@@ -1,16 +1,12 @@
-<script>
-import { ref, watch } from "vue";
+<script setup>
+import { ref } from 'vue';
 
-export default {
-  name: "TopBar",
-  props: { onSearchValueChange: Function },
-  setup() {
-    const searchValue = ref("");
-    return {
-      searchValue,
-    };
-  },
-};
+const searchValue = ref('');
+const props = defineProps({
+  onSearchValueChange: Function,
+  handleSignOut: Function,
+  isLoggedIn: Boolean,
+});
 </script>
 
 <template>
@@ -27,13 +23,27 @@ export default {
         placeholder="Search..."
       />
     </div>
-    <div class="w-1/6 flex space-x-2 justify-end">
-      <button class="bg-gray-700 p-2 rounded hover:opacity-70 cursor-pointer">
+    <div v-if="!isLoggedIn" class="w-1/6 flex space-x-2 justify-end">
+      <router-link
+        class="bg-gray-700 p-2 rounded hover:opacity-70 cursor-pointer"
+        to="/sign-in"
+      >
         Log In
-      </button>
-      <button class="hover:opacity-70 bg-gray-700 p-2 rounded cursor-pointer">
+      </router-link>
+      <router-link
+        class="hover:opacity-70 bg-gray-700 p-2 rounded cursor-pointer"
+        to="register"
+      >
         Sign Up
-      </button>
+      </router-link>
+      <img
+        src="../assets/sidebar.png"
+        alt="Toggle Sidebar"
+        class="hover:opacity-70 cursor-pointer h-10 w-10"
+      />
+    </div>
+    <div v-if="isLoggedIn" class="w-1/6 flex space-x-2 justify-end">
+      <button @click="handleSignOut">Sign Out</button>
       <img
         src="../assets/sidebar.png"
         alt="Toggle Sidebar"
