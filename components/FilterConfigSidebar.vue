@@ -1,7 +1,10 @@
 <script setup lang="ts">
 const yearRange = ref([2000, 2023]);
-const selectedGenre = ref('');
+const selectedGenres = ref([]);
 const ratingRange = ref([0, 10]);
+watchEffect(() => {
+  console.log(selectedGenres.value);
+});
 </script>
 
 <template>
@@ -26,6 +29,7 @@ const ratingRange = ref([0, 10]);
       chips
       multiple
       label="Genre"
+      v-model="selectedGenres"
       :items="[
         'Pop',
         'Rock',

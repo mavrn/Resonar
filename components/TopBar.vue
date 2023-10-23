@@ -10,7 +10,7 @@ defineProps({
 <template>
   <div class="bg-gray-900 text-white p-4 flex items-center max-h-30">
     <NuxtLink class="w-1/6" to="/">
-      <img class="h-16" src="../assets/sonar-logo.png" alt="Logo" />
+      <img class="h-14" src="../assets/sonar-logo.png" alt="Logo" />
     </NuxtLink>
     <div class="w-4/6 flex">
       <input

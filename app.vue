@@ -50,7 +50,7 @@ const handleSignOut = () => {
     :isLoggedIn="isLoggedIn"
     :handleSignOut="handleSignOut"
   />
-  <div class="p-2 flex space-x-2 bg-gray-700 min-h-screen">
+  <div class="p-2 space-x-2 bg-gray-700 min-h-screen">
     <NuxtPage></NuxtPage>
   </div>
 </template>
