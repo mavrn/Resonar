@@ -1,4 +1,4 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 export default defineNuxtConfig({
   devtools: {
     enabled: true,
@@ -7,7 +7,19 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['@nuxtjs/tailwindcss', 'nuxt-vuefire'],
+  build: {
+    transpile: ['vuetify'],
+  },
+  modules: [
+    '@nuxtjs/tailwindcss',
+    'nuxt-vuefire',
+    (_options, nuxt) => {
+      nuxt.hooks.hook('vite:extendConfig', (config) => {
+        // @ts-expect-error
+        config.plugins.push(vuetify({ autoImport: true }));
+      });
+    },
+  ],
 
   vuefire: {
     config: {
@@ -18,6 +30,13 @@ export default defineNuxtConfig({
       messagingSenderId: '1096856922094',
       appId: '1:1096856922094:web:9df9aea96f320e132e90ff',
       measurementId: 'G-JFRVL2QV3C',
+    },
+  },
+  vite: {
+    vue: {
+      template: {
+        transformAssetUrls,
+      },
     },
   },
 });

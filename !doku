@@ -1,0 +1,2 @@
+-stack: vue3 + nuxt + tailwindcss + typescript + firebase
+-automatic deploys using vercel and nuxt to sonarmusic.vercel.app
