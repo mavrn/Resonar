@@ -1,6 +1,8 @@
-<script setup>
+<script setup lang="ts">
 const searchValue = ref('');
-const props = defineProps({
+const filterMenuToggled = ref(false);
+const sortingMenuToggled = ref(false);
+defineProps({
   onSearchValueChange: Function,
   handleSignOut: Function,
   isLoggedIn: Boolean,
@@ -12,14 +14,22 @@ const props = defineProps({
     <NuxtLink class="w-1/6" to="/">
       <img class="h-16" src="../assets/sonar-logo.png" alt="Logo" />
     </NuxtLink>
-    <div class="w-4/6">
+    <div class="bg-gray-800 w-4/6 flex">
       <input
         type="text"
         v-model="searchValue"
-        @input="onSearchValueChange(searchValue)"
+        @input="onSearchValueChange?.(searchValue)"
         class="w-full bg-gray-800 text-white p-2 rounded h-12 focus:outline-none"
         placeholder="Search..."
       />
+      <div class="flex space-x-2 ml-auto pr-4">
+        <button @click="filterMenuToggled = !filterMenuToggled" class="">
+          <img src="../assets/filter.png" class="h-8" alt="FilterLogo" />
+        </button>
+        <button @click="sortingMenuToggled = !sortingMenuToggled" class="">
+          <img src="../assets/sort.png" class="h-7" alt="FilterLogo" />
+        </button>
+      </div>
     </div>
     <div v-if="!isLoggedIn" class="w-1/6 flex space-x-2 justify-end">
       <NuxtLink
@@ -41,7 +51,7 @@ const props = defineProps({
       />
     </div>
     <div v-if="isLoggedIn" class="w-1/6 flex space-x-2 justify-end">
-      <button @click="handleSignOut">Sign Out</button>
+      <button @click="handleSignOut?.()">Sign Out</button>
       <img
         src="../assets/sidebar.png"
         alt="Toggle Sidebar"

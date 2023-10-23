@@ -30,7 +30,7 @@ const register = () => {
     .catch((error) => {
       console.log(error.code);
       alert(error.message);
-    });
+    }); 
 };
 const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
