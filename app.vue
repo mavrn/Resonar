@@ -1,19 +1,13 @@
 <script setup>
-import {
-  QueryDocumentSnapshot,
-  collection,
-  getDoc,
-  getDocs,
-} from 'firebase/firestore';
-import { db } from './main';
-import { ref, onMounted } from 'vue';
-import { default as TopBar } from './components/TopBar.vue';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import router from './router';
-const searchTerm = ref('');
+import { getDocs, collection } from 'firebase/firestore';
 
 const albums = ref([]);
 const isLoggedIn = ref(false);
+const searchTerm = ref('');
+const router = useRouter();
+const db = useFirestore();
+let auth;
 
 onMounted(async () => {
   const querySnapshot = await getDocs(collection(db, 'albums'));
@@ -22,7 +16,6 @@ onMounted(async () => {
   });
 });
 
-let auth;
 onMounted(() => {
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
@@ -50,5 +43,8 @@ const handleSignOut = () => {
     :isLoggedIn="isLoggedIn"
     :handleSignOut="handleSignOut"
   />
-  <div class="p-4 bg-gray-700 min-h-screen"><router-view></router-view></div>
+  <div class="p-4 bg-gray-700 min-h-screen">
+    <span>{{ searchTerm }}</span
+    ><NuxtPage></NuxtPage>
+  </div>
 </template>

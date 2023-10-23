@@ -11,16 +11,14 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import {
   getAuth,
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { useRouter } from 'vue-router';
-import router from '../router';
 
+const router = useRouter();
 const email = ref('');
 const password = ref('');
 const register = () => {

@@ -1,6 +1,4 @@
 <script setup>
-import { ref } from 'vue';
-
 const searchValue = ref('');
 const props = defineProps({
   onSearchValueChange: Function,
@@ -11,9 +9,9 @@ const props = defineProps({
 
 <template>
   <div class="bg-gray-900 text-white p-4 flex items-center max-h-30">
-    <div class="w-1/6">
+    <NuxtLink class="w-1/6" to="/">
       <img class="h-16" src="../assets/sonar-logo.png" alt="Logo" />
-    </div>
+    </NuxtLink>
     <div class="w-4/6">
       <input
         type="text"
@@ -24,18 +22,18 @@ const props = defineProps({
       />
     </div>
     <div v-if="!isLoggedIn" class="w-1/6 flex space-x-2 justify-end">
-      <router-link
+      <NuxtLink
         class="bg-gray-700 p-2 rounded hover:opacity-70 cursor-pointer"
         to="/sign-in"
       >
         Log In
-      </router-link>
-      <router-link
+      </NuxtLink>
+      <NuxtLink
         class="hover:opacity-70 bg-gray-700 p-2 rounded cursor-pointer"
         to="register"
       >
         Sign Up
-      </router-link>
+      </NuxtLink>
       <img
         src="../assets/sidebar.png"
         alt="Toggle Sidebar"

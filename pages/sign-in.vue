@@ -12,23 +12,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
 import {
   getAuth,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth';
-import { useRouter } from 'vue-router';
-import router from '../router';
 
+const router = useRouter();
 const email = ref('');
 const password = ref('');
 const errMsg = ref();
 const signIn = () => {
   signInWithEmailAndPassword(getAuth(), email.value, password.value)
     .then((data) => {
-      console.log('Successfully registered!');
+      console.log('Successfully signed in!');
       router.push('/');
     })
     .catch((error) => {
@@ -53,7 +51,7 @@ const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)
     .then((data) => {
-      console.log('Successfully registered!');
+      console.log('Successfully signed in!');
       router.push('/');
     })
     .catch((error) => {

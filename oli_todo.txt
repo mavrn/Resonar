@@ -1,6 +1,0 @@
-1. Felder konsistent benennen:
-    -englisch
-    -camelCase
-
-2. Funktionen:
-    -Hinzufügen/Editieren/Löschen eines Tracks/Artists/Albums
