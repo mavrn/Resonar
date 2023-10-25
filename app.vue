@@ -10,6 +10,7 @@ const filterSettings = ref(Filter);
 const sorting = ref('popular');
 const router = useRouter();
 const db = useFirestore();
+const userProfile = ref<DocumentData | null>(null);
 
 let auth: Auth;
 
@@ -21,6 +22,7 @@ onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isLoggedIn.value = true;
+      userProfile.value = useDocument(doc(collection(db, 'users'), user.uid));
       router.push('./');
     } else {
       isLoggedIn.value = false;
@@ -45,6 +47,7 @@ const handleSignOut = async () => {
     :onSearchValueChange="handleSearchValueChange"
     :isLoggedIn="isLoggedIn"
     :handleSignOut="handleSignOut"
+    :user="userProfile?.value"
   />
   <div class="p-2 space-x-2 bg-gray-700 min-h-screen">
     <NuxtPage></NuxtPage>

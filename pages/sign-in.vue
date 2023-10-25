@@ -48,7 +48,7 @@ const signInRedirect = async () => {
 <template>
   <div class="text-white pt-6 space-y-4 flex flex-col items-center">
     <h1 class="text-4xl">Sign In</h1>
-    <form class="items-center flex-col flex">
+    <form class="items-center flex-col flex" @submit.prevent="signIn">
       <v-text-field
         class="text-white mx-auto"
         label="E-Mail"
@@ -66,7 +66,7 @@ const signInRedirect = async () => {
         style="width: 30vw"
       />
       <p v-if="errMsg" class="p-0 m-0 text-red">{{ errMsg }}</p>
-      <v-btn variant="tonal" class="mt-5 text-subtitle-1" @click="signIn"
+      <v-btn variant="tonal" class="mt-5 text-subtitle-1" type="submit"
         >Sign In</v-btn
       >
       <p class="text-xl py-3">Or</p>

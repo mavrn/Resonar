@@ -13,6 +13,7 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss',
     'nuxt-vuefire',
+    '@vee-validate/nuxt',
     (_options, nuxt) => {
       nuxt.hooks.hook('vite:extendConfig', (config) => {
         // @ts-expect-error
@@ -32,7 +33,6 @@ export default defineNuxtConfig({
       measurementId: 'G-JFRVL2QV3C',
     },
   },
-
   vite: {
     vue: {
       template: {
