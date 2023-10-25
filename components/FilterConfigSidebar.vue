@@ -2,9 +2,6 @@
 const yearRange = ref([2000, 2023]);
 const selectedGenres = ref([]);
 const ratingRange = ref([0, 10]);
-watchEffect(() => {
-  console.log(selectedGenres.value);
-});
 </script>
 
 <template>
@@ -24,7 +21,7 @@ watchEffect(() => {
         {{ modelValue }}
       </template>
     </v-range-slider>
-    <v-combobox
+    <v-autocomplete
       class=""
       chips
       multiple
@@ -52,7 +49,7 @@ watchEffect(() => {
         'Gospel',
       ]"
       variant="outlined"
-    ></v-combobox>
+    ></v-autocomplete>
     <div class="">
       <label class="block font-medium mb-2">Rating Range</label>
       <v-range-slider

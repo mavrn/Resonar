@@ -1,33 +1,22 @@
-<template>
-  <h1 class="text-white">Sign In</h1>
-  <p><input type="text" placeholder="Email" v-model="email" /></p>
-  <p><input type="password" placeholder="Password" v-model="password" /></p>
-  <p v-if="errMsg">{{ errMsg }}</p>
-  <p><button class="bg-white" @click="signIn">Submit</button></p>
-  <p>
-    <button class="bg-white" @click="signInWithGoogle">
-      Log In With Google
-    </button>
-  </p>
-</template>
-
 <script setup lang="ts">
 import {
   getAuth,
+  getRedirectResult,
   signInWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
 } from 'firebase/auth';
 
 const router = useRouter();
 const email = ref('');
 const password = ref('');
 const errMsg = ref();
-const signIn = () => {
+
+const signIn = async () => {
   signInWithEmailAndPassword(getAuth(), email.value, password.value)
     .then((data) => {
       console.log('Successfully signed in!');
-      router.push('/');
     })
     .catch((error) => {
       console.log(error.code);
@@ -47,18 +36,49 @@ const signIn = () => {
       }
     });
 };
-const signInWithGoogle = () => {
-  const provider = new GoogleAuthProvider();
-  signInWithPopup(getAuth(), provider)
-    .then((data) => {
-      console.log('Successfully signed in!');
-      router.push('/');
-    })
-    .catch((error) => {
-      console.log(error.code);
-      alert(error.message);
-    });
+
+const signInRedirect = async () => {
+  signInWithRedirect(getAuth(), new GoogleAuthProvider()).catch((error) => {
+    console.error('Failed signinRedirect', error);
+    errMsg.value = 'Failed Redirect.';
+  });
 };
 </script>
+
+<template>
+  <div class="text-white pt-6 space-y-4 flex flex-col items-center">
+    <h1 class="text-4xl">Sign In</h1>
+    <form class="items-center flex-col flex">
+      <v-text-field
+        class="text-white mx-auto"
+        label="E-Mail"
+        type="text"
+        hide-details="auto"
+        v-model="email"
+        style="width: 30vw"
+      />
+      <v-text-field
+        class="text-white mx-auto"
+        hide-details="auto"
+        type="Password"
+        label="Password"
+        v-model="password"
+        style="width: 30vw"
+      />
+      <p v-if="errMsg" class="p-0 m-0 text-red">{{ errMsg }}</p>
+      <v-btn variant="tonal" class="mt-5 text-subtitle-1" @click="signIn"
+        >Sign In</v-btn
+      >
+      <p class="text-xl py-3">Or</p>
+      <v-btn
+        variant="tonal"
+        class="mb-5 text-subtitle-1"
+        @click="signInRedirect"
+      >
+        Sign in With Google
+      </v-btn>
+    </form>
+  </div>
+</template>
 
 <style lang="scss" scoped></style>

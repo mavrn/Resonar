@@ -1,14 +1,14 @@
 <template>
   <div class="wrapper flex w-full">
-    <div class="columnLeft bg-gray-600 min-h-screen">
+    <div class="columnLeft min-h-screen">
       <FilterConfigSidebar />
     </div>
     <div class="dividerLeft"></div>
-    <div class="columnMiddle bg-gray-600 min-h-screen">
+    <div class="columnMiddle min-h-screen">
       <ResultsGrid />
     </div>
     <div class="dividerRight"></div>
-    <div class="columnRight bg-gray-600 min-h-screen">
+    <div class="columnRight min-h-screen">
       <RightSideBar />
     </div>
   </div>
@@ -31,8 +31,6 @@ const pointerRelativeXposRight = ref(0);
 const wrapper = ref(null);
 
 const handleMouseDown = (e) => {
-  console.log('mouse down!');
-
   if (e.target === dividerLeft.value) {
     e.preventDefault();
     isDividerLeftDragging.value = true;
@@ -43,7 +41,6 @@ const handleMouseDown = (e) => {
 };
 
 const handleMouseUp = (e) => {
-  console.log('mouse up!');
   isDividerLeftDragging.value = false;
   isDividerRightDragging.value = false;
 };
@@ -130,6 +127,7 @@ onUnmounted(() => {
   display: block;
   width: 2px;
   height: 100%;
+  background-color: aliceblue;
 }
 
 .dividerRight {
@@ -144,5 +142,6 @@ onUnmounted(() => {
   display: block;
   width: 2px;
   height: 100%;
+  background-color: aliceblue;
 }
 </style>

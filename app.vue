@@ -1,29 +1,27 @@
 <script setup lang="ts">
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import type { Auth } from 'firebase/auth';
-import { getDocs, collection } from 'firebase/firestore';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import type { User } from 'firebase/auth';
+import { getDocs, collection, getDoc, doc } from 'firebase/firestore';
 
-const albums: Ref<string[]> = ref([]);
-const isLoggedIn = ref(false);
 const searchTerm = ref('');
 const filterSettings = ref(Filter);
 const sorting = ref('popular');
 const router = useRouter();
 const db = useFirestore();
+
 let auth: Auth;
 
-onMounted(async () => {
-  const querySnapshot = await getDocs(collection(db, 'albums'));
-  querySnapshot.forEach((doc) => {
-    albums.value.push(doc.id);
-  });
-});
+const albums = ref<QueryDocumentSnapshot[]>([]);
+const isLoggedIn = ref(false);
 
 onMounted(() => {
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
       isLoggedIn.value = true;
+      router.push('./');
     } else {
       isLoggedIn.value = false;
     }
@@ -37,10 +35,8 @@ const handleSearchValueChange = (newQuery: string) => {
 
 const handleSetFilter = (newFilter: typeof Filter) => {};
 
-const handleSignOut = () => {
-  signOut(auth).then(() => {
-    router.push('/');
-  });
+const handleSignOut = async () => {
+  signOut(auth);
 };
 </script>
 

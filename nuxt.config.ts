@@ -32,6 +32,7 @@ export default defineNuxtConfig({
       measurementId: 'G-JFRVL2QV3C',
     },
   },
+
   vite: {
     vue: {
       template: {

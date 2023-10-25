@@ -1,15 +1,3 @@
-<template>
-  <h1 class="text-white">Create an Account</h1>
-  <p><input type="text" placeholder="Email" v-model="email" /></p>
-  <p><input type="password" placeholder="Password" v-model="password" /></p>
-  <p><button class="bg-white" @click="register">Submit</button></p>
-  <p>
-    <button class="bg-white" @click="signInWithGoogle">
-      Sign Up With Google
-    </button>
-  </p>
-</template>
-
 <script setup>
 import {
   getAuth,
@@ -18,7 +6,6 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 
-const router = useRouter();
 const email = ref('');
 const password = ref('');
 const register = () => {
@@ -30,14 +17,13 @@ const register = () => {
     .catch((error) => {
       console.log(error.code);
       alert(error.message);
-    }); 
+    });
 };
 const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)
     .then((data) => {
       console.log('Successfully registered!');
-      router.push('/');
     })
     .catch((error) => {
       console.log(error.code);
@@ -45,5 +31,38 @@ const signInWithGoogle = () => {
     });
 };
 </script>
+
+<template>
+  <div class="text-white pt-6 space-y-4 flex flex-col items-center">
+    <h1 class="text-4xl">Create an Account</h1>
+    <v-text-field
+      class="text-white mx-auto"
+      label="E-Mail"
+      type="text"
+      hide-details="auto"
+      v-model="email"
+      style="width: 30vw"
+    />
+    <v-text-field
+      class="text-white mx-auto"
+      hide-details="auto"
+      type="Password"
+      label="Password"
+      v-model="password"
+      style="width: 30vw"
+    />
+    <v-btn variant="tonal" class="mt-5 text-subtitle-1" @click="register"
+      >Register</v-btn
+    >
+    <p class="text-xl py-3">Or</p>
+    <v-btn
+      variant="tonal"
+      class="mt-5 text-subtitle-1"
+      @click="signInWithGoogle"
+    >
+      Register With Google
+    </v-btn>
+  </div>
+</template>
 
 <style lang="scss" scoped></style>
