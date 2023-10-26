@@ -21,7 +21,6 @@ export default defineNuxtConfig({
       });
     },
   ],
-
   vuefire: {
     config: {
       apiKey: 'AIzaSyCgV1C1nyvG2eJ13tGs1CwDJh_dcaGWTXc',
@@ -40,4 +39,5 @@ export default defineNuxtConfig({
       },
     },
   },
+  css: ['@/assets/css/main.css'],
 });

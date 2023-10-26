@@ -23,7 +23,6 @@ onMounted(() => {
     if (user) {
       isLoggedIn.value = true;
       userProfile.value = useDocument(doc(collection(db, 'users'), user.uid));
-      router.push('./');
     } else {
       isLoggedIn.value = false;
     }
@@ -32,7 +31,10 @@ onMounted(() => {
 
 const handleSearchValueChange = (newQuery: string) => {
   searchTerm.value = newQuery;
-  router.replace({ query: { search: encodeURIComponent(searchTerm.value) } });
+  router.push({
+    path: '/',
+    query: { search: encodeURIComponent(searchTerm.value) },
+  });
 };
 
 const handleSetFilter = (newFilter: typeof Filter) => {};
@@ -40,6 +42,8 @@ const handleSetFilter = (newFilter: typeof Filter) => {};
 const handleSignOut = async () => {
   signOut(auth);
 };
+
+provide('handleSearchValueChange', handleSearchValueChange);
 </script>
 
 <template>
@@ -49,7 +53,9 @@ const handleSignOut = async () => {
     :handleSignOut="handleSignOut"
     :user="userProfile?.value"
   />
-  <div class="p-2 space-x-2 bg-gray-700 min-h-screen">
-    <NuxtPage></NuxtPage>
-  </div>
+  <NuxtPage></NuxtPage>
 </template>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Agbalumo&display=swap');
+</style>

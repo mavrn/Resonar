@@ -5,7 +5,7 @@ const ratingRange = ref([0, 10]);
 </script>
 
 <template>
-  <div class="p-4 text-white align-items-center">
+  <div class="p-4 align-items-center">
     <h2 class="text-lg">Filters</h2>
     <label class="">Year Range</label>
     <v-range-slider

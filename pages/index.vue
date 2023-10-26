@@ -1,14 +1,14 @@
 <template>
-  <div class="wrapper flex w-full">
-    <div class="columnLeft min-h-screen">
+  <div class="p-4 wrapper flex w-full text-white">
+    <div class="columnLeft bg-primarylight rounded-xl overflow-hidden">
       <FilterConfigSidebar />
     </div>
     <div class="dividerLeft"></div>
-    <div class="columnMiddle min-h-screen">
+    <div class="columnMiddle">
       <ResultsGrid />
     </div>
     <div class="dividerRight"></div>
-    <div class="columnRight min-h-screen">
+    <div class="columnRight bg-primarylight rounded-xl overflow-hidden">
       <RightSideBar />
     </div>
   </div>
@@ -50,8 +50,7 @@ const handleMouseMove = (e) => {
     containerOffsetLeft.value = wrapper.value.offsetLeft;
     pointerRelativeXposLeft.value = e.clientX;
     if (pointerRelativeXposLeft.value / sidebarMinWidth < snappingThreshold) {
-      columnLeft.value.style.display = 'none';
-      columnLeft.value.style.width = '0px';
+      columnLeft.value.style.width = '7px';
     } else {
       columnLeft.value.style.display = 'block';
       columnLeft.value.style.width = `${Math.min(
@@ -64,8 +63,7 @@ const handleMouseMove = (e) => {
     containerOffsetRight.value = wrapper.value.offsetLeft;
     pointerRelativeXposRight.value = window.innerWidth - e.clientX - 12;
     if (pointerRelativeXposRight.value / sidebarMinWidth < snappingThreshold) {
-      columnRight.value.style.display = 'none';
-      columnRight.value.style.width = '0px';
+      columnRight.value.style.width = '7px';
     } else {
       columnRight.value.style.display = 'block';
       columnRight.value.style.width = `${Math.min(
@@ -103,6 +101,7 @@ onUnmounted(() => {
   flex: 1 1 auto;
   box-sizing: border-box;
   width: 14%;
+  height: 60vh;
 }
 .columnMiddle {
   flex: 1 1 auto;
@@ -112,6 +111,7 @@ onUnmounted(() => {
 .columnRight {
   flex: 1 1 auto;
   box-sizing: border-box;
+  height: 60vh;
   width: 14%;
 }
 
@@ -122,26 +122,10 @@ onUnmounted(() => {
   flex: 0 0 auto;
 }
 
-.dividerLeft::before {
-  content: '';
-  display: block;
-  width: 2px;
-  height: 100%;
-  background-color: aliceblue;
-}
-
 .dividerRight {
   width: 10px;
   padding: 0;
   cursor: ew-resize;
   flex: 0 0 auto;
-}
-
-.dividerRight::before {
-  content: '';
-  display: block;
-  width: 2px;
-  height: 100%;
-  background-color: aliceblue;
 }
 </style>
