@@ -11,7 +11,7 @@ onMounted(async () => {
     user.likedReleases.forEach((reference) => {
       getDoc(reference).then((albumSnapshot) => {
         console.log('sddf');
-        likedReleasesNames.push(albumSnapshot.data().name);
+        likedReleasesNames.value.push(albumSnapshot.data().name);
       });
     });
   });
@@ -35,7 +35,12 @@ onMounted(async () => {
       <div>
         <div>Username: {{ foundUser.username }}</div>
         <div>Email: {{ foundUser.email }}</div>
-        <div>Liked Releases: {{ likedReleasesNames[0] }}</div>
+        <div>Liked Releases:</div>
+        <ul>
+          <li v-for="(releaseName, index) in likedReleasesNames" :key="index">
+            {{ releaseName }}
+          </li>
+        </ul>
       </div>
     </div>
   </div>
