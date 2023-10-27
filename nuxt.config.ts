@@ -7,23 +7,34 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  build: {
-    transpile: ['vuetify'],
-  },
-  modules: [
-    '@nuxtjs/tailwindcss',
-    'nuxt-vuefire',
-    '@vee-validate/nuxt',
-    (_options, nuxt) => {
-      nuxt.hooks.hook('vite:extendConfig', (config) => {
-        // @ts-expect-error
-        config.plugins.push(vuetify({ autoImport: true }));
-      });
+  modules: ['nuxt-vuefire','nuxt-primevue'],
+  primevue: {
+    usePrimeVue: true,
+    options: {
+      ripple: true,
     },
-  ],
+    components: {
+      prefix: '',
+      name: undefined,
+      include: '*',
+      exclude: undefined,
+    },
+    directives: {
+      prefix: '',
+      name: undefined,
+      include: undefined,
+      exclude: undefined,
+    },
+    composables: {
+      prefix: '',
+      name: undefined,
+      include: undefined,
+      exclude: undefined,
+    },
+  },
   vuefire: {
     config: {
-      apiKey: 'AIzaSyCgV1C1nyvG2eJ13tGs1CwDJh_dcaGWTXc',
+      apiKey: process.env.API_KEY,
       authDomain: 'sonar0.firebaseapp.com',
       projectId: 'sonar0',
       storageBucket: 'sonar0.appspot.com',
@@ -32,12 +43,5 @@ export default defineNuxtConfig({
       measurementId: 'G-JFRVL2QV3C',
     },
   },
-  vite: {
-    vue: {
-      template: {
-        transformAssetUrls,
-      },
-    },
-  },
-  css: ['@/assets/css/main.css'],
+  css: ['assets/css/main.css', 'assets/css/theme.css'],
 });

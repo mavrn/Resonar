@@ -1,4 +1,4 @@
-class Filter {
+export class Filter {
   startDate: Date;
   endDate: Date;
   genre: string;
@@ -20,4 +20,3 @@ class Filter {
   }
 }
 
-export default Filter;

@@ -16,7 +16,7 @@ export const getUser = async (username: string) => {
   try {
     const snapshot = await getDocs(q);
     if (snapshot.docs.length > 0) {
-      let foundUser = snapshot.docs[0].data();
+      let foundUser = snapshot.docs[0];
       return foundUser;
     } else {
       console.log('Didnt find user');

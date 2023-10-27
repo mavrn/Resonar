@@ -47,44 +47,83 @@ const signInRedirect = async () => {
 </script>
 
 <template>
-  <div class="flex h-[70vh] justify-center items-center">
-    <div
-      class="w-[30vw] min-w-[300px] h-[50vh] bg-primarylight space-y-4 flex flex-col items-center justify-center text-white rounded-xl"
-    >
-      <h1 class="text-4xl">Sign In</h1>
-      <form
-        class="items-center flex-col flex w-[100%]"
-        @submit.prevent="signIn"
-      >
-        <v-text-field
-          class="mx-auto min-w-[100px] w-[50%]"
-          label="E-Mail"
-          type="text"
-          hide-details="auto"
-          v-model="email"
-        />
-        <v-text-field
-          class="mx-auto min-w-[100px] w-[50%]"
-          hide-details="auto"
-          type="Password"
-          label="Password"
-          v-model="password"
-        />
-        <p v-if="errMsg" class="p-0 m-0 text-red">{{ errMsg }}</p>
-        <v-btn variant="tonal" class="mt-5 text-subtitle-1" type="submit"
-          >Sign In</v-btn
-        >
-        <p class="text-xl py-3">Or</p>
-        <v-btn
-          variant="tonal"
-          class="mb-5 text-subtitle-1"
-          @click="signInRedirect"
-        >
+  <div class="wrapper">
+    <div class="card">
+      <h1>Sign In</h1>
+      <form @submit.prevent="signIn">
+        <div class="input-field p-inputgroup">
+          <span class="p-inputgroup-addon">
+            <i class="material-icons">person</i>
+          </span>
+          <InputText placeholder="E-Mail or Username" v-model="email" type="text" />
+        </div>
+        <div class="input-field p-inputgroup" style="padding-bottom: 20px">
+          <span class="p-inputgroup-addon">
+            <i class="material-icons">key</i>
+          </span>
+          <InputText
+            placeholder="Password"
+            v-model="password"
+            type="password"
+          />
+        </div>
+
+        <p v-if="errMsg" class="error-message">{{ errMsg }}</p>
+        <Button class="login-button" type="submit">Sign In</Button>
+        <p class="text-divider">Or</p>
+        <Button class="secondary-button google-button" @click="signInRedirect">
+          <img class="google-logo" src="../assets/google.svg" />
           Sign in With Google
-        </v-btn>
+        </Button>
       </form>
     </div>
   </div>
 </template>
 
-<style lang="scss" scoped></style>
+<style scoped>
+.wrapper {
+  display: flex;
+  height: 70vh;
+  justify-content: center;
+  align-items: center;
+}
+
+.card {
+  width: 30vw;
+  min-width: 300px;
+  height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+form {
+  flex-direction: column;
+  align-items: center;
+  display: flex;
+  width: 100%;
+  gap: 5px;
+}
+
+.input-field {
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 300px;
+  width: 70%;
+}
+
+.text-divider {
+  font-size: 12px;
+}
+.google-button {
+  padding: 7px;
+}
+.google-logo {
+  height: 30px;
+  width: auto;
+  padding-right: 5px;
+  padding-top: 2px;
+}
+</style>

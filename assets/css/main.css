@@ -1,4 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+@import 'primeicons/primeicons.css';
+@import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 
 body {
   font-family: 'Inter', sans-serif;
