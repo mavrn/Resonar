@@ -82,6 +82,13 @@ const searchValue = ref('');
               Sign Out
             </Button>
           </div>
+          <div class="header-main-user show-smaller-than-md-flex">
+            <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
+              ><Button class="topbar-button"
+                ><i class="material-icons text-white">person</i></Button
+              >
+            </NuxtLink>
+          </div>
         </div>
       </div>
     </div>

@@ -42,8 +42,6 @@ const handleSetFilter = (newFilter: typeof Filter) => {};
 const handleSignOut = async () => {
   signOut(auth);
 };
-
-provide('handleSearchValueChange', handleSearchValueChange);
 </script>
 
 <template>
@@ -55,7 +53,10 @@ provide('handleSearchValueChange', handleSearchValueChange);
         :handleSignOut="handleSignOut"
         :loggedInUser="userProfile?.value"
       />
-      <NuxtPage :loggedInUser="userProfile"></NuxtPage>
+      <NuxtPage
+        :loggedInUser="userProfile"
+        :searchValue="searchTerm"
+      ></NuxtPage>
     </div>
   </body>
 </template>

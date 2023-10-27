@@ -24,11 +24,10 @@ onMounted(async () => {
       : false;
     for (const reference of user.data().likedReleases) {
       const albumSnapshot = await getDoc(reference);
-      const release = new Release(albumSnapshot);
+      const release = new Album(albumSnapshot);
       await release.resolve();
       likedReleases.value.push(release);
     }
-    console.log(likedReleases);
   });
 });
 </script>
@@ -54,21 +53,25 @@ onMounted(async () => {
         <Button v-if="isLoggedInUser" label="Account Settings"></Button>
       </div>
       <div class="rated-releases">
-        <DataView :value="likedReleases" paginator :rows="10"></DataView>
-        <ul>
-          <li v-for="(release, index) in likedReleases" :key="index">
-            <div class="release-card">
-              <h3>{{ release.title }}</h3>
-              <p>{{}}</p>
+        <DataView class="data-view" :value="likedReleases" paginator :rows="10">
+          <template #list="slotProps">
+            <div class="item-wrapper">
+              <div class="item-container">
+                <img class="item-image" :src="slotProps.data.cover" />
+                <div class="item-info">
+                  <div class="item-main-container">
+                    <div class="title">{{ slotProps.data.title }}</div>
+                    <div class="rating">{{ slotProps.data.rating }}</div>
+                    <div class="artist">{{}}</div>
+                  </div>
+                </div>
+              </div>
             </div>
-          </li>
-        </ul>
+          </template>
+        </DataView>
       </div>
     </div>
-    <div v-if="!foundUser" class="user-not-found-wrapper">
-      <p class="user-not-found-main">404</p>
-      <p class="user-not-found-sub">User Not Found</p>
-    </div>
+    <NotFound v-if="!foundUser" element="User" />
   </div>
 </template>
 
@@ -130,20 +133,54 @@ onMounted(async () => {
   background-color: aliceblue;
   grid-area: 2 / 2 / 3 / 3;
   height: 200px;
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: flex-start;
 }
 
-.user-not-found-wrapper {
+.data-view {
+  width: 100%;
+}
+.item-wrapper {
+  width: 100%;
+}
+.item-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 10px;
+  gap: 10px;
 }
-.user-not-found-main {
-  padding-top: 100px;
-  padding-bottom: 60px;
-  font-size: 200px;
+
+.item-image {
+  width: 100px;
+  height: 100px;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  display: block;
+  border-radius: 10px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.item-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex: 1 1 0%;
+  gap: 10px;
+}
+
+.item-main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.title {
+  font-size: 20px;
+  font: bold;
 }
 </style>

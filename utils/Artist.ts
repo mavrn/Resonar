@@ -5,22 +5,14 @@ import { Release } from './Release';
 export class Artist {
   avatar: string;
   name: string;
-  // releasesUnresolved: DocumentReference[];
-  // releases: Release[];
+  uid: number;
 
-  constructor(doc: DocumentData) {
-    const docData = doc.data();
-    this.avatar = docData.avatar;
-    this.name = docData.name;
-    // this.releasesUnresolved = docData.releases;
-    // this.releases = [];
+  constructor(doc?: DocumentData) {
+    if (doc) {
+      const docData = doc.data();
+      this.uid = doc.id;
+      this.avatar = docData.avatar;
+      this.name = docData.name;
+    }
   }
-
-  // async resolve() {
-  //   this.releasesUnresolved.forEach((releaseReference: DocumentReference) =>
-  //     getDoc(releaseReference).then((releaseSnapshot) => {
-  //       this.releases.push(new Release(releaseSnapshot));
-  //     })
-  //   );
-  // }
 }
