@@ -7,7 +7,7 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['nuxt-vuefire','nuxt-primevue'],
+  modules: ['nuxt-vuefire', 'nuxt-primevue'],
   primevue: {
     usePrimeVue: true,
     options: {
@@ -16,8 +16,8 @@ export default defineNuxtConfig({
     components: {
       prefix: '',
       name: undefined,
-      include: '*',
-      exclude: undefined,
+      include: undefined,
+      exclude: ['Editor', 'Chart'],
     },
     directives: {
       prefix: '',

@@ -11,9 +11,7 @@
   },
   "devDependencies": {
     "@nuxt/devtools": "latest",
-    "@nuxtjs/tailwindcss": "^6.8.0",
     "nuxt": "^3.8.0",
-    "vite-plugin-vuetify": "^1.0.2",
     "vue": "^3.3.6",
     "vue-router": "^4.2.5",
     "vuetify": "^3.3.22"
@@ -23,10 +21,9 @@
     "@vee-validate/nuxt": "^4.11.8",
     "firebase": "^10.5.0",
     "firebase-admin": "^11.11.0",
-    "nuxt-primevue": "^0.3.0",
+    "nuxt-primevue": "^0.1.0",
     "nuxt-vuefire": "^0.4.0",
     "primeicons": "^6.0.1",
-    "vue-slider-component": "^3.2.24",
     "vuefire": "^3.1.17"
   }
 }
