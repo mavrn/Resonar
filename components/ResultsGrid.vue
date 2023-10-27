@@ -20,7 +20,6 @@
 defineProps({
   results: Object,
 });
-
 </script>
 
 <style scoped>

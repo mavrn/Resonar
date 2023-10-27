@@ -6,6 +6,7 @@
 import { getDoc } from 'firebase/firestore';
 
 const resultList = ref([]);
+const refreshKey = ref(0);
 const props = defineProps({
   searchValue: String,
   isLoggedIn: Boolean,
@@ -14,13 +15,12 @@ const props = defineProps({
 const updateResults = async (searchValue) => {
   resultList.value = [];
   const qs = await searchForTerm(searchValue);
-  await Promise.all(
-    qs.docs.map(async (doc) => {
-      const relSnapshot = await getDoc(doc.data().reference);
-      const release = new Album(relSnapshot);
-      resultList.value.push(await release.resolve());
-    })
-  );
+  qs.docs.forEach(async (doc) => {
+    const relSnapshot = await getDoc(doc.data().reference);
+    const release = new Album(relSnapshot);
+    await release.resolve()
+    resultList.value.push(release);
+  });
 };
 
 watch(
