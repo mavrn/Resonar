@@ -1,26 +1,28 @@
 <template>
-  <ResultsGrid :results="resultList" />
+  <ResultsGrid :results="results" />
 </template>
 
 <script setup>
 import { getDoc } from 'firebase/firestore';
 
-const resultList = ref([]);
-const refreshKey = ref(0);
+const results = ref(new Map());
 const props = defineProps({
   searchValue: String,
   isLoggedIn: Boolean,
 });
 
 const updateResults = async (searchValue) => {
-  resultList.value = [];
-  const qs = await searchForTerm(searchValue);
-  qs.docs.forEach(async (doc) => {
-    const relSnapshot = await getDoc(doc.data().reference);
-    const release = new Album(relSnapshot);
-    await release.resolve()
-    resultList.value.push(release);
-  });
+  const levels = [0];
+  results.value.clear();
+  for (const level of levels) {
+    const qs = await searchForTerm(searchValue, level);
+    qs.docs.forEach(async (doc) => {
+      const relSnapshot = await getDoc(doc.data().reference);
+      const release = new Album(relSnapshot);
+      await release.resolve();
+      results.value.set(release.uid, release);
+    });
+  }
 };
 
 watch(

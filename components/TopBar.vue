@@ -5,6 +5,7 @@ const props = defineProps({
   isLoggedIn: Boolean,
   loggedInUser: Object,
 });
+
 const searchValue = ref('');
 </script>
 <template>
@@ -60,11 +61,12 @@ const searchValue = ref('');
             </NuxtLink>
           </div>
           <div class="header-main-user show-smaller-than-md-flex">
-            <NuxtLink to="/login"
-              ><Button class="topbar-button"
-                ><i class="material-icons text-white">login</i>
-              </Button>
-            </NuxtLink>
+            <Button @click="buildIndex()"></Button>
+            <!--<NuxtLink to="/login"-->
+            <!--  ><Button class="topbar-button"-->
+            <!--    ><i class="material-icons text-white">login</i>-->
+            <!--  </Button>-->
+            <!--</NuxtLink>-->
           </div>
         </div>
         <div v-if="isLoggedIn" class="header-right-login">

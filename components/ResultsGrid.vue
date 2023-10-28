@@ -4,11 +4,11 @@
       <div class="inner">
         <ul class="grid-releases">
           <li
-            v-for="(result, index) in results"
-            :key="index"
+            v-for="album in results.values()"
+            :key="album.uid"
             class="release-item col-3"
           >
-            <LazyResultCard :release="result" />
+            <LazyResultCard :release="album" />
           </li>
         </ul>
       </div>

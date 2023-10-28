@@ -6,18 +6,36 @@ import {
   orderBy,
   endAt,
   startAt,
+  getFirestore,
 } from 'firebase/firestore';
 
-export const searchForTerm = async (searchQuery: string) => {
+export const searchForTerm = async (searchQuery: string, level = 0) => {
+  let field = '';
+  switch (level) {
+    case 0:
+      field = 'name';
+      break;
+    case 1:
+      field = 'subnoun1';
+      break;
+    case 2:
+      field = "subnoun2";
+      break;
+    case 3:
+      field = "subnoun3";
+      break;
+  }
+
   searchQuery = searchQuery.toLowerCase();
   const db = useFirestore();
   const index = collection(db, 'index');
+
   var q = query(
     index,
-    orderBy('name'),
-    startAt(searchQuery),
-    endAt(searchQuery + '~')
+    where(field, '>=', searchQuery),
+    where(field, '<=', searchQuery + '\uf8ff')
   );
+
   try {
     const snapshot = await getDocs(q);
     return snapshot;
