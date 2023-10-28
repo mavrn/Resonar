@@ -1,15 +1,23 @@
 <script setup lang="ts">
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import type { Auth } from 'firebase/auth';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
+import type { FirebaseStorage } from 'firebase/storage';
+import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getDocs, collection, getDoc, doc } from 'firebase/firestore';
+import {
+  getDownloadURL,
+  getStorage,
+  ref as storageRef,
+} from 'firebase/storage';
 
 const searchTerm = ref('');
 const filterSettings = ref(Filter);
 const sorting = ref('popular');
 const router = useRouter();
 const db = useFirestore();
+const index = ref([]);
+
 const userProfile = ref<DocumentData | null>(null);
 
 let auth: Auth;
@@ -17,7 +25,44 @@ let auth: Auth;
 const albums = ref<QueryDocumentSnapshot[]>([]);
 const isLoggedIn = ref(false);
 
+const fetchIndexJson = async () => {
+  const requestOptions = {
+    method: 'GET',
+    headers: new Headers({}),
+  };
+  const storage = useFirebaseStorage();
+  const jsonRef = storageRef(storage, 'index.json');
+  const url = await new Promise((resolve, reject) => {
+    const storageUrl = useStorageFileUrl(jsonRef);
+    storageUrl
+      .refresh()
+      .then(() => {
+        resolve(storageUrl.url.value);
+      })
+      .catch(reject);
+  });
+  if (url) {
+    const request = new Request(url, requestOptions);
+    const response = await fetch(request);
+    const json = await response.json();
+    return json;
+  }
+};
+
 onMounted(() => {
+  const indexProbe = localStorage.getItem('index');
+  if (indexProbe) {
+    console.log('Found index in local storage.');
+    index.value = JSON.parse(indexProbe);
+  } else {
+    console.log('Didnt find index in local storage.');
+    fetchIndexJson().then((response) => {
+      index.value = response;
+      console.log(response);
+      localStorage.setItem('index', JSON.stringify(response));
+    });
+  }
+
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -45,7 +90,7 @@ const handleSignOut = async () => {
 </script>
 
 <template>
-  <body class="header-fixed">
+  <div class="header-fixed">
     <div class="wrapper">
       <TopBar
         :onSearchValueChange="handleSearchValueChange"
@@ -56,9 +101,10 @@ const handleSignOut = async () => {
       <NuxtPage
         :loggedInUser="userProfile"
         :searchValue="searchTerm"
+        :index="index"
       ></NuxtPage>
     </div>
-  </body>
+  </div>
 </template>
 
 <style scoped>

@@ -61,7 +61,7 @@ const searchValue = ref('');
             </NuxtLink>
           </div>
           <div class="header-main-user show-smaller-than-md-flex">
-            <Button @click="buildIndex()"></Button>
+            <Button @click="handleSignOut?.()"></Button>
             <!--<NuxtLink to="/login"-->
             <!--  ><Button class="topbar-button"-->
             <!--    ><i class="material-icons text-white">login</i>-->
