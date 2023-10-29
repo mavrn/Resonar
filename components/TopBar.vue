@@ -4,13 +4,52 @@ const props = defineProps({
   handleSignOut: Function,
   isLoggedIn: Boolean,
   loggedInUser: Object,
+  handleSortingChange: Function,
+  handleSortingOrderChange: Function,
+  handleFilterChange: Function,
 });
 
 const searchValue = ref('');
+const sorting = ref('Popular');
+const filtering = ref(null);
+const sortingOrder = ref(1);
+
+function toCamelCase(inputString: string) {
+  return inputString
+    .replace(/\s(.)/g, (_, match) => match.toUpperCase())
+    .replace(/\s/g, '')
+    .replace(/^(.)/, (match) => match.toLowerCase());
+}
+
+function onSortingChange(newSorting: string) {
+  sorting.value = newSorting;
+  newSorting = toCamelCase(newSorting);
+  props.handleSortingChange?.(newSorting);
+}
+
+function onSortingOrderChange() {
+  sortingOrder.value = -sortingOrder.value;
+}
 </script>
 <template>
   <div class="show-smaller-than-md-flex header-logo-sm-container">
-    <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo" />
+    <NuxtLink to="/">
+      <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
+    /></NuxtLink>
+    <div v-if="!isLoggedIn" class="header-main-user show-smaller-than-sm-flex">
+      <NuxtLink to="/login"
+        ><Button class="topbar-button secondary-button"
+          ><i class="material-icons text-white">login</i>
+        </Button>
+      </NuxtLink>
+    </div>
+    <div class="header-main-user show-smaller-than-sm-flex">
+      <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
+        ><Button class="topbar-button secondary-button"
+          ><i class="material-icons text-white">person</i></Button
+        >
+      </NuxtLink>
+    </div>
   </div>
   <header>
     <div class="inner">
@@ -33,21 +72,39 @@ const searchValue = ref('');
               />
             </div>
             <div class="show-bigger-than-lg-block">
-              <div class="search-in-seperator">IN</div>
+              <div class="search-in-seperator">SORTED BY</div>
               <div class="search-dropdown">
-                <svg class="ico-svg" width="12" viewBox="0 0 20 20">
+                <svg class="expand-arrow" width="12" viewBox="0 0 20 20">
                   <use href="../assets/expand.svg#arrow"></use>
                 </svg>
-                <div class="dropdown-selected">Tracks</div>
-                <div class="dropdown-options"></div>
-              </div>
-              <div class="search-in-seperator">WITH FILTER</div>
-              <div class="search-dropdown">
-                <svg class="ico-svg" width="12" viewBox="0 0 20 20">
-                  <use href="../assets/expand.svg#arrow"></use>
-                </svg>
-                <div class="dropdown-selected">All</div>
-                <div class="dropdown-options"></div>
+                <div class="dropdown-selected">{{ sorting }}</div>
+                <div class="dropdown-options">
+                  <div
+                    class="dropdown-option"
+                    @click="onSortingChange('Popular')"
+                  >
+                    Popular
+                  </div>
+                  <div
+                    class="dropdown-option"
+                    @click="onSortingChange('Release Date')"
+                  >
+                    Release Date
+                  </div>
+                  <div
+                    class="dropdown-option"
+                    @click="onSortingChange('Rating')"
+                  >
+                    Rating
+                  </div>
+                  <div
+                    v-if="isLoggedIn"
+                    class="dropdown-option"
+                    @click="onSortingChange('Your Rating')"
+                  >
+                    Your Rating
+                  </div>
+                </div>
               </div>
             </div>
             <div class="show-smaller-than-lg-block filter-field">
@@ -66,7 +123,7 @@ const searchValue = ref('');
               ><Button class="topbar-button">Sign Up</Button>
             </NuxtLink>
           </div>
-          <div class="header-main-user show-smaller-than-md-flex">
+          <div class="header-main-user show-between-sm-md">
             <NuxtLink to="/login"
               ><Button class="topbar-button"
                 ><i class="material-icons text-white">login</i>
@@ -89,7 +146,7 @@ const searchValue = ref('');
               Sign Out
             </Button>
           </div>
-          <div class="header-main-user show-smaller-than-md-flex">
+          <div class="header-main-user show-between-sm-md">
             <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
               ><Button class="topbar-button"
                 ><i class="material-icons text-white">person</i></Button
@@ -118,6 +175,9 @@ header {
   width: 100%;
   margin: 0 auto;
   padding: 0 24px;
+  @media (max-width: 500px) {
+    padding: 0 5px;
+  }
 }
 
 .header-main {
@@ -142,8 +202,13 @@ header {
 
 .header-logo-sm-container {
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   padding-top: 10px;
+  padding-left: 40px;
+  padding-right: 40px;
+  @media (min-width: 501px) {
+    justify-content: center;
+  }
 }
 
 .header-search {
@@ -177,6 +242,7 @@ header {
   height: 100%;
   background: transparent;
   border: none;
+  padding-left: 10px;
 }
 
 .search-input:focus {
@@ -198,42 +264,75 @@ header {
   font-size: 11px;
 }
 
+.button-seperator {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+}
+
+.order-arrow {
+  height: auto;
+  width: 15px;
+  transition: transform 0.3s;
+}
+
+.order-button {
+  position: relative;
+  align-items: center;
+  font-size: 11px;
+  width: 17px;
+  border: none;
+  background: none;
+}
+
+.order-arrow.down {
+  transform: scaleY(-1);
+}
 .search-dropdown {
   position: relative;
   display: inline-flex;
   width: 125px;
   cursor: pointer;
+  border: none;
   border-radius: 26px;
+  background: transparent;
+  user-select: none;
 }
 
-.ico-svg {
+.expand-arrow {
   position: absolute;
   top: 50%;
   right: 0;
-  transform: translateY(-50%);
   z-index: 2;
+  transform: translateY(-50%);
   transition: transform 0.3s;
   display: inline-block;
   height: auto;
   fill: black;
 }
 
+.search-dropdown:hover .expand-arrow {
+  top: calc(50% - 5px);
+  fill: white;
+  transform: scaleY(-1);
+}
+
 .dropdown-selected {
   position: relative;
   display: flex;
   align-items: center;
-  padding-right: 25px;
+  padding-right: 30px;
   font-weight: 500;
   z-index: 2;
 }
 .dropdown-options {
   position: absolute;
-  top: calc(100% - 40px);
-  width: calc(100% + 28px);
-  padding: 40px 0 10px 0;
-  background: var(--bg-secondary);
-  border-radius: var(--rounded-normal);
-  color: var(--color-white);
+  top: calc(100% - 43px);
+  width: calc(100% + 27px);
+  padding: 46px 0 10px 0;
+  background: black;
+  border-radius: var(--border-radius);
+  color: white;
   transform: translateX(-8px);
   overflow: hidden;
   opacity: 0;
@@ -241,11 +340,28 @@ header {
   transition: all 0.3s;
 }
 
+.search-dropdown:hover .dropdown-options {
+  opacity: 1;
+  visibility: visible;
+}
+
+.search-dropdown:hover .dropdown-selected {
+  color: white;
+}
+
 .dropdown-option {
   display: block;
   padding: 2px 24px;
-  color: var(--color-white);
+  padding-left: 9px;
+  color: white;
   transition: all 0.3s;
+  text-decoration: none;
+  border: none;
+  margin: 0;
+}
+
+.dropdown-option:hover {
+  color: gray;
 }
 
 .header-right-login {
@@ -262,10 +378,6 @@ header {
 
 .topbar-button {
   height: 42px;
-}
-
-input::placeholder {
-  padding-left: 10px;
 }
 
 .placeholder-logo {

@@ -6,27 +6,29 @@
       </NuxtLink>
     </figure>
     <div class="release-info-wrapper">
-      <div class="release-info-left">
-        <div class="release-info-row">
-          <strong>
-            <NuxtLink class="title" :to="'/album/' + release?.uid">{{
-              release?.title
-            }}</NuxtLink></strong
-          >
-          <small v-if="!isTooLong" class="seperator">by</small>
-          <strong>
-            <NuxtLink
-              v-if="!isTooLong"
-              class="artist"
-              :to="'/artist/' + release?.artist?.uid"
-              >{{ release?.artist?.name }}</NuxtLink
-            ></strong
-          >
+      <div class="release-info-row-1">
+        <div class="release-info-left">
+          <div class="release-info-name">
+            <strong>
+              <NuxtLink class="title" :to="'/album/' + release?.uid">{{
+                release?.title
+              }}</NuxtLink></strong
+            >
+            <small v-if="!isTooLong" class="seperator">by</small>
+            <strong>
+              <NuxtLink
+                v-if="!isTooLong"
+                class="artist"
+                :to="'/artist/' + release?.artist?.uid"
+                >{{ release?.artist?.name }}</NuxtLink
+              ></strong
+            >
+          </div>
         </div>
-      </div>
-      <div class="release-info-right">
-        <div class="rating-container">
-          <span class="rating">{{ release?.score }}</span>
+        <div class="release-info-right">
+          <div class="rating-container">
+            <span class="rating">{{ release?.score }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -57,6 +59,7 @@ a {
 
 .release-card {
   font-size: 15px;
+  transition: all 0.3s;
 }
 
 Figure {
@@ -65,6 +68,10 @@ Figure {
   position: relative;
   display: block;
   transition: all 0.3s;
+}
+
+Figure:hover {
+  opacity: 85%;
 }
 
 .figure-link {
@@ -82,6 +89,10 @@ Figure {
 }
 
 .release-info-wrapper {
+  
+}
+
+.release-info-row-1 {
   display: flex;
   flex-wrap: wrap;
   padding-top: 16px;
@@ -94,7 +105,7 @@ Figure {
   padding-left: 5px;
 }
 
-.release-info-row {
+.release-info-name {
   display: flex;
   align-items: center;
   gap: 8px;

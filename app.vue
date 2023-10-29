@@ -13,7 +13,7 @@ import {
 
 const searchTerm = ref('');
 const filterSettings = ref(Filter);
-const sorting = ref('popular');
+const sorting = ref('relevance');
 const router = useRouter();
 const db = useFirestore();
 const index = ref([]);
@@ -81,7 +81,12 @@ const handleSearchValueChange = (newQuery: string) => {
   });
 };
 
-const handleSetFilter = (newFilter: typeof Filter) => {};
+const handleSortingChange = (newSorting: string) => {
+  sorting.value = newSorting;
+  console.log("Sorting changed to", newSorting);
+}
+
+const handleFilterChange = (newFilter: typeof Filter) => {};
 
 const handleSignOut = async () => {
   signOut(auth);
@@ -96,11 +101,14 @@ const handleSignOut = async () => {
         :isLoggedIn="isLoggedIn"
         :handleSignOut="handleSignOut"
         :loggedInUser="userProfile?.value"
+        :handleSortingChange="handleSortingChange"
+        :handleFilterChange="handleFilterChange"
       />
       <NuxtPage
         :loggedInUser="userProfile"
         :searchValue="searchTerm"
         :index="index"
+        :sorting="sorting"
       ></NuxtPage>
     </div>
   </div>
@@ -192,29 +200,36 @@ body {
 
 .show-bigger-than-sm-flex {
   display: none;
-  @media (min-width: 641px) {
+  @media (min-width: 501px) {
     display: flex;
   }
 }
 
 .show-bigger-than-sm-block {
   display: none;
-  @media (min-width: 641px) {
+  @media (min-width: 501px) {
     display: block;
   }
 }
 
 .show-smaller-than-sm-flex {
   display: none;
-  @media (max-width: 640px) {
+  @media (max-width: 500px) {
     display: flex;
   }
 }
 
 .show-smaller-than-sm-block {
   display: none;
-  @media (max-width: 640px) {
+  @media (max-width: 500px) {
     display: block;
+  }
+}
+
+.show-between-sm-md {
+  display: none;
+  @media (min-width: 501px) and (max-width: 768px) {
+    display:flex
   }
 }
 

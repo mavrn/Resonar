@@ -1,2 +1,29 @@
 -stack: vue3 + nuxt + tailwindcss + typescript + firebase
 -automatic deploys using vercel and nuxt to sonarmusic.vercel.app
+
+
+Filter:
+  -Genre (local)
+  -Jahr (local)
+  -Rating (remote)
+  -Typ (local)
+  -In Bookmarks (by User) (remote)
+  -In Rated (by User) (remote)
+
+Sort:
+  -Popularity (local)
+  -Rating (remote)
+  -Jahr (local)
+  -Your Rating (remote)
+
+
+Local:
+  Genre - Array
+  Release Date
+  Type
+  Popularity
+
+Remote: 
+  1. Collection ordered mit Limit 10 bekommen
+  2. Nach FTS filtern
+  3. 1. wiederholen, solage Results < 10

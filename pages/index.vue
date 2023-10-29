@@ -4,14 +4,14 @@
 
 <script setup>
 import { getDoc, doc, getFirestore } from 'firebase/firestore';
-import { searchForTermLocal } from '~/composables/searchForTemLocal';
 
-const results = ref(new Map());
+const results = ref([]);
 const isLoading = ref(false);
 const props = defineProps({
   searchValue: String,
   isLoggedIn: Boolean,
   index: Array,
+  sorting: String,
 });
 const db = getFirestore();
 
@@ -29,16 +29,21 @@ const updateResultsOld = async (searchValue) => {
   }
 };
 
-const updateResultsUnl = async (searchValue, index) => {
-  results.value.clear();
-  const response = searchForTermLocal(index, searchValue);
-  response.forEach(async (reference) => {
+const updateResultsUnl = async (searchValue, index, sorting) => {
+  results.value = [];
+  const response = getResults(index, searchValue, {
+    field: sorting,
+    order: 'desc',
+  });
+  response.forEach(async (reference, index) => {
     const [collectionPath, documentId] = reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);
     const relSnapshot = await getDoc(documentRef);
     const release = new Album(relSnapshot);
     await release.resolve();
-    results.value.set(release.uid, release);
+    console.log(index);
+    results.value[index] = release;
+    //results.value.push(release);
   });
 };
 
@@ -58,15 +63,22 @@ const updateResults = debounce(updateResultsUnl, 150);
 
 watch(
   () => props.searchValue,
-  (searchValue, old) => {
-    updateResults(searchValue, props.index);
+  () => {
+    updateResults(props.searchValue, props.index, props.sorting);
   }
 );
 
 watch(
   () => props.index,
   () => {
-    updateResults(props.searchValue, props.index);
+    updateResults(props.searchValue, props.index, props.sorting);
+  }
+);
+
+watch(
+  () => props.sorting,
+  () => {
+    updateResults(props.searchValue, props.index, props.sorting);
   }
 );
 
@@ -77,3 +89,4 @@ onMounted(() => {
 </script>
 
 <style scoped></style>
+~/composables/getResults

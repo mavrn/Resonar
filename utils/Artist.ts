@@ -1,6 +1,5 @@
 import { DocumentReference, getDoc } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
-import { Release } from './Release';
 
 export class Artist {
   avatar: string;

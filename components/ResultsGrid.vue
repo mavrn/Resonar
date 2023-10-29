@@ -6,15 +6,15 @@
           <li
             v-if="isLoading"
             class="release-item col-3"
-            v-for="i in results.size"
+            v-for="i in results.length"
             :key="i"
           >
             <Skeleton class="skeleton"></Skeleton>
           </li>
           <li
             v-if="!isLoading"
-            v-for="album in results.values()"
-            :key="album.uid"
+            v-for="(album, index) in results"
+            :key="index"
             class="release-item col-3"
           >
             <LazyResultCard :release="album" />
