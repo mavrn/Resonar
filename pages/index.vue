@@ -63,7 +63,15 @@ watch(
   }
 );
 
+watch(
+  () => props.index,
+  () => {
+    updateResults(props.searchValue, props.index);
+  }
+);
+
 onMounted(() => {
+  console.log('f', props.searchValue, props.index);
   updateResults(props.searchValue, props.index);
 });
 </script>

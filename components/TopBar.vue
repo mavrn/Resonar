@@ -150,7 +150,6 @@ header {
   position: relative;
   flex: 1;
   margin-left: 12px;
-
   z-index: 3;
 }
 
@@ -178,6 +177,11 @@ header {
   height: 100%;
   background: transparent;
   border: none;
+}
+
+.search-input:focus {
+  border: none;
+  outline: none;
 }
 
 .filter-button {
@@ -270,5 +274,9 @@ input::placeholder {
   border: none;
   background: transparent;
   padding-left: 10px;
+}
+
+.search-bar-field:focus-within {
+  outline: 1px solid black;
 }
 </style>
