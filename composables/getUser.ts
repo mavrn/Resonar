@@ -19,7 +19,6 @@ export const getUser = async (username: string) => {
       let foundUser = snapshot.docs[0];
       return foundUser;
     } else {
-      console.log('Didnt find user');
       return null;
     }
   } catch (error) {

@@ -1,5 +1,5 @@
 <template>
-  <ResultsGrid :results="results" />
+  <ResultsGrid :results="results" :isLoading="isLoading" />
 </template>
 
 <script setup>
@@ -7,6 +7,7 @@ import { getDoc, doc, getFirestore } from 'firebase/firestore';
 import { searchForTermLocal } from '~/composables/searchForTemLocal';
 
 const results = ref(new Map());
+const isLoading = ref(false);
 const props = defineProps({
   searchValue: String,
   isLoggedIn: Boolean,
@@ -28,20 +29,32 @@ const updateResultsOld = async (searchValue) => {
   }
 };
 
-const updateResults = async (searchValue, index) => {
+const updateResultsUnl = async (searchValue, index) => {
   results.value.clear();
-  searchForTermLocal(index, searchValue).then((response) => {
-    response.forEach(async (reference) => {
-      console.log(reference);
-      const [collectionPath, documentId] = reference.split('/');
-      const documentRef = doc(db, collectionPath, documentId);
-      const relSnapshot = await getDoc(documentRef);
-      const release = new Album(relSnapshot);
-      await release.resolve();
-      results.value.set(release.uid, release);
-    });
+  const response = searchForTermLocal(index, searchValue);
+  response.forEach(async (reference) => {
+    const [collectionPath, documentId] = reference.split('/');
+    const documentRef = doc(db, collectionPath, documentId);
+    const relSnapshot = await getDoc(documentRef);
+    const release = new Album(relSnapshot);
+    await release.resolve();
+    results.value.set(release.uid, release);
   });
 };
+
+const debounce = (func, delay) => {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    isLoading.value = true;
+    timeoutId = setTimeout(() => {
+      func(...args);
+      isLoading.value = false;
+    }, delay);
+  };
+};
+
+const updateResults = debounce(updateResultsUnl, 150);
 
 watch(
   () => props.searchValue,

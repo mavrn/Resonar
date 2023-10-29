@@ -1,4 +1,4 @@
-export const searchForTermLocal = async (index: {name: string, reference: string}[], searchQuery: string) => {
+export const searchForTermLocal =  (index: {name: string, reference: string}[], searchQuery: string) => {
     if (!index) {
       return [];
     }

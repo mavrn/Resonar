@@ -4,6 +4,15 @@
       <div class="inner">
         <ul class="grid-releases">
           <li
+            v-if="isLoading"
+            class="release-item col-3"
+            v-for="i in results.size"
+            :key="i"
+          >
+            <Skeleton class="skeleton"></Skeleton>
+          </li>
+          <li
+            v-if="!isLoading"
             v-for="album in results.values()"
             :key="album.uid"
             class="release-item col-3"
@@ -17,8 +26,9 @@
 </template>
 
 <script setup>
-defineProps({
+const props = defineProps({
   results: Object,
+  isLoading: Boolean,
 });
 </script>
 
@@ -62,5 +72,11 @@ Section {
   list-style: none;
   display: list-item;
   text-align: center;
+}
+
+.skeleton {
+  width: 100%;
+  padding-top: 100%; /* 1:1 aspect ratio (height is the same as width) */
+  position: relative; /* Important for the aspect ratio to work */
 }
 </style>

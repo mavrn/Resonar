@@ -58,7 +58,6 @@ onMounted(() => {
     console.log('Didnt find index in local storage.');
     fetchIndexJson().then((response) => {
       index.value = response;
-      console.log(response);
       localStorage.setItem('index', JSON.stringify(response));
     });
   }
@@ -137,14 +136,14 @@ body {
 
 .show-bigger-than-lg-flex {
   display: none;
-  @media (min-width: 1024px) {
+  @media (min-width: 1025px) {
     display: flex;
   }
 }
 
 .show-bigger-than-lg-block {
   display: none;
-  @media (min-width: 1024px) {
+  @media (min-width: 1025px) {
     display: block;
   }
 }
@@ -165,14 +164,14 @@ body {
 
 .show-bigger-than-md-flex {
   display: none;
-  @media (min-width: 768px) {
+  @media (min-width: 769px) {
     display: flex;
   }
 }
 
 .show-bigger-than-md-block {
   display: none;
-  @media (min-width: 768px) {
+  @media (min-width: 769px) {
     display: block;
   }
 }
@@ -193,14 +192,14 @@ body {
 
 .show-bigger-than-sm-flex {
   display: none;
-  @media (min-width: 640px) {
+  @media (min-width: 641px) {
     display: flex;
   }
 }
 
 .show-bigger-than-sm-block {
   display: none;
-  @media (min-width: 640px) {
+  @media (min-width: 641px) {
     display: block;
   }
 }

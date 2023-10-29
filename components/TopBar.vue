@@ -9,21 +9,27 @@ const props = defineProps({
 const searchValue = ref('');
 </script>
 <template>
+  <div class="show-smaller-than-md-flex header-logo-sm-container">
+    <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo" />
+  </div>
   <header>
     <div class="inner">
       <div class="header-main">
-        <NuxtLink class="show-bigger-than-sm-flex" to="/">
+        <NuxtLink class="show-bigger-than-md-flex" to="/">
           <img class="header-logo" src="../assets/sonar-logo.png" alt="Logo" />
         </NuxtLink>
         <div class="header-search">
           <div class="search-bar-field">
             <div class="search-bar">
+              <div class="placeholder-logo">
+                <i class="material-icons text-white">search</i>
+              </div>
               <input
                 class="search-input"
                 type="text"
                 @input="onSearchValueChange?.(searchValue)"
                 v-model="searchValue"
-                placeholder="Search..."
+                placeholder="Search"
               />
             </div>
             <div class="show-bigger-than-lg-block">
@@ -61,12 +67,11 @@ const searchValue = ref('');
             </NuxtLink>
           </div>
           <div class="header-main-user show-smaller-than-md-flex">
-            <Button @click="handleSignOut?.()"></Button>
-            <!--<NuxtLink to="/login"-->
-            <!--  ><Button class="topbar-button"-->
-            <!--    ><i class="material-icons text-white">login</i>-->
-            <!--  </Button>-->
-            <!--</NuxtLink>-->
+            <NuxtLink to="/login"
+              ><Button class="topbar-button"
+                ><i class="material-icons text-white">login</i>
+              </Button>
+            </NuxtLink>
           </div>
         </div>
         <div v-if="isLoggedIn" class="header-right-login">
@@ -128,6 +133,17 @@ header {
   height: 35px;
   width: auto;
   display: block;
+}
+
+.header-logo-sm {
+  height: 35px;
+  width: auto;
+}
+
+.header-logo-sm-container {
+  align-items: center;
+  justify-content: center;
+  padding-top: 10px;
 }
 
 .header-search {
@@ -242,5 +258,17 @@ header {
 
 .topbar-button {
   height: 42px;
+}
+
+input::placeholder {
+  padding-left: 10px;
+}
+
+.placeholder-logo {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  padding-left: 10px;
 }
 </style>
