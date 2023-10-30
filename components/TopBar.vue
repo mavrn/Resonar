@@ -2,19 +2,27 @@
 import { orderBy } from 'firebase/firestore';
 
 const props = defineProps({
-  onSearchValueChange: Function,
+  searchValue: String,
   handleSignOut: Function,
   isLoggedIn: Boolean,
   loggedInUser: Object,
   handleSortingChange: Function,
   handleSortingOrderChange: Function,
   handleFilterChange: Function,
+  remoteIndexLoaded: Boolean,
 });
+const emits = defineEmits(['update:searchValue']);
 
-const searchValue = ref('');
 const sorting = ref('Popular');
 const filtering = ref(null);
 const sortingOrder = ref(-1);
+
+const computedSearchValue = computed({
+  get: () => props.searchValue,
+  set: (value) => {
+    emits('update:searchValue', value);
+  },
+});
 
 function toCamelCase(inputString: string) {
   return inputString
@@ -46,8 +54,8 @@ function onSortingOrderChange() {
         </Button>
       </NuxtLink>
     </div>
-    <div class="header-main-user show-smaller-than-sm-flex">
-      <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
+    <div v-else class="header-main-user show-smaller-than-sm-flex">
+      <NuxtLink :to="'/user/' + loggedInUser.username"
         ><Button class="topbar-button secondary-button"
           ><i class="material-icons text-white">person</i></Button
         >
@@ -69,8 +77,7 @@ function onSortingOrderChange() {
               <input
                 class="search-input"
                 type="text"
-                @input="onSearchValueChange?.(searchValue)"
-                v-model="searchValue"
+                v-model="computedSearchValue"
                 placeholder="Search"
               />
             </div>
@@ -105,6 +112,7 @@ function onSortingOrderChange() {
                   <div
                     class="dropdown-option"
                     @click="onSortingChange('Rating')"
+                    :disabled="remoteIndexLoaded"
                   >
                     Rating
                   </div>
@@ -193,7 +201,7 @@ header {
   margin: 0 auto;
   padding: 0 24px;
   @media (max-width: 500px) {
-    padding: 0 5px;
+    padding: 0 0px 0 8px;
   }
 }
 

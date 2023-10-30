@@ -14,7 +14,10 @@ const filterSettings = ref(Filter);
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const db = useFirestore();
-const index = ref([]);
+const index = ref<Array<{ rating: number; reference: string }>>([]);
+
+const remoteFieldsLoaded = ref(0);
+const remoteIndexLoaded = ref(false);
 
 const userProfile = ref<DocumentData | null>(null);
 
@@ -23,7 +26,7 @@ let auth: Auth;
 const albums = ref<QueryDocumentSnapshot[]>([]);
 const isLoggedIn = ref(false);
 
-const fetchIndexJson = async () => {
+const fetchRemoteJson = async () => {
   console.debug('Starting fetch...');
   const requestOptions = {
     method: 'GET',
@@ -51,21 +54,46 @@ const fetchIndexJson = async () => {
   }
 };
 
-onMounted(() => {
+const resolveJson = async () => {
   const indexProbe = localStorage.getItem('index');
   if (indexProbe) {
     console.debug('Found index in local storage.');
     index.value = JSON.parse(indexProbe);
+    console.log(index.value);
   } else {
     console.debug('Didnt find index in local storage.');
-    fetchIndexJson().then((response) => {
+    fetchRemoteJson().then((response) => {
       index.value = response;
-      console.debug('Saving JSON...');
-      localStorage.setItem('index', JSON.stringify(response));
-      console.debug('Done!');
     });
   }
+};
 
+const resolveJsonWithRatings = async () => {
+  await resolveJson();
+  console.log(
+    'test rating:',
+    index.value[0],
+    index.value[0].rating,
+    'rating' in index.value[0]
+  );
+  console.debug('Testing for ratings...');
+  if ('rating' in index.value[0]) {
+    console.debug('Ratings found!');
+  } else {
+    console.debug('Didnt find ratings. Fetching from remote...');
+    index.value.forEach(async (element) => {
+      const [collectionPath, documentId] = element.reference.split('/');
+      const documentRef = doc(db, collectionPath, documentId);
+      const relSnapshot = await getDoc(documentRef);
+      element.rating = relSnapshot?.data?.()?.score;
+      console.log(element.rating);
+      remoteFieldsLoaded.value += 1;
+    });
+  }
+};
+
+onMounted(() => {
+  resolveJsonWithRatings();
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -77,13 +105,27 @@ onMounted(() => {
   });
 });
 
-const handleSearchValueChange = (newQuery: string) => {
-  searchTerm.value = newQuery;
-  router.push({
-    path: '/',
-    query: { search: encodeURIComponent(searchTerm.value) },
-  });
-};
+watch(
+  () => searchTerm.value,
+  () => {
+    router.push({
+      path: '/',
+      query: { search: encodeURIComponent(searchTerm.value) },
+    });
+  }
+);
+
+watch(
+  () => remoteFieldsLoaded.value,
+  () => {
+    if (remoteFieldsLoaded.value == index.value.length) {
+      remoteIndexLoaded.value = true;
+      console.debug('Saving JSON...');
+      localStorage.setItem('index', JSON.stringify(index.value));
+      console.debug('Done!');
+    }
+  }
+);
 
 const handleSortingChange = (newSorting: string, order: number) => {
   sorting.value = { field: newSorting, order: order };
@@ -101,18 +143,20 @@ const handleSignOut = async () => {
   <div class="header-fixed">
     <div class="wrapper">
       <TopBar
-        :onSearchValueChange="handleSearchValueChange"
+        v-model:search-value="searchTerm"
         :isLoggedIn="isLoggedIn"
         :handleSignOut="handleSignOut"
         :loggedInUser="userProfile?.value"
         :handleSortingChange="handleSortingChange"
         :handleFilterChange="handleFilterChange"
+        :remoteIndexLoaded="remoteIndexLoaded"
       />
       <NuxtPage
         :loggedInUser="userProfile"
-        :searchValue="searchTerm"
+        v-model:searchValue="searchTerm"
         :index="index"
         :sorting="sorting"
+        :remoteIndexLoaded="remoteIndexLoaded"
       ></NuxtPage>
     </div>
   </div>

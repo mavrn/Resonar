@@ -2,7 +2,14 @@
   <div class="block" ref="scroller">
     <div class="inner">
       <ul class="grid-releases">
-        <li v-for="i in Math.max(0, Math.min(loadedResults + 5, results.length -1))" :key="i" class="release-item col-3">
+        <li
+          v-for="i in Math.max(
+            0,
+            Math.min(loadedResults + 5, results.length - 1)
+          )"
+          :key="i"
+          class="release-item col-3"
+        >
           <LazyResultCard
             v-if="results[i] && results[i] instanceof Album"
             :release="results[i]"
@@ -56,16 +63,6 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-@media (max-width: 1023px) {
-  .grid-releases {
-    --minthumb: 320px;
-  }
-
-  .grid-releases.is-double {
-    grid-column: auto;
-  }
-}
-
 Section {
   flex: 1;
   display: block;
@@ -82,12 +79,16 @@ Section {
 }
 
 .grid-releases {
-  --minthumb: 350px;
+  --minthumb: 300px;
+  @media (max-width: 480px) {
+    --minthumb: 200px;
+  }
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--minthumb), 1fr));
   grid-auto-flow: row dense;
   grid-gap: 30px 20px;
   padding-bottom: 30px;
+  
 }
 
 .release-item {

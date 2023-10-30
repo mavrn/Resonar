@@ -24,13 +24,6 @@ Local:
   Popularity
 
 Remote: 
-  1. Collection ordered mit Limit 10 bekommen
-  2. Nach FTS filtern
-  3. 1. wiederholen, solage Results < 10
-
-
-limit 2
-[ref, ref, ref, ref]
-
-[Album, Album, ref, ref]
-
+  1. Firebase Anfrage: Collection Alben, ordered nach Rating Limit + 3
+  2. FTS mit Search Query
+  3. Cross-Matching: 

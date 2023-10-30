@@ -18,8 +18,11 @@ const props = defineProps({
   isLoggedIn: Boolean,
   index: Array,
   sorting: Object,
+  remoteIndexLoaded: Boolean,
 });
+const emits = defineEmits(['update:searchValue']);
 const db = getFirestore();
+const route = useRoute();
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -32,7 +35,7 @@ const debounce = (func, delay) => {
 };
 
 const resolveResults = async () => {
-  console.debug('resolve called while loadedresults', loadedResults.value);
+  console.debug('Resolve called while loadedresults is', loadedResults.value);
   if (processing.value) {
     console.debug('Rejected. Reason: Still preprocessing.');
     return;
@@ -45,7 +48,7 @@ const resolveResults = async () => {
     console.debug('Rejected. Reason: Still processing some docs.');
     return;
   }
-  console.debug('accepted.');
+  console.debug('Accepted.');
   processing.value = true;
   const limitedResults = results.value.slice(
     loadedResults.value,
@@ -98,6 +101,10 @@ watch(
 );
 
 onMounted(() => {
+  const param = route.query.search;
+  if (param) {
+    emits('update:searchValue', param);
+  }
   updateResults(props.searchValue, props.index, props.sorting);
 });
 </script>

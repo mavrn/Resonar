@@ -6,6 +6,7 @@ export const getResults = (
     year: number;
     type: string;
     relevance: number;
+    rating?: number;
   }[],
   searchQuery: string,
   sort?: { field: string; order: number },
@@ -18,7 +19,7 @@ export const getResults = (
   const results = index.filter((item) =>
     item.name.includes(searchQuery.toLowerCase())
   );
-  console.log(sort)
+  console.log(sort);
   if (sort) {
     console.debug('Sorting...');
     if (sort.field === 'releaseDate') {
@@ -33,22 +34,28 @@ export const getResults = (
         const bValue: number = b.relevance;
         return sort.order === 1 ? aValue - bValue : bValue - aValue;
       });
+    } else if (sort.field === 'rating') {
+      results.sort((a, b) => {
+        const aValue: number = a.rating;
+        const bValue: number = b.rating;
+        return sort.order === 1 ? aValue - bValue : bValue - aValue;
+      });
+    } else if (sort.field === 'alphabetical') {
+      results.sort((a, b) => {
+        const aValue: string = a.name.toLowerCase();
+        const bValue: string = b.name.toLowerCase();
+        if (sort.order === -1) {
+          if (aValue < bValue) return -1;
+          if (aValue > bValue) return 1;
+          return 0;
+        } else {
+          if (bValue < aValue) return -1;
+          if (bValue > aValue) return 1;
+          return 0;
+        }
+      });
     }
-    else if (sort.field === 'alphabetical') {
-            results.sort((a, b) => {
-                const aValue: string = a.name.toLowerCase();
-                const bValue: string = b.name.toLowerCase();
-                if (sort.order === -1) {
-                    if (aValue < bValue) return -1;
-                    if (aValue > bValue) return 1;
-                    return 0;
-                } else {
-                    if (bValue < aValue) return -1;
-                    if (bValue > aValue) return 1;
-                    return 0;
-                }
-            });
-  }}
+  }
   console.debug('Mapping...');
   const references = results.map((item) => item.reference);
   console.debug('Done!');
