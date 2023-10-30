@@ -104,8 +104,8 @@ watch(
 );
 
 watch(initialLoadReady, async () => {
-  if (initialLoadReady.value) {
-    console.debug("Initial Load is ready. Fetching ratings from remote...")
+  if (initialLoadReady.value && !remoteIndexLoaded.value) {
+    console.debug('Initial Load is ready. Fetching ratings from remote...');
     resolveRemoteRatings();
   }
 });

@@ -59,7 +59,7 @@ const resolveResults = async () => {
   limitedResults.forEach(async (reference, index) => {
     const [collectionPath, documentId] = reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);
-    console.debug('getting doc...');
+    console.debug('Getting doc', documentId);
     const relSnapshot = await getDoc(documentRef);
     const release = new Album(relSnapshot);
     await release.resolve();
