@@ -1,34 +1,57 @@
 <template>
-  <section>
-    <div class="block">
-      <div class="inner">
-        <ul class="grid-releases">
-          <li
-            v-if="isLoading"
-            class="release-item col-3"
-            v-for="i in results.length"
-            :key="i"
-          >
-            <Skeleton class="skeleton"></Skeleton>
-          </li>
-          <li
-            v-if="!isLoading"
-            v-for="(album, index) in results"
-            :key="index"
-            class="release-item col-3"
-          >
-            <LazyResultCard :release="album" />
-          </li>
-        </ul>
-      </div>
+  <div class="block" ref="scroller">
+    <div class="inner">
+      <ul class="grid-releases">
+        <li v-for="i in Math.max(0, Math.min(loadedResults + 5, results.length -1))" :key="i" class="release-item col-3">
+          <LazyResultCard
+            v-if="results[i] && results[i] instanceof Album"
+            :release="results[i]"
+          />
+          <Skeleton v-else class="skeleton" />
+        </li>
+      </ul>
     </div>
-  </section>
+  </div>
 </template>
 
 <script setup>
 const props = defineProps({
   results: Object,
-  isLoading: Boolean,
+  update: Function,
+  loadedResults: Number,
+});
+
+const debounce = (func, delay) => {
+  let timeoutId;
+  return function (...args) {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
+
+function handleScroll() {
+  const scrollTop =
+    document.documentElement.scrollTop || document.body.scrollTop;
+  const scrollHeight =
+    document.documentElement.scrollHeight || document.body.scrollHeight;
+  const clientHeight =
+    document.documentElement.clientHeight || document.body.clientHeight;
+
+  const percentageScrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
+  if (percentageScrolled > 80) {
+    props.update();
+  }
+}
+const handleDebouncedScroll = debounce(handleScroll, 100);
+
+onMounted(() => {
+  window.addEventListener('scroll', handleDebouncedScroll);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('scroll', handleDebouncedScroll);
 });
 </script>
 
@@ -50,7 +73,6 @@ Section {
 
 .block {
   margin-top: clamp(20px, 3vw, 50px);
-  margin-bottom: clamp(50px, 20vw, 200px);
 }
 
 .inner {

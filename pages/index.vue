@@ -1,62 +1,77 @@
 <template>
-  <ResultsGrid :results="results" :isLoading="isLoading" />
+  <ResultsGrid
+    :results="results"
+    :update="resolveResults"
+    :loadedResults="loadedResults"
+  />
 </template>
 
 <script setup>
 import { getDoc, doc, getFirestore } from 'firebase/firestore';
 
+const limit = 12;
 const results = ref([]);
-const isLoading = ref(false);
+const loadedResults = ref(0);
+const processing = ref(false);
 const props = defineProps({
   searchValue: String,
   isLoggedIn: Boolean,
   index: Array,
-  sorting: String,
+  sorting: Object,
 });
 const db = getFirestore();
-
-const updateResultsOld = async (searchValue) => {
-  const levels = [0, 1, 2, 3];
-  results.value.clear();
-  for (const level of levels) {
-    const qs = await searchForTerm(searchValue, level);
-    qs.docs.forEach(async (doc) => {
-      const relSnapshot = await getDoc(doc.data().reference);
-      const release = new Album(relSnapshot);
-      await release.resolve();
-      results.value.set(release.uid, release);
-    });
-  }
-};
-
-const updateResultsUnl = async (searchValue, index, sorting) => {
-  results.value = [];
-  const response = getResults(index, searchValue, {
-    field: sorting,
-    order: 'desc',
-  });
-  response.forEach(async (reference, index) => {
-    const [collectionPath, documentId] = reference.split('/');
-    const documentRef = doc(db, collectionPath, documentId);
-    const relSnapshot = await getDoc(documentRef);
-    const release = new Album(relSnapshot);
-    await release.resolve();
-    console.log(index);
-    results.value[index] = release;
-    //results.value.push(release);
-  });
-};
 
 const debounce = (func, delay) => {
   let timeoutId;
   return function (...args) {
     clearTimeout(timeoutId);
-    isLoading.value = true;
     timeoutId = setTimeout(() => {
       func(...args);
-      isLoading.value = false;
     }, delay);
   };
+};
+
+const resolveResults = async () => {
+  console.debug('resolve called while loadedresults', loadedResults.value);
+  if (processing.value) {
+    console.debug('Rejected. Reason: Still preprocessing.');
+    return;
+  }
+  if (loadedResults.value == results.value.length) {
+    console.debug('Rejected. Reason: All results loaded already.');
+    return;
+  }
+  if (loadedResults.value % limit != 0) {
+    console.debug('Rejected. Reason: Still processing some docs.');
+    return;
+  }
+  console.debug('accepted.');
+  processing.value = true;
+  const limitedResults = results.value.slice(
+    loadedResults.value,
+    loadedResults.value + limit
+  );
+  const currLoaded = loadedResults.value;
+  limitedResults.forEach(async (reference, index) => {
+    const [collectionPath, documentId] = reference.split('/');
+    const documentRef = doc(db, collectionPath, documentId);
+    console.debug('getting doc...');
+    const relSnapshot = await getDoc(documentRef);
+    console.debug('making album...');
+    const release = new Album(relSnapshot);
+    console.debug('resolving artist...');
+    await release.resolve();
+    loadedResults.value += 1;
+    results.value[currLoaded + index] = release;
+    console.debug('Done, populated index', currLoaded + index);
+    processing.value = false;
+  });
+};
+
+const updateResultsUnl = async (searchValue, index, sorting) => {
+  loadedResults.value = 0;
+  results.value = getResults(index, searchValue, sorting);
+  resolveResults();
 };
 
 const updateResults = debounce(updateResultsUnl, 150);
@@ -83,10 +98,8 @@ watch(
 );
 
 onMounted(() => {
-  console.log('f', props.searchValue, props.index);
-  updateResults(props.searchValue, props.index);
+  updateResults(props.searchValue, props.index, props.sorting);
 });
 </script>
 
 <style scoped></style>
-~/composables/getResults

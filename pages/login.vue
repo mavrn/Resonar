@@ -16,11 +16,11 @@ const errMsg = ref();
 const signIn = async () => {
   signInWithEmailAndPassword(getAuth(), email.value, password.value)
     .then((data) => {
-      console.log('Successfully signed in!');
+      console.debug('Successfully signed in!');
       router.push('./');
     })
     .catch((error) => {
-      console.log(error.code);
+      console.debug(error.code);
       switch (error.code) {
         case 'auth/invalid-email':
           errMsg.value = 'Invalid email';

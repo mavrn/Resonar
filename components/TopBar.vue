@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { orderBy } from 'firebase/firestore';
+
 const props = defineProps({
   onSearchValueChange: Function,
   handleSignOut: Function,
@@ -12,7 +14,7 @@ const props = defineProps({
 const searchValue = ref('');
 const sorting = ref('Popular');
 const filtering = ref(null);
-const sortingOrder = ref(1);
+const sortingOrder = ref(-1);
 
 function toCamelCase(inputString: string) {
   return inputString
@@ -24,11 +26,12 @@ function toCamelCase(inputString: string) {
 function onSortingChange(newSorting: string) {
   sorting.value = newSorting;
   newSorting = toCamelCase(newSorting);
-  props.handleSortingChange?.(newSorting);
+  props.handleSortingChange?.(newSorting, sortingOrder);
 }
 
 function onSortingOrderChange() {
   sortingOrder.value = -sortingOrder.value;
+  props.handleSortingChange?.(toCamelCase(sorting.value), sortingOrder.value);
 }
 </script>
 <template>
@@ -73,6 +76,14 @@ function onSortingOrderChange() {
             </div>
             <div class="show-bigger-than-lg-block">
               <div class="search-in-seperator">SORTED BY</div>
+              <button class="order-button" @click="onSortingOrderChange">
+                <svg
+                  :class="{ 'order-arrow': true, down: sortingOrder == -1 }"
+                  viewBox="0 0 20 20"
+                >
+                  <use href="../assets/arrow.svg#arrow"></use>
+                </svg>
+              </button>
               <div class="search-dropdown">
                 <svg class="expand-arrow" width="12" viewBox="0 0 20 20">
                   <use href="../assets/expand.svg#arrow"></use>
@@ -103,6 +114,12 @@ function onSortingOrderChange() {
                     @click="onSortingChange('Your Rating')"
                   >
                     Your Rating
+                  </div>
+                  <div
+                    class="dropdown-option"
+                    @click="onSortingChange('Alphabetical')"
+                  >
+                    Alphabetical
                   </div>
                 </div>
               </div>
@@ -260,13 +277,7 @@ header {
 .search-in-seperator {
   display: inline-flex;
   align-items: center;
-  margin: 0 20px;
-  font-size: 11px;
-}
-
-.button-seperator {
-  display: inline-flex;
-  align-items: center;
+  margin: 0 10px;
   font-size: 11px;
 }
 
@@ -276,6 +287,15 @@ header {
   transition: transform 0.3s;
 }
 
+.order-arrow.down {
+  transform: scaleY(-1) translateY(-4px);
+  transition: transform 0.3s;
+}
+
+.order-button:hover {
+  fill: gray;
+}
+
 .order-button {
   position: relative;
   align-items: center;
@@ -283,11 +303,9 @@ header {
   width: 17px;
   border: none;
   background: none;
+  margin-right: 10px;
 }
 
-.order-arrow.down {
-  transform: scaleY(-1);
-}
 .search-dropdown {
   position: relative;
   display: inline-flex;

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import type { Auth } from 'firebase/auth';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import type { User } from 'firebase/auth';
-import type { FirebaseStorage } from 'firebase/storage';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { getDocs, collection, getDoc, doc } from 'firebase/firestore';
 import {
@@ -13,7 +11,7 @@ import {
 
 const searchTerm = ref('');
 const filterSettings = ref(Filter);
-const sorting = ref('relevance');
+const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const db = useFirestore();
 const index = ref([]);
@@ -26,12 +24,14 @@ const albums = ref<QueryDocumentSnapshot[]>([]);
 const isLoggedIn = ref(false);
 
 const fetchIndexJson = async () => {
+  console.debug('Starting fetch...');
   const requestOptions = {
     method: 'GET',
     headers: new Headers({}),
   };
   const storage = useFirebaseStorage();
   const jsonRef = storageRef(storage, 'index.json');
+  console.debug('Getting URL...');
   const url = await new Promise((resolve, reject) => {
     const storageUrl = useStorageFileUrl(jsonRef);
     storageUrl
@@ -43,7 +43,9 @@ const fetchIndexJson = async () => {
   });
   if (url) {
     const request = new Request(url, requestOptions);
+    console.debug('Requesting JSON...');
     const response = await fetch(request);
+    console.debug('Parsing JSON...');
     const json = await response.json();
     return json;
   }
@@ -52,13 +54,15 @@ const fetchIndexJson = async () => {
 onMounted(() => {
   const indexProbe = localStorage.getItem('index');
   if (indexProbe) {
-    console.log('Found index in local storage.');
+    console.debug('Found index in local storage.');
     index.value = JSON.parse(indexProbe);
   } else {
-    console.log('Didnt find index in local storage.');
+    console.debug('Didnt find index in local storage.');
     fetchIndexJson().then((response) => {
       index.value = response;
+      console.debug('Saving JSON...');
       localStorage.setItem('index', JSON.stringify(response));
+      console.debug('Done!');
     });
   }
 
@@ -81,10 +85,10 @@ const handleSearchValueChange = (newQuery: string) => {
   });
 };
 
-const handleSortingChange = (newSorting: string) => {
-  sorting.value = newSorting;
-  console.log("Sorting changed to", newSorting);
-}
+const handleSortingChange = (newSorting: string, order: number) => {
+  sorting.value = { field: newSorting, order: order };
+  console.debug('Sorting changed to', sorting.value);
+};
 
 const handleFilterChange = (newFilter: typeof Filter) => {};
 
@@ -229,7 +233,7 @@ body {
 .show-between-sm-md {
   display: none;
   @media (min-width: 501px) and (max-width: 768px) {
-    display:flex
+    display: flex;
   }
 }
 

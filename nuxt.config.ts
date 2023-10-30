@@ -7,7 +7,7 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['nuxt-vuefire', 'nuxt-primevue'],
+  modules: ['nuxt-vuefire', 'nuxt-primevue', '@vueuse/nuxt'],
   primevue: {
     usePrimeVue: true,
     options: {
