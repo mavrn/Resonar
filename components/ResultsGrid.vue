@@ -69,7 +69,7 @@ Section {
 }
 
 .block {
-  margin-top: clamp(20px, 3vw, 50px);
+  margin-top: clamp(0px, 3vw, 10px);
 }
 
 .inner {

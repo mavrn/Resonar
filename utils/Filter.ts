@@ -1,22 +1,24 @@
 export class Filter {
-  startDate: Date;
-  endDate: Date;
-  genre: string;
-  minRating: number;
-  maxRating: number;
+  type: string;
+  genres: string[];
+  ratingRange: number[];
+  yearRange: number[];
+  inBookmarks: boolean;
+  inRated: boolean;
 
   constructor(
-    startDate: Date,
-    endDate: Date,
-    genre: string,
-    minRating: number,
-    maxRating: number
+    type: string,
+    genres: string[],
+    ratingRange: number[],
+    yearRange: number[],
+    inBookmarks: boolean,
+    inRated: boolean
   ) {
-    this.startDate = startDate;
-    this.endDate = endDate;
-    this.genre = genre;
-    this.minRating = minRating;
-    this.maxRating = maxRating;
+    this.type = type;
+    this.genres = genres;
+    this.yearRange = yearRange;
+    this.ratingRange = ratingRange;
+    this.inBookmarks = inBookmarks;
+    this.inRated = inRated;
   }
 }
-

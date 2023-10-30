@@ -2,15 +2,13 @@
 import type { Auth } from 'firebase/auth';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { getDocs, collection, getDoc, doc } from 'firebase/firestore';
-import {
-  getDownloadURL,
-  getStorage,
-  ref as storageRef,
-} from 'firebase/storage';
+import { collection, getDoc, doc } from 'firebase/firestore';
+import { ref as storageRef } from 'firebase/storage';
 
-const searchTerm = ref('');
-const filterSettings = ref(Filter);
+const searchValue = ref('');
+const filtering = ref(
+  new Filter('all', [], [0, 10], [1950, 2023], false, false)
+);
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const db = useFirestore();
@@ -22,8 +20,6 @@ const remoteIndexLoaded = ref(false);
 const userProfile = ref<DocumentData | null>(null);
 
 let auth: Auth;
-
-const albums = ref<QueryDocumentSnapshot[]>([]);
 const isLoggedIn = ref(false);
 
 const fetchRemoteJson = async () => {
@@ -70,12 +66,6 @@ const resolveJson = async () => {
 
 const resolveJsonWithRatings = async () => {
   await resolveJson();
-  console.log(
-    'test rating:',
-    index.value[0],
-    index.value[0].rating,
-    'rating' in index.value[0]
-  );
   console.debug('Testing for ratings...');
   if ('rating' in index.value[0]) {
     console.debug('Ratings found!');
@@ -106,11 +96,11 @@ onMounted(() => {
 });
 
 watch(
-  () => searchTerm.value,
+  () => searchValue.value,
   () => {
     router.push({
       path: '/',
-      query: { search: encodeURIComponent(searchTerm.value) },
+      query: { search: encodeURIComponent(searchValue.value) },
     });
   }
 );
@@ -132,8 +122,6 @@ const handleSortingChange = (newSorting: string, order: number) => {
   console.debug('Sorting changed to', sorting.value);
 };
 
-const handleFilterChange = (newFilter: typeof Filter) => {};
-
 const handleSignOut = async () => {
   signOut(auth);
 };
@@ -143,19 +131,20 @@ const handleSignOut = async () => {
   <div class="header-fixed">
     <div class="wrapper">
       <TopBar
-        v-model:search-value="searchTerm"
+        v-model:search-value="searchValue"
         :isLoggedIn="isLoggedIn"
         :handleSignOut="handleSignOut"
         :loggedInUser="userProfile?.value"
         :handleSortingChange="handleSortingChange"
-        :handleFilterChange="handleFilterChange"
+        v-model:filtering="filtering"
         :remoteIndexLoaded="remoteIndexLoaded"
       />
       <NuxtPage
         :loggedInUser="userProfile"
-        v-model:searchValue="searchTerm"
+        v-model:searchValue="searchValue"
         :index="index"
         :sorting="sorting"
+        :filtering="filtering"
         :remoteIndexLoaded="remoteIndexLoaded"
       ></NuxtPage>
     </div>
@@ -192,28 +181,28 @@ body {
 
 .show-bigger-than-lg-flex {
   display: none;
-  @media (min-width: 1025px) {
+  @media (min-width: 1101px) {
     display: flex;
   }
 }
 
 .show-bigger-than-lg-block {
   display: none;
-  @media (min-width: 1025px) {
+  @media (min-width: 1101px) {
     display: block;
   }
 }
 
 .show-smaller-than-lg-flex {
   display: none;
-  @media (max-width: 1024px) {
+  @media (max-width: 1100px) {
     display: flex;
   }
 }
 
 .show-smaller-than-lg-block {
   display: none;
-  @media (max-width: 1024px) {
+  @media (max-width: 1100px) {
     display: block;
   }
 }

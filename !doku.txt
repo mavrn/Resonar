@@ -1,0 +1,20 @@
+-stack: vue3 + nuxt + tailwindcss + typescript + firebase
+-automatic deploys using vercel and nuxt to sonarmusic.vercel.app
+
+
+Filter:
+  -Genre (local) (autocomplete)
+  -Jahr (local) (double slider)
+  -Rating (remote) (double slider)
+  -Typ (local) ()
+  -In Bookmarks (by User) (remote)
+  -In Rated (by User) (remote)
+
+
+
+
+Sort:
+  -Popularity (local)
+  -Rating (remote)
+  -Jahr (local)
+  -Your Rating (by User) (remote)

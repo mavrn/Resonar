@@ -18,6 +18,7 @@ const props = defineProps({
   isLoggedIn: Boolean,
   index: Array,
   sorting: Object,
+  filtering: Filter,
   remoteIndexLoaded: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
@@ -71,9 +72,9 @@ const resolveResults = async () => {
   });
 };
 
-const updateResultsUnl = async (searchValue, index, sorting) => {
+const updateResultsUnl = async (searchValue, index, sorting, filtering) => {
   loadedResults.value = 0;
-  results.value = getResults(index, searchValue, sorting);
+  results.value = getResults(index, searchValue, sorting, filtering);
   resolveResults();
 };
 
@@ -82,21 +83,47 @@ const updateResults = debounce(updateResultsUnl, 150);
 watch(
   () => props.searchValue,
   () => {
-    updateResults(props.searchValue, props.index, props.sorting);
+    updateResults(
+      props.searchValue,
+      props.index,
+      props.sorting,
+      props.filtering
+    );
   }
 );
 
 watch(
   () => props.index,
   () => {
-    updateResults(props.searchValue, props.index, props.sorting);
+    updateResults(
+      props.searchValue,
+      props.index,
+      props.sorting,
+      props.filtering
+    );
   }
 );
 
 watch(
   () => props.sorting,
   () => {
-    updateResults(props.searchValue, props.index, props.sorting);
+    updateResults(
+      props.searchValue,
+      props.index,
+      props.sorting,
+      props.filtering
+    );
+  }
+);
+
+watch(
+  props.filtering, () => {
+    updateResults(
+      props.searchValue,
+      props.index,
+      props.sorting,
+      props.filtering
+    );
   }
 );
 
@@ -105,7 +132,7 @@ onMounted(() => {
   if (param) {
     emits('update:searchValue', param);
   }
-  updateResults(props.searchValue, props.index, props.sorting);
+  updateResults(props.searchValue, props.index, props.sorting, props.filtering);
 });
 </script>
 

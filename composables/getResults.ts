@@ -1,50 +1,77 @@
+import { Filter } from '../utils/Filter';
+
 export const getResults = (
   index: {
     name: string;
     reference: string;
-    genre: string;
+    genres: string[];
     year: number;
     type: string;
     relevance: number;
     rating?: number;
   }[],
   searchQuery: string,
-  sort?: { field: string; order: number },
-  localFilter?: Object[]
+  sorting?: { field: string; order: number },
+  filtering?: Filter
 ) => {
   if (!index) {
     return [];
   }
   console.debug('Filtering...');
-  const results = index.filter((item) =>
+  let results = index.filter((item) =>
     item.name.includes(searchQuery.toLowerCase())
   );
-  console.log(sort);
-  if (sort) {
+  console.log(sorting);
+  if (filtering) {
+    console.log(filtering);
+    if (filtering.type != 'all') {
+      results = results.filter((item) => item.type === filtering.type);
+    }
+    if (filtering.genres.length != 0) {
+      results = results.filter((item) =>
+        item.genres.every((genre) => filtering.genres.includes(genre))
+      );
+    }
+    if (filtering.yearRange[0] != 1950 || filtering.yearRange[1] != 2023) {
+      results = results.filter(
+        (item) =>
+          filtering.yearRange[0] <= item.year &&
+          item.year <= filtering.yearRange[1]
+      );
+    }
+    if (filtering.ratingRange[0] != 0 || filtering.ratingRange[1] != 10) {
+      results = results.filter(
+        (item) =>
+          filtering.ratingRange[0] <= item.rating &&
+          item.rating <= filtering.ratingRange[1]
+      );
+    }
+  }
+  if (sorting) {
     console.debug('Sorting...');
-    if (sort.field === 'releaseDate') {
+    if (sorting.field === 'releaseDate') {
       results.sort((a, b) => {
         const aValue: number = a.year;
         const bValue: number = b.year;
-        return sort.order === 1 ? aValue - bValue : bValue - aValue;
+        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
       });
-    } else if (sort.field === 'popular') {
+    } else if (sorting.field === 'popular') {
       results.sort((a, b) => {
         const aValue: number = a.relevance;
         const bValue: number = b.relevance;
-        return sort.order === 1 ? aValue - bValue : bValue - aValue;
+        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
       });
-    } else if (sort.field === 'rating') {
+    } else if (sorting.field === 'rating') {
       results.sort((a, b) => {
         const aValue: number = a.rating;
         const bValue: number = b.rating;
-        return sort.order === 1 ? aValue - bValue : bValue - aValue;
+        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
       });
-    } else if (sort.field === 'alphabetical') {
+    } else if (sorting.field === 'alphabetical') {
       results.sort((a, b) => {
         const aValue: string = a.name.toLowerCase();
         const bValue: string = b.name.toLowerCase();
-        if (sort.order === -1) {
+        if (sorting.order === -1) {
           if (aValue < bValue) return -1;
           if (aValue > bValue) return 1;
           return 0;

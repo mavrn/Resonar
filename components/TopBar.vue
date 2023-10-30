@@ -1,21 +1,63 @@
 <script setup lang="ts">
-import { orderBy } from 'firebase/firestore';
-
 const props = defineProps({
   searchValue: String,
   handleSignOut: Function,
   isLoggedIn: Boolean,
   loggedInUser: Object,
   handleSortingChange: Function,
-  handleSortingOrderChange: Function,
-  handleFilterChange: Function,
   remoteIndexLoaded: Boolean,
+  filtering: Filter,
 });
-const emits = defineEmits(['update:searchValue']);
+const emits = defineEmits(['update:searchValue', 'update:filtering']);
 
 const sorting = ref('Popular');
-const filtering = ref(null);
 const sortingOrder = ref(-1);
+
+const genres = [
+  'Rock',
+  'Pop',
+  'Hip-Hop',
+  'Jazz',
+  'Country',
+  'Electronic',
+  'Classical',
+  'R&B',
+  'Reggae',
+  'Blues',
+  'Funk',
+  'Soul',
+  'Metal',
+  'Punk',
+  'Indie',
+  'Alternative',
+  'Rap',
+  'EDM',
+  'Dance',
+  'Gospel',
+];
+
+const genreSuggestions = ref<string[]>([]);
+const genreQuery = ref('');
+
+const addToQuery = (suggestion: string) => {
+  const query = genreQuery.value.split(', ');
+  query[query.length - 1] = suggestion; // Access the last element
+  genreQuery.value = query.join(', ') + ', ';
+  atInput();
+};
+
+const atInput = () => {
+  resizeArea();
+  const queryGenres = genreQuery.value.split(', ');
+  const query = queryGenres[queryGenres.length - 1].toLowerCase();
+  genreSuggestions.value = [];
+  for (let genre of genres) {
+    genre = genre.toLowerCase();
+    if (genre.includes(query) && genreSuggestions.value.length < 3) {
+      genreSuggestions.value.push(toTitleCase(genre));
+    }
+  }
+};
 
 const computedSearchValue = computed({
   get: () => props.searchValue,
@@ -31,6 +73,9 @@ function toCamelCase(inputString: string) {
     .replace(/^(.)/, (match) => match.toLowerCase());
 }
 
+function toTitleCase(inputString: string) {
+  return inputString.charAt(0).toUpperCase() + inputString.slice(1);
+}
 function onSortingChange(newSorting: string) {
   sorting.value = newSorting;
   newSorting = toCamelCase(newSorting);
@@ -41,13 +86,31 @@ function onSortingOrderChange() {
   sortingOrder.value = -sortingOrder.value;
   props.handleSortingChange?.(toCamelCase(sorting.value), sortingOrder.value);
 }
+
+const textarea = ref<HTMLElement | null>(null);
+
+function resizeArea() {
+  if (textarea.value) {
+    textarea.value.style.height = '15px';
+    textarea.value.style.width = '100%';
+    textarea.value.style.height = textarea.value.scrollHeight + 10 + 'px';
+  }
+}
+
+onMounted(() => {
+  const textarea = document.getElementById('genre-input');
+  textarea?.addEventListener('input', resizeArea);
+});
 </script>
 <template>
-  <div class="show-smaller-than-md-flex header-logo-sm-container">
+  <div class="show-smaller-than-lg-flex header-logo-sm-container">
     <NuxtLink to="/">
       <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
     /></NuxtLink>
-    <div v-if="!isLoggedIn" class="header-main-user show-smaller-than-sm-flex">
+    <div
+      v-if="!loggedInUser"
+      class="header-main-user show-smaller-than-sm-flex"
+    >
       <NuxtLink to="/login"
         ><Button class="topbar-button secondary-button"
           ><i class="material-icons text-white">login</i>
@@ -65,7 +128,7 @@ function onSortingOrderChange() {
   <header>
     <div class="inner">
       <div class="header-main">
-        <NuxtLink class="show-bigger-than-md-flex" to="/">
+        <NuxtLink class="show-bigger-than-lg-flex" to="/">
           <img class="header-logo" src="../assets/sonar-logo.png" alt="Logo" />
         </NuxtLink>
         <div class="header-search">
@@ -82,7 +145,122 @@ function onSortingOrderChange() {
               />
             </div>
             <div class="show-bigger-than-lg-block">
-              <div class="search-in-seperator">SORTED BY</div>
+              <div class="filter-separator">IN</div>
+              <div class="filter-dropdown">
+                <svg class="expand-arrow" width="12" viewBox="0 0 20 20">
+                  <use href="../assets/expand.svg#arrow"></use>
+                </svg>
+                <div class="dropdown-selected">
+                  {{ toTitleCase(filtering.type) }}
+                </div>
+                <div class="filter-dropdown-options">
+                  <div class="filter-type-field">
+                    <div
+                      class="filter-dropdown-option"
+                      @click="filtering.type = 'all'"
+                    >
+                      All
+                    </div>
+                    <div
+                      class="filter-dropdown-option"
+                      @click="filtering.type = 'releases'"
+                    >
+                      Releases
+                    </div>
+                    <div
+                      class="filter-dropdown-option is-child"
+                      @click="filtering.type = 'albums'"
+                    >
+                      Albums
+                    </div>
+                    <div
+                      class="filter-dropdown-option is-child"
+                      @click="filtering.type = 'singles'"
+                    >
+                      Singles
+                    </div>
+                    <div
+                      class="filter-dropdown-option"
+                      @click="filtering.type = 'artists'"
+                    >
+                      Artists
+                    </div>
+                    <div
+                      class="filter-dropdown-option"
+                      @click="filtering.type = 'users'"
+                    >
+                      Users
+                    </div>
+                  </div>
+                  <div class="filter-genre-field">
+                    <textarea
+                      rows="1"
+                      class="genre-input"
+                      ref="textarea"
+                      v-model="genreQuery"
+                      @input="atInput()"
+                      placeholder="Search for Genres..."
+                    />
+                    <div
+                      v-for="suggestion in genreSuggestions"
+                      @click="addToQuery(suggestion)"
+                    >
+                      {{ suggestion }}
+                    </div>
+                  </div>
+                  <div class="filter-combi-field">
+                    <div class="range-display">
+                      Rating: {{ filtering?.ratingRange[0] }} -
+                      {{ filtering?.ratingRange[1] }}
+                    </div>
+                    <Slider
+                      range
+                      class="filter-slider"
+                      v-model="filtering.ratingRange"
+                      :min="0"
+                      :max="10"
+                      :step="0.1"
+                      :pt="{ range: 'class: slider-range' }"
+                    />
+                    <div class="range-display">
+                      Year: {{ filtering?.yearRange[0] }} -
+                      {{ filtering?.yearRange[1] }}
+                    </div>
+                    <Slider
+                      range
+                      class="filter-slider"
+                      v-model="filtering.yearRange"
+                      :min="1950"
+                      :max="2023"
+                      :step="1"
+                      :pt="{ range: 'class: slider-range' }"
+                    />
+                    <div class="button-field">
+                      <button
+                        v-if="loggedInUser"
+                        :class="{
+                          'filter-active-button': filtering?.inRated,
+                          'filter-passive-button': !filtering?.inRated,
+                        }"
+                        @click="filtering.inRated = !filtering?.inRated"
+                      >
+                        In your Rated
+                      </button>
+                      <button
+                        v-if="loggedInUser"
+                        :class="{
+                          'filter-active-button': filtering?.inBookmarks,
+                          'filter-passive-button': !filtering?.inBookmarks,
+                        }"
+                        @click="filtering.inBookmarks = !filtering?.inBookmarks"
+                      >
+                        In your Bookmarks
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="sorting-separator">SORTED BY</div>
               <button class="order-button" @click="onSortingOrderChange">
                 <svg
                   :class="{ 'order-arrow': true, down: sortingOrder == -1 }"
@@ -91,26 +269,26 @@ function onSortingOrderChange() {
                   <use href="../assets/arrow.svg#arrow"></use>
                 </svg>
               </button>
-              <div class="search-dropdown">
+              <div class="sorting-dropdown">
                 <svg class="expand-arrow" width="12" viewBox="0 0 20 20">
                   <use href="../assets/expand.svg#arrow"></use>
                 </svg>
                 <div class="dropdown-selected">{{ sorting }}</div>
-                <div class="dropdown-options">
+                <div class="sorting-dropdown-options">
                   <div
-                    class="dropdown-option"
+                    class="sorting-dropdown-option"
                     @click="onSortingChange('Popular')"
                   >
                     Popular
                   </div>
                   <div
-                    class="dropdown-option"
+                    class="sorting-dropdown-option"
                     @click="onSortingChange('Release Date')"
                   >
                     Release Date
                   </div>
                   <div
-                    class="dropdown-option"
+                    class="sorting-dropdown-option"
                     @click="onSortingChange('Rating')"
                     :disabled="remoteIndexLoaded"
                   >
@@ -118,13 +296,13 @@ function onSortingOrderChange() {
                   </div>
                   <div
                     v-if="isLoggedIn"
-                    class="dropdown-option"
+                    class="sorting-dropdown-option"
                     @click="onSortingChange('Your Rating')"
                   >
                     Your Rating
                   </div>
                   <div
-                    class="dropdown-option"
+                    class="sorting-dropdown-option"
                     @click="onSortingChange('Alphabetical')"
                   >
                     Alphabetical
@@ -132,6 +310,7 @@ function onSortingOrderChange() {
                 </div>
               </div>
             </div>
+
             <div class="show-smaller-than-lg-block filter-field">
               <Button class="filter-button secondary-button">
                 <i class="material-icons text-white">tune</i>
@@ -199,8 +378,8 @@ header {
 .inner {
   width: 100%;
   margin: 0 auto;
-  padding: 0 24px;
-  @media (max-width: 500px) {
+  padding: 0 30px 0 30px;
+  @media (max-width: 1200px) {
     padding: 0 0px 0 8px;
   }
 }
@@ -247,7 +426,6 @@ header {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 20px;
   height: 56px;
   background: #e5e4e4;
   border-radius: var(--border-radius);
@@ -282,13 +460,6 @@ header {
   border: none;
 }
 
-.search-in-seperator {
-  display: inline-flex;
-  align-items: center;
-  margin: 0 10px;
-  font-size: 11px;
-}
-
 .order-arrow {
   height: auto;
   width: 15px;
@@ -314,44 +485,30 @@ header {
   margin-right: 10px;
 }
 
-.search-dropdown {
+.sorting-separator {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 10px;
+  font-size: 11px;
+}
+.filter-separator {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 10px;
+  font-size: 11px;
+}
+.sorting-dropdown {
   position: relative;
   display: inline-flex;
   width: 125px;
   cursor: pointer;
   border: none;
-  border-radius: 26px;
+  border-radius: var(--border-radius);
   background: transparent;
   user-select: none;
 }
 
-.expand-arrow {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  z-index: 2;
-  transform: translateY(-50%);
-  transition: transform 0.3s;
-  display: inline-block;
-  height: auto;
-  fill: black;
-}
-
-.search-dropdown:hover .expand-arrow {
-  top: calc(50% - 5px);
-  fill: white;
-  transform: scaleY(-1);
-}
-
-.dropdown-selected {
-  position: relative;
-  display: flex;
-  align-items: center;
-  padding-right: 30px;
-  font-weight: 500;
-  z-index: 2;
-}
-.dropdown-options {
+.sorting-dropdown-options {
   position: absolute;
   top: calc(100% - 43px);
   width: calc(100% + 27px);
@@ -366,16 +523,140 @@ header {
   transition: all 0.3s;
 }
 
-.search-dropdown:hover .dropdown-options {
+.filter-dropdown {
+  position: relative;
+  display: inline-flex;
+  width: 200px;
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius);
+  background: transparent;
+  user-select: none;
+}
+
+.filter-dropdown:hover .expand-arrow {
+  top: calc(50% - 5px);
+  fill: white;
+  transform: scaleY(-1);
+}
+.filter-dropdown:hover .filter-dropdown-options {
   opacity: 1;
   visibility: visible;
 }
 
-.search-dropdown:hover .dropdown-selected {
+.filter-dropdown:hover .dropdown-selected {
   color: white;
 }
+.filter-dropdown-options {
+  position: absolute;
+  top: calc(100% - 43px);
+  width: calc(100% + 10px);
+  padding: 46px 3px 3px 3px;
+  background: black;
+  border-radius: var(--border-radius);
+  color: white;
+  transform: translateX(-8px);
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+.filter-dropdown-option {
+  display: block;
+  padding: 2px 24px;
+  padding-left: 9px;
+  color: white;
+  transition: all 0.3s;
+  text-decoration: none;
+  border: none;
+  margin: 0;
+}
+.filter-dropdown-option:hover {
+  color: gray;
+}
+.is-child {
+  padding-left: 20px;
+}
 
-.dropdown-option {
+.filter-type-field {
+  margin: 2px;
+}
+
+.filter-genre-field {
+  margin: 2px;
+  margin-top: 5px;
+  border-top: 2px solid white;
+  padding: 5px;
+  padding-top: 10px;
+}
+
+.filter-combi-field {
+  margin: 2px;
+  margin-top: 10px;
+  border-top: 2px solid white;
+  padding: 10px;
+}
+
+.filter-slider {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  height: 2px;
+}
+
+.genre-input {
+  width: 100%;
+  background: transparent;
+  border: 1px solid #242424;
+  border-radius: var(--border-radius);
+  height: auto;
+  min-height: 30px;
+  color: white;
+  padding-left: 5px;
+  overflow: hidden;
+}
+
+.range-display {
+  width: 100%;
+  text-align: center;
+  align-items: center;
+}
+
+.button-field {
+  display: flex;
+  padding-top: 10px;
+}
+.filter-active-button {
+  border-radius: var(--border-radius);
+  background-color: white;
+  color: black;
+  border: none;
+  width: 40%;
+  height: 40px;
+  margin-left: 10px;
+  margin-right: 10px;
+  opacity: 80%;
+}
+.filter-passive-button {
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  width: 40%;
+  height: 40px;
+  margin-left: 10px;
+  margin-right: 10px;
+  opacity: 80%;
+}
+
+.filter-passive-button:hover {
+  opacity: 100%;
+}
+.filter-active-button:hover {
+  opacity: 100%;
+}
+.sorting-dropdown-option {
   display: block;
   padding: 2px 24px;
   padding-left: 9px;
@@ -386,8 +667,42 @@ header {
   margin: 0;
 }
 
-.dropdown-option:hover {
+.sorting-dropdown-option:hover {
   color: gray;
+}
+.expand-arrow {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 2;
+  transform: translateY(-50%);
+  transition: transform 0.3s;
+  display: inline-block;
+  height: auto;
+  fill: black;
+}
+
+.dropdown-selected {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 30px;
+  font-weight: 500;
+  z-index: 2;
+}
+
+.sorting-dropdown:hover .expand-arrow {
+  top: calc(50% - 5px);
+  fill: white;
+  transform: scaleY(-1);
+}
+.sorting-dropdown:hover .sorting-dropdown-options {
+  opacity: 1;
+  visibility: visible;
+}
+
+.sorting-dropdown:hover .dropdown-selected {
+  color: white;
 }
 
 .header-right-login {
@@ -412,9 +727,5 @@ header {
   border: none;
   background: transparent;
   padding-left: 10px;
-}
-
-.search-bar-field:focus-within {
-  outline: 1px solid black;
 }
 </style>
