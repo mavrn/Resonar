@@ -21,9 +21,7 @@ export const getResults = (
   let results = index.filter((item) =>
     item.name.includes(searchQuery.toLowerCase())
   );
-  console.log(sorting);
   if (filtering) {
-    console.log(filtering);
     if (filtering.type != 'all') {
       results = results.filter((item) => item.type === filtering.type);
     }

@@ -19,9 +19,9 @@ const props = defineProps({
   index: Array,
   sorting: Object,
   filtering: Filter,
-  remoteIndexLoaded: Boolean,
+  initialLoadReady: Boolean,
 });
-const emits = defineEmits(['update:searchValue']);
+const emits = defineEmits(['update:searchValue', 'update:initialLoadReady']);
 const db = getFirestore();
 const route = useRoute();
 
@@ -61,14 +61,13 @@ const resolveResults = async () => {
     const documentRef = doc(db, collectionPath, documentId);
     console.debug('getting doc...');
     const relSnapshot = await getDoc(documentRef);
-    console.debug('making album...');
     const release = new Album(relSnapshot);
-    console.debug('resolving artist...');
     await release.resolve();
     loadedResults.value += 1;
     results.value[currLoaded + index] = release;
     console.debug('Done, populated index', currLoaded + index);
     processing.value = false;
+    emits('update:initialLoadReady', true);
   });
 };
 
@@ -116,16 +115,9 @@ watch(
   }
 );
 
-watch(
-  props.filtering, () => {
-    updateResults(
-      props.searchValue,
-      props.index,
-      props.sorting,
-      props.filtering
-    );
-  }
-);
+watch(props.filtering, () => {
+  updateResults(props.searchValue, props.index, props.sorting, props.filtering);
+});
 
 onMounted(() => {
   const param = route.query.search;

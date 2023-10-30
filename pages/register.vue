@@ -12,11 +12,11 @@ const password = ref('');
 const register = () => {
   createUserWithEmailAndPassword(getAuth(), email.value, password.value)
     .then((data) => {
-      console.log('Successfully registered!');
+      console.debug('Successfully registered!');
       router.push('./');
     })
     .catch((error) => {
-      console.log(error.code);
+      console.debug(error.code);
       alert(error.message);
     });
 };
@@ -24,10 +24,10 @@ const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)
     .then((data) => {
-      console.log('Successfully registered!');
+      console.debug('Successfully registered!');
     })
     .catch((error) => {
-      console.log(error.code);
+      console.debug(error.code);
       alert(error.message);
     });
 };

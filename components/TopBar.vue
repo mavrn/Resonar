@@ -97,10 +97,6 @@ function resizeArea() {
   }
 }
 
-onMounted(() => {
-  const textarea = document.getElementById('genre-input');
-  textarea?.addEventListener('input', resizeArea);
-});
 </script>
 <template>
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
@@ -290,7 +286,7 @@ onMounted(() => {
                   <div
                     class="sorting-dropdown-option"
                     @click="onSortingChange('Rating')"
-                    :disabled="remoteIndexLoaded"
+                    v-if="remoteIndexLoaded"
                   >
                     Rating
                   </div>

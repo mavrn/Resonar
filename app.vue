@@ -14,8 +14,9 @@ const router = useRouter();
 const db = useFirestore();
 const index = ref<Array<{ rating: number; reference: string }>>([]);
 
+const initialLoadReady = ref(false);
 const remoteFieldsLoaded = ref(0);
-const remoteIndexLoaded = ref(false);
+const remoteIndexLoaded = ref(true);
 
 const userProfile = ref<DocumentData | null>(null);
 
@@ -55,35 +56,32 @@ const resolveJson = async () => {
   if (indexProbe) {
     console.debug('Found index in local storage.');
     index.value = JSON.parse(indexProbe);
-    console.log(index.value);
   } else {
     console.debug('Didnt find index in local storage.');
-    fetchRemoteJson().then((response) => {
-      index.value = response;
-    });
+    index.value = await fetchRemoteJson();
+  }
+  console.debug('Testing for ratings...');
+  if ('rating' in index.value[0]) {
+    console.debug('Ratings found! Enabling rating sort');
+    remoteIndexLoaded.value = true;
+  } else {
+    console.debug('Didnt find ratings.');
+    remoteIndexLoaded.value = false;
   }
 };
 
-const resolveJsonWithRatings = async () => {
-  await resolveJson();
-  console.debug('Testing for ratings...');
-  if ('rating' in index.value[0]) {
-    console.debug('Ratings found!');
-  } else {
-    console.debug('Didnt find ratings. Fetching from remote...');
-    index.value.forEach(async (element) => {
-      const [collectionPath, documentId] = element.reference.split('/');
-      const documentRef = doc(db, collectionPath, documentId);
-      const relSnapshot = await getDoc(documentRef);
-      element.rating = relSnapshot?.data?.()?.score;
-      console.log(element.rating);
-      remoteFieldsLoaded.value += 1;
-    });
-  }
+const resolveRemoteRatings = async () => {
+  index.value.forEach(async (element) => {
+    const [collectionPath, documentId] = element.reference.split('/');
+    const documentRef = doc(db, collectionPath, documentId);
+    const relSnapshot = await getDoc(documentRef);
+    element.rating = relSnapshot?.data?.()?.score;
+    remoteFieldsLoaded.value += 1;
+  });
 };
 
 onMounted(() => {
-  resolveJsonWithRatings();
+  resolveJson();
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -105,17 +103,21 @@ watch(
   }
 );
 
-watch(
-  () => remoteFieldsLoaded.value,
-  () => {
-    if (remoteFieldsLoaded.value == index.value.length) {
-      remoteIndexLoaded.value = true;
-      console.debug('Saving JSON...');
-      localStorage.setItem('index', JSON.stringify(index.value));
-      console.debug('Done!');
-    }
+watch(initialLoadReady, async () => {
+  if (initialLoadReady.value) {
+    console.debug("Initial Load is ready. Fetching ratings from remote...")
+    resolveRemoteRatings();
   }
-);
+});
+
+watch(remoteFieldsLoaded, async (oldVal, newVal) => {
+  if (newVal == index.value.length - 1) {
+    remoteIndexLoaded.value = true;
+    console.debug('Saving JSON...');
+    localStorage.setItem('index', JSON.stringify(index.value));
+    console.debug('Done!');
+  }
+});
 
 const handleSortingChange = (newSorting: string, order: number) => {
   sorting.value = { field: newSorting, order: order };
@@ -145,7 +147,7 @@ const handleSignOut = async () => {
         :index="index"
         :sorting="sorting"
         :filtering="filtering"
-        :remoteIndexLoaded="remoteIndexLoaded"
+        v-model:initialLoadReady="initialLoadReady"
       ></NuxtPage>
     </div>
   </div>
