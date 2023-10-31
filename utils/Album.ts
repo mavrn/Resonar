@@ -2,6 +2,18 @@ import { Artist } from './Artist';
 import { DocumentReference, getDoc } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 
+function toTitleCase(str: string) {
+  return str
+    .split(' ')
+    .map((word) => {
+      if (word.length === 0) {
+        return word; // Handle empty strings
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ');
+}
+
 export class Album {
   uid: number;
   artistUnresolved: DocumentReference;
@@ -35,5 +47,10 @@ export class Album {
         })
         .catch(reject); // Reject the promise if there's an error
     });
+  }
+
+  resolveLocal(artistName: string) {
+    this.artist = new Artist();
+    this.artist.name = toTitleCase(artistName);
   }
 }

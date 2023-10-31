@@ -19,9 +19,8 @@ const props = defineProps({
   index: Array,
   sorting: Object,
   filtering: Filter,
-  initialLoadReady: Boolean,
 });
-const emits = defineEmits(['update:searchValue', 'update:initialLoadReady']);
+const emits = defineEmits(['update:searchValue']);
 const db = getFirestore();
 const route = useRoute();
 
@@ -56,18 +55,17 @@ const resolveResults = async () => {
     loadedResults.value + limit
   );
   const currLoaded = loadedResults.value;
-  limitedResults.forEach(async (reference, index) => {
-    const [collectionPath, documentId] = reference.split('/');
+  limitedResults.forEach(async (result, index) => {
+    const [collectionPath, documentId] = result.reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);
     console.debug('Getting doc', documentId);
     const relSnapshot = await getDoc(documentRef);
     const release = new Album(relSnapshot);
-    await release.resolve();
+    release.resolveLocal(result.artist)
     loadedResults.value += 1;
     results.value[currLoaded + index] = release;
     console.debug('Done, populated index', currLoaded + index);
     processing.value = false;
-    emits('update:initialLoadReady', true);
   });
 };
 

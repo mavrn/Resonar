@@ -3,6 +3,7 @@ import { Filter } from '../utils/Filter';
 export const getResults = (
   index: {
     name: string;
+    artist: string,
     reference: string;
     genres: string[];
     year: number;
@@ -12,7 +13,8 @@ export const getResults = (
   }[],
   searchQuery: string,
   sorting?: { field: string; order: number },
-  filtering?: Filter
+  filtering?: Filter,
+  withArtistNames? :Boolean
 ) => {
   if (!index) {
     return [];
@@ -81,8 +83,6 @@ export const getResults = (
       });
     }
   }
-  console.debug('Mapping...');
-  const references = results.map((item) => item.reference);
   console.debug('Done!');
-  return references;
+  return results;
 };
