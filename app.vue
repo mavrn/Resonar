@@ -14,9 +14,9 @@ const router = useRouter();
 const db = useFirestore();
 const index = ref<Array<{ rating: number; reference: string }>>([]);
 
-const initialLoadReady = ref(false);
 const remoteFieldsLoaded = ref(0);
-const remoteIndexLoaded = ref(true);
+const remoteIndexLoaded = ref<boolean | null>(null);
+let loadingInterval: NodeJS.Timeout;
 
 const userProfile = ref<DocumentData | null>(null);
 
@@ -71,6 +71,14 @@ const resolveJson = async () => {
 };
 
 const resolveRemoteRatings = async () => {
+  console.log('called');
+  if (remoteIndexLoaded.value == null) {
+    return;
+  }
+  if (remoteIndexLoaded.value == true) {
+    clearInterval(loadingInterval);
+    return;
+  }
   index.value.forEach(async (element) => {
     const [collectionPath, documentId] = element.reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);
@@ -82,6 +90,7 @@ const resolveRemoteRatings = async () => {
 
 onMounted(() => {
   resolveJson();
+  resolveRemoteRatings();
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -102,13 +111,6 @@ watch(
     });
   }
 );
-
-watch(initialLoadReady, async () => {
-  if (initialLoadReady.value && !remoteIndexLoaded.value) {
-    console.debug('Initial Load is ready. Fetching ratings from remote...');
-    resolveRemoteRatings();
-  }
-});
 
 watch(remoteFieldsLoaded, async (oldVal, newVal) => {
   if (newVal == index.value.length - 1) {
@@ -147,7 +149,6 @@ const handleSignOut = async () => {
         :index="index"
         :sorting="sorting"
         :filtering="filtering"
-        v-model:initialLoadReady="initialLoadReady"
       ></NuxtPage>
     </div>
   </div>
