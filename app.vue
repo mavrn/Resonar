@@ -91,7 +91,6 @@ const resolveRemoteRatings = async () => {
 
 onMounted(() => {
   resolveJson();
-  resolveRemoteRatings();
   auth = getAuth();
   onAuthStateChanged(auth, (user) => {
     if (user) {
