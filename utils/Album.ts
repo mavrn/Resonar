@@ -38,7 +38,7 @@ export class Album {
     }
   }
 
-  async resolve() {
+  async resolveArtist() {
     return new Promise((resolve, reject) => {
       getDoc(this.artistUnresolved)
         .then((artistSnapshot) => {
@@ -49,8 +49,25 @@ export class Album {
     });
   }
 
-  resolveLocal(artistName: string) {
+  resolveArtistLocal(artistName: string) {
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName);
+  }
+
+  resolveLocal(
+    uid: number,
+    artistName: string,
+    title: string,
+    cover: string,
+    year: number,
+    score: number
+  ) {
+    this.uid = uid;
+    this.artist = new Artist();
+    this.artist.name = toTitleCase(artistName);
+    this.title = title;
+    this.cover = cover;
+    this.date = String(year);
+    this.score = score;
   }
 }

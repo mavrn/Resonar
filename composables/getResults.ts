@@ -4,12 +4,13 @@ export const getResults = (
   index: {
     name: string;
     artist: string,
+    cover: string,
     reference: string;
     genres: string[];
     year: number;
     type: string;
     relevance: number;
-    rating?: number;
+    rating: number;
   }[],
   searchQuery: string,
   sorting?: { field: string; order: number },
@@ -20,8 +21,9 @@ export const getResults = (
     return [];
   }
   console.debug('Filtering...');
+  searchQuery = searchQuery.toLowerCase()
   let results = index.filter((item) =>
-    item.name.includes(searchQuery.toLowerCase())
+    item.name.toLowerCase().includes(searchQuery) || item.artist.toLowerCase().includes(searchQuery)
   );
   if (filtering) {
     if (filtering.type != 'all') {

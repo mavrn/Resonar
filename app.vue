@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { Auth } from 'firebase/auth';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+import type { DocumentData } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, getDoc, doc } from 'firebase/firestore';
+import { collection, getDoc, doc, getFirestore } from 'firebase/firestore';
 import { ref as storageRef } from 'firebase/storage';
 
 const searchValue = ref('');
@@ -11,12 +11,11 @@ const filtering = ref(
 );
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
-const db = useFirestore();
+const db = getFirestore();
 const index = ref<Array<{ rating: number; reference: string }>>([]);
 
 const remoteFieldsLoaded = ref(0);
 const remoteIndexLoaded = ref<boolean | null>(null);
-let loadingInterval: NodeJS.Timeout;
 
 const userProfile = ref<DocumentData | null>(null);
 
@@ -72,14 +71,6 @@ const resolveJson = async () => {
 };
 
 const resolveRemoteRatings = async () => {
-  console.log('called');
-  if (remoteIndexLoaded.value == null) {
-    return;
-  }
-  if (remoteIndexLoaded.value == true) {
-    clearInterval(loadingInterval);
-    return;
-  }
   index.value.forEach(async (element) => {
     const [collectionPath, documentId] = element.reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);
@@ -149,6 +140,8 @@ const handleSignOut = async () => {
         :index="index"
         :sorting="sorting"
         :filtering="filtering"
+        :remoteIndexLoaded="remoteIndexLoaded"
+        :db="db"
       ></NuxtPage>
     </div>
   </div>

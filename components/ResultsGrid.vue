@@ -39,6 +39,7 @@ const debounce = (func, delay) => {
 };
 
 function handleScroll() {
+  const loadingThreshold = window.innerWidth < 600 ? 55 : 70
   const scrollTop =
     document.documentElement.scrollTop || document.body.scrollTop;
   const scrollHeight =
@@ -47,7 +48,7 @@ function handleScroll() {
     document.documentElement.clientHeight || document.body.clientHeight;
 
   const percentageScrolled = (scrollTop / (scrollHeight - clientHeight)) * 100;
-  if (percentageScrolled > 80) {
+  if (percentageScrolled > loadingThreshold) {
     props.update();
   }
 }
@@ -88,7 +89,6 @@ Section {
   grid-auto-flow: row dense;
   grid-gap: 30px 20px;
   padding-bottom: 30px;
-  
 }
 
 .release-item {

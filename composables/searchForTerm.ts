@@ -3,10 +3,6 @@ import {
   getDocs,
   query,
   where,
-  orderBy,
-  endAt,
-  startAt,
-  getFirestore,
 } from 'firebase/firestore';
 
 export const searchForTerm = async (searchQuery: string, level = 0) => {

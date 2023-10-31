@@ -7,7 +7,7 @@
 </template>
 
 <script setup>
-import { getDoc, doc, getFirestore } from 'firebase/firestore';
+import { getDoc, doc } from 'firebase/firestore';
 
 const limit = 12;
 const results = ref([]);
@@ -19,10 +19,12 @@ const props = defineProps({
   index: Array,
   sorting: Object,
   filtering: Filter,
+  remoteIndexLoaded: Boolean,
+  db: Object,
 });
 const emits = defineEmits(['update:searchValue']);
-const db = getFirestore();
 const route = useRoute();
+const connectionIsReady = ref(false);
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -49,24 +51,59 @@ const resolveResults = async () => {
     return;
   }
   console.debug('Accepted.');
+  let local;
+  if (!props.remoteIndexLoaded) {
+    console.debug(
+      'Showing local results. Reason: Index not yet fetched from remote.'
+    );
+    local = true;
+  } else if (!connectionIsReady.value) {
+    console.debug(
+      'Showing local results. Reason: Firebase connection still initializing.'
+    );
+    local = true;
+  } else {
+    console.debug('Showing remote results.');
+    local = false;
+  }
   processing.value = true;
   const limitedResults = results.value.slice(
     loadedResults.value,
     loadedResults.value + limit
   );
   const currLoaded = loadedResults.value;
-  limitedResults.forEach(async (result, index) => {
-    const [collectionPath, documentId] = result.reference.split('/');
-    const documentRef = doc(db, collectionPath, documentId);
-    console.debug('Getting doc', documentId);
-    const relSnapshot = await getDoc(documentRef);
-    const release = new Album(relSnapshot);
-    release.resolveLocal(result.artist)
-    loadedResults.value += 1;
-    results.value[currLoaded + index] = release;
-    console.debug('Done, populated index', currLoaded + index);
-    processing.value = false;
-  });
+  if (local) {
+    limitedResults.forEach(async (result, index) => {
+      const [collectionPath, documentId] = result.reference.split('/');
+      console.debug('Getting Release locally', documentId);
+      const release = new Album();
+      release.resolveLocal(
+        documentId,
+        result.artist,
+        result.name,
+        result.cover,
+        result.year,
+        result.score
+      );
+      loadedResults.value += 1;
+      results.value[currLoaded + index] = release;
+      console.debug('Done, populated index', currLoaded + index);
+      processing.value = false;
+    });
+  } else {
+    limitedResults.forEach(async (result, index) => {
+      const [collectionPath, documentId] = result.reference.split('/');
+      const documentRef = doc(props.db, collectionPath, documentId);
+      console.debug('Getting Doc', documentId);
+      const relSnapshot = await getDoc(documentRef);
+      const release = new Album(relSnapshot);
+      release.resolveArtistLocal(result.artist);
+      loadedResults.value += 1;
+      results.value[currLoaded + index] = release;
+      console.debug('Done, populated index', currLoaded + index);
+      processing.value = false;
+    });
+  }
 };
 
 const updateResultsUnl = async (searchValue, index, sorting, filtering) => {
@@ -117,7 +154,15 @@ watch(props.filtering, () => {
   updateResults(props.searchValue, props.index, props.sorting, props.filtering);
 });
 
+const probeConnection = async () => {
+  const exampleDoc = doc(props.db, 'users', 'LYe0RNkQj3QYj2ojlpcYHryd4h43');
+  getDoc(exampleDoc).then(() => {
+    connectionIsReady.value = true;
+  });
+};
+
 onMounted(() => {
+  probeConnection();
   const param = route.query.search;
   if (param) {
     emits('update:searchValue', param);
