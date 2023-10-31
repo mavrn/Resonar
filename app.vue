@@ -67,6 +67,7 @@ const resolveJson = async () => {
   } else {
     console.debug('Didnt find ratings.');
     remoteIndexLoaded.value = false;
+    resolveRemoteRatings();
   }
 };
 
