@@ -158,6 +158,7 @@ const probeConnection = async () => {
   const exampleDoc = doc(props.db, 'users', 'LYe0RNkQj3QYj2ojlpcYHryd4h43');
   getDoc(exampleDoc).then(() => {
     connectionIsReady.value = true;
+    console.debug('Firebase initialized.');
   });
 };
 

@@ -87,7 +87,7 @@ Section {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--minthumb), 1fr));
   grid-auto-flow: row dense;
-  grid-gap: 30px 20px;
+  grid-gap: 20px 30px;
   padding-bottom: 30px;
 }
 
@@ -99,7 +99,7 @@ Section {
 
 .skeleton {
   width: 100%;
-  padding-top: 100%; /* 1:1 aspect ratio (height is the same as width) */
-  position: relative; /* Important for the aspect ratio to work */
+  padding-top: 100%;
+  position: relative;
 }
 </style>

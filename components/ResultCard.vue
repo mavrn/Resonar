@@ -7,29 +7,34 @@
     </figure>
     <div class="release-info-wrapper">
       <div class="release-info-row-1">
-        <div class="release-info-left">
-          <div class="release-info-name">
-            <strong>
-              <NuxtLink class="title" :to="'/album/' + release?.uid">{{
-                release?.title
-              }}</NuxtLink></strong
-            >
-            <small v-if="!isTooLong" class="seperator">by</small>
-            <strong>
-              <NuxtLink
-                v-if="!isTooLong"
-                class="artist"
-                :to="'/artist/' + release?.artist?.uid"
-                >{{ release?.artist?.name }}</NuxtLink
-              ></strong
-            >
-          </div>
+        <div class="release-info-row-1-left">
+          <strong>
+            <NuxtLink class="title" :to="'/album/' + release?.uid">{{
+              release?.title
+            }}</NuxtLink></strong
+          >
         </div>
-        <div class="release-info-right">
-          <div class="rating-container">
-            <span class="rating">{{ release?.score }}</span>
-          </div>
+      </div>
+      <div class="release-info-row-2">
+        <div class="release-info-row-2-left">
+          <NuxtLink
+            class="artist-name"
+            :to="'/artist/' + release?.artist?.uid"
+            >{{ release?.artist?.name }}</NuxtLink
+          >
         </div>
+      </div>
+      <div class="release-info-row-3">
+        <img class="type-icon" src="../assets/album.png" />
+        <span>Album</span>
+      </div>
+      <div class="release-info-col-1">
+        <div class="rating-container">
+          {{ release?.score }}
+        </div>
+      </div>
+      <div class="release-info-row-4">
+        <span>{{ release?.date }}</span>
       </div>
     </div>
   </div>
@@ -38,15 +43,6 @@
 <script setup lang="ts">
 const props = defineProps({
   release: Album,
-});
-
-const isTooLong = ref(false);
-
-onMounted(() => {
-  if (props.release && props.release.artist) {
-    isTooLong.value =
-      (props.release.title + props.release.artist.name).length > 30;
-  }
 });
 </script>
 
@@ -89,41 +85,76 @@ Figure:hover {
 }
 
 .release-info-wrapper {
-  
+  display: grid;
+  grid-template-columns: 1fr 0.2fr;
+  grid-template-rows: 1fr 0.9fr 0.3fr;
 }
 
 .release-info-row-1 {
+  grid-area: 1 / 1 / 2 / 2;
   display: flex;
-  flex-wrap: wrap;
-  padding-top: 16px;
+  padding-top: 4px;
 }
 
-.release-info-left {
+.release-info-row-1-left {
+  flex: 1;
+  display: flex;
+  align-items: flex-end;
+  padding-left: 5px;
+  font-size: 18px;
+}
+.release-info-row-2 {
+  grid-area: 2 / 1 / 3 / 2;
+  display: flex;
+}
+
+.release-info-row-3 {
+  padding-left: 8px;
+  padding-right: 10px;
+  grid-area: 3 / 1 / 4 / 2;
+  display: flex;
+  font-size: 13px;
+  align-items: center;
+  opacity: 60%;
+  gap: 3px;
+}
+
+.release-info-col-1 {
+  grid-area: 1 / 2 / 3 / 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.release-info-row-4 {
+  grid-area: 3 / 2 / 4 / 3;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  font-size: 13px;
+  opacity: 60%;
+}
+
+.release-info-row-2-left {
   flex: 1;
   display: flex;
   align-items: center;
-  padding-left: 5px;
+  padding-left: 1px;
+  font-size: 16px;
 }
 
-.release-info-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.type-icon {
+  width: 13px;
+  height: 13px;
 }
 
-.nowrap {
-  white-space: nowrap;
-}
-.release-info-right {
-  display: flex;
-  gap: 16px;
-  flex-shrink: 0;
-  padding-left: 20px;
+.artist-name {
+  padding-left: 4px;
 }
 
 .rating-container {
-  height: 35px;
-  width: 35px;
+  height: 40px;
+  width: 40px;
   border-radius: 50%;
   border-style: solid;
   border-width: 2px;
@@ -131,9 +162,6 @@ Figure:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.rating {
-  font-size: 14px;
+  font-size: 17px;
 }
 </style>

@@ -96,7 +96,6 @@ function resizeArea() {
     textarea.value.style.height = textarea.value.scrollHeight + 10 + 'px';
   }
 }
-
 </script>
 <template>
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
@@ -188,22 +187,7 @@ function resizeArea() {
                       Users
                     </div>
                   </div>
-                  <div class="filter-genre-field">
-                    <textarea
-                      rows="1"
-                      class="genre-input"
-                      ref="textarea"
-                      v-model="genreQuery"
-                      @input="atInput()"
-                      placeholder="Search for Genres..."
-                    />
-                    <div
-                      v-for="suggestion in genreSuggestions"
-                      @click="addToQuery(suggestion)"
-                    >
-                      {{ suggestion }}
-                    </div>
-                  </div>
+
                   <div class="filter-combi-field">
                     <div class="range-display">
                       Rating: {{ filtering?.ratingRange[0] }} -
@@ -252,6 +236,22 @@ function resizeArea() {
                       >
                         In your Bookmarks
                       </button>
+                    </div>
+                    <div class="filter-genre-field">
+                      <textarea
+                        rows="1"
+                        class="genre-input"
+                        ref="textarea"
+                        v-model="genreQuery"
+                        @input="atInput()"
+                        placeholder="Search for Genres..."
+                      />
+                      <div
+                        v-for="suggestion in genreSuggestions"
+                        @click="addToQuery(suggestion)"
+                      >
+                        {{ suggestion }}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -581,7 +581,6 @@ header {
 .filter-genre-field {
   margin: 2px;
   margin-top: 5px;
-  border-top: 2px solid white;
   padding: 5px;
   padding-top: 10px;
 }
@@ -589,7 +588,6 @@ header {
 .filter-combi-field {
   margin: 2px;
   margin-top: 10px;
-  border-top: 2px solid white;
   padding: 10px;
 }
 
@@ -604,13 +602,18 @@ header {
 .genre-input {
   width: 100%;
   background: transparent;
-  border: 1px solid #242424;
+  border: 1px solid white;
   border-radius: var(--border-radius);
   height: auto;
   min-height: 30px;
   color: white;
   padding-left: 5px;
   overflow: hidden;
+}
+
+.genre-input::placeholder {
+  color: white;
+  opacity: 80%;
 }
 
 .range-display {
