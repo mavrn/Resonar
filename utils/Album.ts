@@ -1,5 +1,16 @@
 import { Artist } from './Artist';
-import { DocumentReference, getDoc } from 'firebase/firestore';
+import { User } from './User';
+import { Comment } from './Comment';
+import {
+  DocumentReference,
+  getDoc,
+  Firestore,
+  collection,
+  query,
+  getDocs,
+  orderBy,
+  doc,
+} from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 
 function toTitleCase(str: string) {
@@ -21,8 +32,11 @@ export class Album {
   title: string;
   cover: string;
   date: string;
-  score: number;
-  discussion: DocumentReference[];
+  rating: number;
+  ratingCount: number;
+  genres: string[];
+  comments: Comment[];
+  tracklist: { title: string; duration: string; index: number }[];
 
   constructor(doc?: DocumentData) {
     if (doc) {
@@ -31,9 +45,12 @@ export class Album {
       this.cover = docData.cover;
       this.date = docData.date;
       this.title = docData.name;
-      this.score = docData.score;
-      this.discussion = [];
+      this.rating = docData.score;
+      this.comments = [];
+      this.tracklist = [];
+      this.genres = docData.genres;
       this.artistUnresolved = docData.artist;
+      this.ratingCount = docData.ratingCount;
       this.artist = null;
     }
   }
@@ -43,9 +60,71 @@ export class Album {
       getDoc(this.artistUnresolved)
         .then((artistSnapshot) => {
           this.artist = new Artist(artistSnapshot);
-          resolve(this); // Resolve the promise with 'this'
+          resolve(this);
         })
-        .catch(reject); // Reject the promise if there's an error
+        .catch(reject);
+    });
+  }
+
+  async resolveComments(db: Firestore) {
+    const comments = collection(db, 'albums/' + this.uid + '/comments');
+    const commentsQuery = query(comments);
+    getDocs(commentsQuery).then((commentsSnapshot) => {
+      commentsSnapshot.forEach(async (comment) => {
+        const commentData = comment.data();
+        const replyIndex = collection(
+          db,
+          'albums/' + this.uid + '/comments/' + comment.id + '/replies'
+        );
+        const replyQuery = query(replyIndex, orderBy('created', 'asc'));
+        const replyDocs = await getDocs(replyQuery);
+        const replies: Comment[] = [];
+        replyDocs.forEach(async (replyDoc) => {
+          const replyData = replyDoc.data();
+          const user = new User(await getDoc(replyData.user));
+          replies.push(
+            new Comment(
+              replyData.content,
+              replyData.created,
+              undefined,
+              undefined,
+              undefined,
+              user,
+              undefined
+            )
+          );
+        });
+        replies.sort((a, b) => b.created.getSeconds() - a.created.getSeconds());
+        const user = new User(await getDoc(commentData.user));
+        const newComment = new Comment(
+          commentData.content,
+          commentData.created,
+          replies,
+          commentData.score,
+          undefined,
+          user,
+          undefined
+        );
+        this.comments.push(newComment);
+      });
+    });
+  }
+
+  async resolveTracklist(db: Firestore) {
+    const tracklistCollection = collection(
+      db,
+      'albums/' + this.uid + '/tracklist'
+    );
+    const tracklistQuery = query(tracklistCollection, orderBy('index', 'asc'));
+    getDocs(tracklistQuery).then((tracklistSnapshot) => {
+      tracklistSnapshot.forEach((track) => {
+        const trackData = track.data();
+        this.tracklist.push({
+          title: trackData.title,
+          duration: trackData.duration,
+          index: trackData.index,
+        });
+      });
     });
   }
 
@@ -54,7 +133,7 @@ export class Album {
     this.artist.name = toTitleCase(artistName);
   }
 
-  resolveLocal(
+  resolveAllLocal(
     uid: number,
     artistName: string,
     title: string,
@@ -68,6 +147,6 @@ export class Album {
     this.title = title;
     this.cover = cover;
     this.date = String(year);
-    this.score = score;
+    this.rating = score;
   }
 }

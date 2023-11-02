@@ -1,7 +1,7 @@
 <template>
   <div class="release-card">
     <figure>
-      <NuxtLink :to="'/album/' + release?.uid" class="figure-link">
+      <NuxtLink :to="'/release/' + release?.uid" class="figure-link">
         <img :src="release?.cover" alt="" class="figure-image" />
       </NuxtLink>
     </figure>
@@ -26,11 +26,11 @@
       </div>
       <div class="release-info-row-3">
         <img class="type-icon" src="../assets/album.png" />
-        <span>Album</span>
+        <span>Album | Rock</span>
       </div>
       <div class="release-info-col-1">
         <div class="rating-container">
-          {{ release?.score }}
+          {{ release?.rating }}
         </div>
       </div>
       <div class="release-info-row-4">

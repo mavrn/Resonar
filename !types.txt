@@ -1,0 +1,39 @@
+Release (releases/)
+    title: string
+    artist: Artist
+    type: string ["single", "album"]
+    uid: string
+    date: Date
+    rating: number [0.0-10.0]
+    genres: string[main genre, ... ]
+    comments: {user: User, content: string, score: number, created: Date, {replies}[]}[]
+    cover: string
+    tracklist?type=album: {title: string, duration: string, index: number}[]
+    spotify?: string
+    apple?: string
+
+
+Artist (artists/)
+    name: string
+    uid: string
+    picture: string
+
+User (users/)
+    username: string
+    location: string
+    email: string
+    picture: string
+    created: Date
+    uid: string
+    ratings: {release: Release, content: string, score: number, created: Date}[]
+    comments: {release: Release, content: string, parent?: comment}
+    settings: {theme: string ["dark", "light"]}
+
+Comment (releases/X/comments) & (users/X/comments)
+    content: string
+    created: Date
+    replies: Comment[]
+    rating?: number
+    release?: Release
+    user?: User
+    parent?: Comment

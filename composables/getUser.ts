@@ -8,8 +8,9 @@ import {
   where,
 } from 'firebase/firestore';
 
-export const getUser = async (username: string) => {
-  const db = useFirestore();
+import type { Firestore } from 'firebase/firestore';
+
+export const getUser = async (db: Firestore, username: string) => {
   const users = collection(db, 'users');
   var q = query(users, where('username', '==', username));
 

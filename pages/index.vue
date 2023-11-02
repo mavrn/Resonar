@@ -77,7 +77,7 @@ const resolveResults = async () => {
       const [collectionPath, documentId] = result.reference.split('/');
       console.debug('Getting Release locally', documentId);
       const release = new Album();
-      release.resolveLocal(
+      release.resolveAllLocal(
         documentId,
         result.artist,
         result.name,
