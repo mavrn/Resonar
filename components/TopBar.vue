@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useFilteringStore } from '../store/filtering';
+
 const props = defineProps({
   searchValue: String,
   handleSignOut: Function,
@@ -6,58 +8,13 @@ const props = defineProps({
   loggedInUser: Object,
   handleSortingChange: Function,
   remoteIndexLoaded: Boolean,
-  filtering: Filter,
 });
-const emits = defineEmits(['update:searchValue', 'update:filtering']);
+const emits = defineEmits(['update:searchValue']);
 
 const sorting = ref('Popular');
 const sortingOrder = ref(-1);
-
-const genres = [
-  'Rock',
-  'Pop',
-  'Hip-Hop',
-  'Jazz',
-  'Country',
-  'Electronic',
-  'Classical',
-  'R&B',
-  'Reggae',
-  'Blues',
-  'Funk',
-  'Soul',
-  'Metal',
-  'Punk',
-  'Indie',
-  'Alternative',
-  'Rap',
-  'EDM',
-  'Dance',
-  'Gospel',
-];
-
-const genreSuggestions = ref<string[]>([]);
-const genreQuery = ref('');
-
-const addToQuery = (suggestion: string) => {
-  const query = genreQuery.value.split(', ');
-  query[query.length - 1] = suggestion; // Access the last element
-  genreQuery.value = query.join(', ') + ', ';
-  atInput();
-};
-
-const atInput = () => {
-  resizeArea();
-  const queryGenres = genreQuery.value.split(', ');
-  const query = queryGenres[queryGenres.length - 1].toLowerCase();
-  genreSuggestions.value = [];
-  for (let genre of genres) {
-    genre = genre.toLowerCase();
-    if (genre.includes(query) && genreSuggestions.value.length < 3) {
-      genreSuggestions.value.push(toTitleCase(genre));
-    }
-  }
-};
+const showFilterMenu = ref(false);
+const { filtering } = storeToRefs(useFilteringStore());
 
 const computedSearchValue = computed({
   get: () => props.searchValue,
@@ -86,18 +43,13 @@ function onSortingOrderChange() {
   sortingOrder.value = -sortingOrder.value;
   props.handleSortingChange?.(toCamelCase(sorting.value), sortingOrder.value);
 }
-
-const textarea = ref<HTMLElement | null>(null);
-
-function resizeArea() {
-  if (textarea.value) {
-    textarea.value.style.height = '15px';
-    textarea.value.style.width = '100%';
-    textarea.value.style.height = textarea.value.scrollHeight + 10 + 'px';
-  }
-}
 </script>
 <template>
+  <Transition mode="out-in">
+    <div v-if="showFilterMenu" class="filter-overlay">
+      <FilterMenu :filtering="filtering"></FilterMenu>
+    </div>
+  </Transition>
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
     <NuxtLink to="/">
       <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
@@ -190,8 +142,8 @@ function resizeArea() {
 
                   <div class="filter-combi-field">
                     <div class="range-display">
-                      Rating: {{ filtering?.ratingRange[0] }} -
-                      {{ filtering?.ratingRange[1] }}
+                      Rating: {{ filtering.ratingRange[0] }} -
+                      {{ filtering.ratingRange[1] }}
                     </div>
                     <Slider
                       range
@@ -200,11 +152,10 @@ function resizeArea() {
                       :min="0"
                       :max="10"
                       :step="0.1"
-                      :pt="{ range: 'class: slider-range' }"
                     />
                     <div class="range-display">
-                      Year: {{ filtering?.yearRange[0] }} -
-                      {{ filtering?.yearRange[1] }}
+                      Year: {{ filtering.yearRange[0] }} -
+                      {{ filtering.yearRange[1] }}
                     </div>
                     <Slider
                       range
@@ -213,45 +164,34 @@ function resizeArea() {
                       :min="1950"
                       :max="2023"
                       :step="1"
-                      :pt="{ range: 'class: slider-range' }"
                     />
                     <div class="button-field">
                       <button
                         v-if="loggedInUser"
                         :class="{
-                          'filter-active-button': filtering?.inRated,
-                          'filter-passive-button': !filtering?.inRated,
+                          'filter-active-button': filtering.inRated,
+                          'filter-passive-button': !filtering.inRated,
                         }"
-                        @click="filtering.inRated = !filtering?.inRated"
+                        @click="filtering.inRated = !filtering.inRated"
                       >
                         In your Rated
                       </button>
                       <button
                         v-if="loggedInUser"
                         :class="{
-                          'filter-active-button': filtering?.inBookmarks,
-                          'filter-passive-button': !filtering?.inBookmarks,
+                          'filter-active-button': filtering.inBookmarks,
+                          'filter-passive-button': !filtering.inBookmarks,
                         }"
-                        @click="filtering.inBookmarks = !filtering?.inBookmarks"
+                        @click="filtering.inBookmarks = !filtering.inBookmarks"
                       >
                         In your Bookmarks
                       </button>
                     </div>
                     <div class="filter-genre-field">
-                      <textarea
-                        rows="1"
-                        class="genre-input"
-                        ref="textarea"
-                        v-model="genreQuery"
-                        @input="atInput()"
-                        placeholder="Search for Genres..."
-                      />
-                      <div
-                        v-for="suggestion in genreSuggestions"
-                        @click="addToQuery(suggestion)"
-                      >
-                        {{ suggestion }}
-                      </div>
+                      <GenreFilter
+                        class="genre-filter"
+                        v-model="filtering.genres"
+                      ></GenreFilter>
                     </div>
                   </div>
                 </div>
@@ -308,7 +248,10 @@ function resizeArea() {
             </div>
 
             <div class="show-smaller-than-lg-block filter-field">
-              <Button class="filter-button secondary-button">
+              <Button
+                class="filter-button secondary-button"
+                @click="showFilterMenu = !showFilterMenu"
+              >
                 <i class="material-icons text-white">tune</i>
               </Button>
             </div>
@@ -360,6 +303,41 @@ function resizeArea() {
 </template>
 
 <style scoped>
+.filter-overlay {
+  z-index: 3;
+  position: fixed;
+  top: 140px;
+  left: 10%;
+  height: 70vh;
+  width: 80vw;
+  background-color: black;
+  opacity: 96%;
+  border: 1px solid white;
+  box-shadow: azure;
+  padding: 20px;
+  border-radius: 20px;
+  @media (min-width: 1101px) {
+    display: none;
+  }
+  @media (max-width: 400px) {
+    width: 90vw;
+    left: 5%;
+  }
+}
+
+.v-enter-active {
+  transition: opacity 0.4s ease-out;
+}
+
+.v-leave-active {
+  transition: opacity 0.4s ease-in;
+}
+
+.v-enter-from,
+.v-leave-to {
+  opacity: 0;
+}
+
 header {
   position: sticky;
   top: 0;
@@ -471,6 +449,9 @@ header {
   fill: gray;
 }
 
+.genre-filter {
+  width: 100%;
+}
 .order-button {
   position: relative;
   align-items: center;
@@ -597,23 +578,6 @@ header {
   margin-bottom: 10px;
   padding-bottom: 4px;
   height: 2px;
-}
-
-.genre-input {
-  width: 100%;
-  background: transparent;
-  border: 1px solid white;
-  border-radius: var(--border-radius);
-  height: auto;
-  min-height: 30px;
-  color: white;
-  padding-left: 5px;
-  overflow: hidden;
-}
-
-.genre-input::placeholder {
-  color: white;
-  opacity: 80%;
 }
 
 .range-display {

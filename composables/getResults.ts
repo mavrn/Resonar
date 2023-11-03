@@ -3,8 +3,8 @@ import { Filter } from '../utils/Filter';
 export const getResults = (
   index: {
     name: string;
-    artist: string,
-    cover: string,
+    artist: string;
+    cover: string;
     reference: string;
     genres: string[];
     year: number;
@@ -14,22 +14,23 @@ export const getResults = (
   }[],
   searchQuery: string,
   sorting?: { field: string; order: number },
-  filtering?: Filter,
-  withArtistNames? :Boolean
+  filtering?: Filter
 ) => {
   if (!index) {
     return [];
   }
   console.debug('Filtering...');
-  searchQuery = searchQuery.toLowerCase()
-  let results = index.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery) || item.artist.toLowerCase().includes(searchQuery)
+  searchQuery = searchQuery.toLowerCase();
+  let results = index.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery) ||
+      item.artist.toLowerCase().includes(searchQuery)
   );
   if (filtering) {
     if (filtering.type != 'all') {
       results = results.filter((item) => item.type === filtering.type);
     }
-    if (filtering.genres.length != 0) {
+    if (filtering.genres.length != 0 && filtering.genres[0] != "") {
       results = results.filter((item) =>
         item.genres.every((genre) => filtering.genres.includes(genre))
       );

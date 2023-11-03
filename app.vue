@@ -5,10 +5,8 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDoc, doc, getFirestore } from 'firebase/firestore';
 import { ref as storageRef } from 'firebase/storage';
 
+
 const searchValue = ref('');
-const filtering = ref(
-  new Filter('all', [], [0, 10], [1950, 2023], false, false)
-);
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const db = getFirestore();
@@ -131,15 +129,14 @@ const handleSignOut = async () => {
         :handleSignOut="handleSignOut"
         :loggedInUser="userProfile?.value"
         :handleSortingChange="handleSortingChange"
-        v-model:filtering="filtering"
         :remoteIndexLoaded="remoteIndexLoaded"
       />
+
       <NuxtPage
         :loggedInUser="userProfile"
         v-model:searchValue="searchValue"
         :index="index"
         :sorting="sorting"
-        :filtering="filtering"
         :remoteIndexLoaded="remoteIndexLoaded"
         :db="db"
       ></NuxtPage>

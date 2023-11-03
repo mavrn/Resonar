@@ -20,11 +20,11 @@ Artist (artists/)
 
 User (users/)
     username: string
-    location: string
     email: string
-    picture: string
-    created: Date
     uid: string
+    location: string
+    picture: string ["png", "webp", "jpg", "jpeg"]
+    created: Date
     ratings: {release: Release, content: string, score: number, created: Date}[]
     comments: {release: Release, content: string, parent?: comment}
     settings: {theme: string ["dark", "light"]}

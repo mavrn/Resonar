@@ -25,12 +25,16 @@ const menuOptions = ref([
   },
 ]);
 const selectedOption = ref('User Info');
+const imageSrc = ref('');
+
 onMounted(async () => {
   getUser(props.db, routedUser).then(async (user) => {
     if (!user) {
       foundUser.value = undefined;
     } else {
       foundUser.value = new User(user);
+      imageSrc.value = await loadImage(foundUser.value.picture);
+      console.log("sdf" + imageSrc.value);
       foundUser.value.resolve(props.db);
       isLoggedInUser.value = props.loggedInUser
         ? user.id == props.loggedInUser?.value?.id
@@ -44,7 +48,7 @@ onMounted(async () => {
   <div class="profile-wrapper show-bigger-than-lg-block">
     <div v-if="foundUser" class="profile-container">
       <div class="avatar-wrapper">
-        <img class="avatar" :src="foundUser.picture" /><img />
+        <img class="avatar" :src="imageSrc" /><img />
       </div>
       <div class="menu-wrapper">
         <Button
@@ -72,7 +76,7 @@ onMounted(async () => {
   <div class="profile-wrapper-sm show-smaller-than-lg-flex">
     <div v-if="foundUser" class="profile-container-sm">
       <div class="avatar-wrapper-sm">
-        <img class="avatar-sm" :src="foundUser.picture" /><img />
+        <img class="avatar-sm" :src="imageSrc" /><img />
       </div>
       <p class="username">{{ foundUser.username }}</p>
       <div class="menu-wrapper-sm">

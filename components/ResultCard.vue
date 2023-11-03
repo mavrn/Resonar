@@ -9,7 +9,7 @@
       <div class="release-info-row-1">
         <div class="release-info-row-1-left">
           <strong>
-            <NuxtLink class="title" :to="'/album/' + release?.uid">{{
+            <NuxtLink class="title" :to="'/release/' + release?.uid">{{
               release?.title
             }}</NuxtLink></strong
           >

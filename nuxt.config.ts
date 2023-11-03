@@ -1,5 +1,7 @@
-import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify';
 export default defineNuxtConfig({
+  experimental: {
+    renderJsonPayloads: false,
+  },
   devtools: {
     enabled: true,
 
@@ -7,7 +9,7 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['nuxt-vuefire', 'nuxt-primevue', '@vueuse/nuxt'],
+  modules: ['nuxt-vuefire', 'nuxt-primevue', '@pinia/nuxt'],
   primevue: {
     usePrimeVue: true,
     options: {
@@ -16,20 +18,27 @@ export default defineNuxtConfig({
     components: {
       prefix: '',
       name: undefined,
-      include: undefined,
-      exclude: ['Editor', 'Chart'],
+      include: [
+        'Button',
+        'Slider',
+        'Dropdown',
+        'Skeleton',
+        'InputText',
+        'FileUpload',
+      ],
+      exclude: undefined,
     },
     directives: {
       prefix: '',
       name: undefined,
       include: undefined,
-      exclude: undefined,
+      exclude: '*',
     },
     composables: {
       prefix: '',
       name: undefined,
       include: undefined,
-      exclude: undefined,
+      exclude: '*',
     },
   },
   vuefire: {

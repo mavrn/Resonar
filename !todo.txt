@@ -83,3 +83,16 @@ Oli Checkliste:
     5. Wenn 2.2 nicht erfolgreich, dann 2.1 Webcrawler
     6. Am Ende: Ausführliches Testen der Seite, evtl Doku
     
+
+Next:
+    -Filter Mobil done
+    -Onboarding, image upload: Location, Bio, Image
+    -Ability to add Comments and Ratings, Replies
+    -Searching for Users and Artists
+    -Album, Artist, Single + Mobil refinement
+    -User Settings
+    -User Page rework
+    -Datatype unification
+    -Database building
+    -Code cleaning
+    -Documentation

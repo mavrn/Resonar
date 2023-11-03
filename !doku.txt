@@ -18,3 +18,9 @@ Sort:
   -Rating (remote)
   -Jahr (local)
   -Your Rating (by User) (remote)
+
+
+createUser
+  -creates an user field containing email, name, uid
+
+addUserField (location, picture, bio)

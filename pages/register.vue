@@ -4,16 +4,22 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
+  updateProfile,
 } from 'firebase/auth';
+import { Firestore } from 'firebase/firestore';
 
+const {db} = defineProps({db: Firestore})
 const router = useRouter();
 const email = ref('');
+const username = ref('');
 const password = ref('');
+const auth = getAuth();
 const register = () => {
-  createUserWithEmailAndPassword(getAuth(), email.value, password.value)
-    .then((data) => {
-      console.debug('Successfully registered!');
-      router.push('./');
+  createUserWithEmailAndPassword(auth, email.value, password.value)
+    .then(async (userCredentials) => {
+        console.debug('Successfully registered!');
+        await createUser(db, username.value, email.value, userCredentials.user.uid);
+        navigateTo('/onboarding');
     })
     .catch((error) => {
       console.debug(error.code);
@@ -25,6 +31,7 @@ const signInWithGoogle = () => {
   signInWithPopup(getAuth(), provider)
     .then((data) => {
       console.debug('Successfully registered!');
+      router.push('./');
     })
     .catch((error) => {
       console.debug(error.code);
@@ -42,7 +49,7 @@ const signInWithGoogle = () => {
           <span class="p-inputgroup-addon">
             <i class="material-icons">person</i>
           </span>
-          <InputText placeholder="Username" type="text" />
+          <InputText placeholder="Username" v-model="username" type="text" />
         </div>
         <div class="input-field p-inputgroup">
           <span class="p-inputgroup-addon">
@@ -58,7 +65,7 @@ const signInWithGoogle = () => {
           <InputText
             placeholder="Password"
             v-model="password"
-            type="passwerd"
+            type="password"
           />
         </div>
 

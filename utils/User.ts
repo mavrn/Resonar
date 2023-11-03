@@ -27,7 +27,7 @@ export class User {
       this.uid = doc.id;
       this.username = docData.username;
       this.location = docData.location;
-      this.picture = docData.profilePicture;
+      this.picture = docData.picture;
       this.created = docData.created;
       this.email = docData.email;
       this.comments = [];

@@ -8,6 +8,9 @@
 
 <script setup>
 import { getDoc, doc } from 'firebase/firestore';
+import { useFilteringStore } from '../store/filtering';
+const filteringStore = useFilteringStore();
+const { filtering } = filteringStore;
 
 const limit = 12;
 const results = ref([]);
@@ -18,7 +21,6 @@ const props = defineProps({
   isLoggedIn: Boolean,
   index: Array,
   sorting: Object,
-  filtering: Filter,
   remoteIndexLoaded: Boolean,
   db: Object,
 });
@@ -106,7 +108,7 @@ const resolveResults = async () => {
   }
 };
 
-const updateResultsUnl = async (searchValue, index, sorting, filtering) => {
+const updateResultsUnl = async (searchValue, index, sorting) => {
   loadedResults.value = 0;
   results.value = getResults(index, searchValue, sorting, filtering);
   resolveResults();
@@ -117,41 +119,26 @@ const updateResults = debounce(updateResultsUnl, 150);
 watch(
   () => props.searchValue,
   () => {
-    updateResults(
-      props.searchValue,
-      props.index,
-      props.sorting,
-      props.filtering
-    );
+    updateResults(props.searchValue, props.index, props.sorting);
   }
 );
 
 watch(
   () => props.index,
   () => {
-    updateResults(
-      props.searchValue,
-      props.index,
-      props.sorting,
-      props.filtering
-    );
+    updateResults(props.searchValue, props.index, props.sorting);
   }
 );
 
 watch(
   () => props.sorting,
   () => {
-    updateResults(
-      props.searchValue,
-      props.index,
-      props.sorting,
-      props.filtering
-    );
+    updateResults(props.searchValue, props.index, props.sorting);
   }
 );
 
-watch(props.filtering, () => {
-  updateResults(props.searchValue, props.index, props.sorting, props.filtering);
+watch(filtering, () => {
+  updateResults(props.searchValue, props.index, props.sorting);
 });
 
 const probeConnection = async () => {
@@ -168,7 +155,7 @@ onMounted(() => {
   if (param) {
     emits('update:searchValue', param);
   }
-  updateResults(props.searchValue, props.index, props.sorting, props.filtering);
+  updateResults(props.searchValue, props.index, props.sorting);
 });
 </script>
 
