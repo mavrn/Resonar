@@ -4,21 +4,19 @@ import type { DocumentData } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDoc, doc, getFirestore } from 'firebase/firestore';
 import { ref as storageRef } from 'firebase/storage';
+import { useUserStore } from './store/currentUser';
 
-
+const { setUser } = useUserStore();
+const db = useFirestore();
 const searchValue = ref('');
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
-const db = getFirestore();
 const index = ref<Array<{ rating: number; reference: string }>>([]);
 
 const remoteFieldsLoaded = ref(0);
 const remoteIndexLoaded = ref<boolean | null>(null);
 
-const userProfile = ref<DocumentData | null>(null);
-
 let auth: Auth;
-const isLoggedIn = ref(false);
 
 const fetchRemoteJson = async () => {
   console.debug('Starting fetch...');
@@ -81,12 +79,13 @@ const resolveRemoteRatings = async () => {
 onMounted(() => {
   resolveJson();
   auth = getAuth();
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
-      isLoggedIn.value = true;
-      userProfile.value = useDocument(doc(collection(db, 'users'), user.uid));
+      const newUser = new User(await getDoc(doc(collection(db, 'users'), user.uid)));
+      await newUser.resolve(db);
+      setUser(newUser);
     } else {
-      isLoggedIn.value = false;
+      setUser(null);
     }
   });
 });
@@ -125,20 +124,15 @@ const handleSignOut = async () => {
     <div class="wrapper">
       <TopBar
         v-model:search-value="searchValue"
-        :isLoggedIn="isLoggedIn"
         :handleSignOut="handleSignOut"
-        :loggedInUser="userProfile?.value"
         :handleSortingChange="handleSortingChange"
         :remoteIndexLoaded="remoteIndexLoaded"
       />
-
       <NuxtPage
-        :loggedInUser="userProfile"
         v-model:searchValue="searchValue"
         :index="index"
         :sorting="sorting"
         :remoteIndexLoaded="remoteIndexLoaded"
-        :db="db"
       ></NuxtPage>
     </div>
   </div>

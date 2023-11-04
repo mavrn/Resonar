@@ -1,5 +1,3 @@
-import { DocumentReference, getDoc } from 'firebase/firestore';
-import type { DocumentData } from 'firebase/firestore';
 import { User } from './User';
 import { Album } from './Album';
 
@@ -11,6 +9,7 @@ export class Comment {
   release?: Album;
   user?: User;
   parent?: Comment;
+  picture?: string;
 
   constructor(
     content: string,
@@ -19,13 +18,16 @@ export class Comment {
     rating?: number,
     release?: Album,
     user?: User,
-    parent?: Comment
+    parent?: Comment,
+    picture?: string
   ) {
     this.content = content;
-    this.created = new Date(created_seconds*1000)
+    this.created = new Date(created_seconds * 1000);
     this.replies = replies;
     this.rating = rating;
+    this.release = release;
     this.user = user;
     this.parent = parent;
+    this.picture = picture;
   }
 }

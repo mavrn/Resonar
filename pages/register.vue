@@ -6,9 +6,7 @@ import {
   signInWithPopup,
   updateProfile,
 } from 'firebase/auth';
-import { Firestore } from 'firebase/firestore';
 
-const {db} = defineProps({db: Firestore})
 const router = useRouter();
 const email = ref('');
 const username = ref('');

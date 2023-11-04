@@ -86,7 +86,7 @@ Oli Checkliste:
 
 Next:
     -Filter Mobil done
-    -Onboarding, image upload: Location, Bio, Image
+    -Onboarding, image upload: Location, Bio, Image done
     -Ability to add Comments and Ratings, Replies
     -Searching for Users and Artists
     -Album, Artist, Single + Mobil refinement

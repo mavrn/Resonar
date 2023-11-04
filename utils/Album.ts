@@ -10,6 +10,11 @@ import {
   getDocs,
   orderBy,
   doc,
+  addDoc,
+  Timestamp,
+  where,
+  deleteDoc,
+  setDoc,
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 
@@ -26,7 +31,7 @@ function toTitleCase(str: string) {
 }
 
 export class Album {
-  uid: number;
+  uid: string;
   artistUnresolved: DocumentReference;
   artist: Artist | null;
   title: string;
@@ -69,44 +74,81 @@ export class Album {
   async resolveComments(db: Firestore) {
     const comments = collection(db, 'albums/' + this.uid + '/comments');
     const commentsQuery = query(comments);
-    getDocs(commentsQuery).then((commentsSnapshot) => {
-      commentsSnapshot.forEach(async (comment) => {
-        const commentData = comment.data();
-        const replyIndex = collection(
-          db,
-          'albums/' + this.uid + '/comments/' + comment.id + '/replies'
-        );
-        const replyQuery = query(replyIndex, orderBy('created', 'asc'));
-        const replyDocs = await getDocs(replyQuery);
-        const replies: Comment[] = [];
-        replyDocs.forEach(async (replyDoc) => {
-          const replyData = replyDoc.data();
+    const commentsSnapshot = await getDocs(commentsQuery);
+
+    const commentPromises = commentsSnapshot.docs.map(async (comment) => {
+      const commentData = comment.data();
+      const replyIndex = collection(
+        db,
+        'albums/' + this.uid + '/comments/' + comment.id + '/replies'
+      );
+      const replyQuery = query(replyIndex, orderBy('created', 'asc'));
+      const replyDocs = await getDocs(replyQuery);
+      const replies: Comment[] = [];
+
+      const userPromises: Promise<void>[] = [];
+
+      replyDocs.forEach((replyDoc) => {
+        const replyData = replyDoc.data();
+        const userPromise = (async () => {
           const user = new User(await getDoc(replyData.user));
-          replies.push(
-            new Comment(
-              replyData.content,
-              replyData.created,
-              undefined,
-              undefined,
-              undefined,
-              user,
-              undefined
-            )
+          const imageData = await loadImage(user.picture);
+          const ratingDoc = await getDoc(
+            doc(db, 'users/' + user.uid + '/ratings', this.uid)
           );
-        });
-        replies.sort((a, b) => b.created.getSeconds() - a.created.getSeconds());
-        const user = new User(await getDoc(commentData.user));
-        const newComment = new Comment(
-          commentData.content,
-          commentData.created,
-          replies,
-          commentData.score,
-          undefined,
-          user,
-          undefined
-        );
-        this.comments.push(newComment);
+          let rating;
+          if (ratingDoc.exists()) {
+            rating = ratingDoc.data().rating;
+          } else {
+            rating = undefined;
+          }
+          const replyComment = new Comment(
+            replyData.content,
+            replyData.created.seconds,
+            undefined,
+            rating,
+            undefined,
+            user,
+            undefined,
+            imageData
+          );
+          replies.push(replyComment);
+        })();
+        userPromises.push(userPromise);
       });
+
+      await Promise.all(userPromises);
+      replies.sort((a, b) => {
+        return a.created.getTime() - b.created.getTime();
+      });
+      const user = new User(await getDoc(commentData.user));
+      const imageData = await loadImage(user.picture);
+      const ratingDoc = await getDoc(
+        doc(db, 'users/' + user.uid + '/ratings', this.uid)
+      );
+      let rating;
+      if (ratingDoc.exists()) {
+        rating = ratingDoc.data().rating;
+      } else {
+        rating = undefined;
+      }
+      const newComment = new Comment(
+        commentData.content,
+        commentData.created.seconds,
+        replies,
+        rating,
+        undefined,
+        user,
+        undefined,
+        imageData
+      );
+
+      this.comments.push(newComment);
+    });
+
+    await Promise.all(commentPromises);
+    this.comments.sort((a, b) => {
+      return b.created.getTime() - a.created.getTime();
     });
   }
 
@@ -128,13 +170,68 @@ export class Album {
     });
   }
 
+  async addComment(db: Firestore, content: string, user: User) {
+    console.log(content, user);
+    const releaseRef = doc(db, 'albums/', this.uid);
+    const docRef = await addDoc(
+      collection(db, 'users/' + user.uid + '/comments'),
+      {
+        created: Timestamp.now(),
+        content: content,
+        release: releaseRef,
+      }
+    );
+    const commentID = docRef.id;
+
+    const userRef = doc(db, 'users/', user.uid);
+    setDoc(doc(db, 'albums/' + this.uid + '/comments', commentID), {
+      created: Timestamp.now(),
+      content: content,
+      user: userRef,
+    });
+
+    const imageData = await loadImage(user.picture);
+    const ratingDoc = await getDoc(
+      doc(db, 'users/' + user.uid + '/ratings', this.uid)
+    );
+    let rating;
+    if (ratingDoc.exists()) {
+      rating = ratingDoc.data().rating;
+    } else {
+      rating = undefined;
+    }
+
+    return new Comment(
+      content,
+      Date.now() + 1000,
+      [],
+      rating,
+      undefined,
+      user,
+      undefined,
+      imageData
+    );
+  }
+
+  async removeComment(db: Firestore, commentID: string) {
+    const commentToDelete = await getDoc(
+      doc(db, 'albums/' + this.uid + '/comments', commentID)
+    );
+    const commentUserID = commentToDelete.data().user.id;
+    deleteDoc(commentToDelete.ref);
+    deleteDoc(
+      (await getDoc(doc(db, 'users/' + commentUserID + '/comments', commentID)))
+        .ref
+    );
+  }
+
   resolveArtistLocal(artistName: string) {
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName);
   }
 
   resolveAllLocal(
-    uid: number,
+    uid: string,
     artistName: string,
     title: string,
     cover: string,

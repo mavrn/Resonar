@@ -10,14 +10,9 @@
           <p>{{ rating.release.title }}</p>
           <p>{{ rating.release.artist?.name }}</p>
           <p class="date">
-            Rated on
             {{
               ' ' +
-              rating.created.toLocaleDateString(undefined, {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-              })
+              getTimeDescriptor(rating.created)
             }}
           </p>
         </div>

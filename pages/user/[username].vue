@@ -1,11 +1,8 @@
 <script setup>
-import { getDoc } from 'firebase/firestore';
+import { useUserStore } from '~/store/currentUser';
+const { currentUser } = storeToRefs(useUserStore());
 
-const props = defineProps({
-  loggedInUser: Object,
-  db: Object,
-});
-
+const db = useFirestore();
 const routedUser = useRoute().params.username;
 const foundUser = ref(null);
 const isLoggedInUser = ref(false);
@@ -28,17 +25,14 @@ const selectedOption = ref('User Info');
 const imageSrc = ref('');
 
 onMounted(async () => {
-  getUser(props.db, routedUser).then(async (user) => {
+  getUser(db, routedUser).then(async (user) => {
     if (!user) {
-      foundUser.value = undefined;
+      foundUser.value = false;
     } else {
       foundUser.value = new User(user);
+      foundUser.value.resolve(db);
       imageSrc.value = await loadImage(foundUser.value.picture);
-      console.log("sdf" + imageSrc.value);
-      foundUser.value.resolve(props.db);
-      isLoggedInUser.value = props.loggedInUser
-        ? user.id == props.loggedInUser?.value?.id
-        : false;
+      isLoggedInUser.value = currentUser.uid == foundUser.uid;
     }
   });
 });
@@ -48,7 +42,8 @@ onMounted(async () => {
   <div class="profile-wrapper show-bigger-than-lg-block">
     <div v-if="foundUser" class="profile-container">
       <div class="avatar-wrapper">
-        <img class="avatar" :src="imageSrc" /><img />
+        <img v-if="imageSrc" class="avatar" :src="imageSrc" />
+        <Skeleton v-else class="skeleton" />
       </div>
       <div class="menu-wrapper">
         <Button
@@ -76,7 +71,8 @@ onMounted(async () => {
   <div class="profile-wrapper-sm show-smaller-than-lg-flex">
     <div v-if="foundUser" class="profile-container-sm">
       <div class="avatar-wrapper-sm">
-        <img class="avatar-sm" :src="imageSrc" /><img />
+        <img v-if="imageSrc" class="avatar-sm" :src="imageSrc" />
+        <Skeleton v-else class="skeleton-sm" />
       </div>
       <p class="username">{{ foundUser.username }}</p>
       <div class="menu-wrapper-sm">
@@ -152,6 +148,21 @@ onMounted(async () => {
   object-fit: cover;
 }
 
+.skeleton {
+  aspect-ratio: 1;
+  width: clamp(200px, 80%, 100%) !important;
+  height: clamp(200px, 80%, 100%) !important;
+  border-radius: 50%;
+  position: relative;
+}
+
+.skeleton-sm {
+  aspect-ratio: 1;
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 50%;
+  position: relative;
+}
 .avatar-wrapper-sm {
   overflow: hidden;
   display: flex;

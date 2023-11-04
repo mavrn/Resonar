@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import { useFilteringStore } from '../store/filtering';
+import { useUserStore } from '~/store/currentUser';
 
 const props = defineProps({
   searchValue: String,
   handleSignOut: Function,
-  isLoggedIn: Boolean,
-  loggedInUser: Object,
   handleSortingChange: Function,
   remoteIndexLoaded: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
+const {currentUser} = storeToRefs(useUserStore());
+
 
 const sorting = ref('Popular');
 const sortingOrder = ref(-1);
@@ -55,7 +56,7 @@ function onSortingOrderChange() {
       <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
     /></NuxtLink>
     <div
-      v-if="!loggedInUser"
+      v-if="!currentUser"
       class="header-main-user show-smaller-than-sm-flex"
     >
       <NuxtLink to="/login"
@@ -65,7 +66,7 @@ function onSortingOrderChange() {
       </NuxtLink>
     </div>
     <div v-else class="header-main-user show-smaller-than-sm-flex">
-      <NuxtLink :to="'/user/' + loggedInUser.username"
+      <NuxtLink :to="'/user/' + currentUser.username"
         ><Button class="topbar-button secondary-button"
           ><i class="material-icons text-white">person</i></Button
         >
@@ -167,7 +168,7 @@ function onSortingOrderChange() {
                     />
                     <div class="button-field">
                       <button
-                        v-if="loggedInUser"
+                        v-if="currentUser"
                         :class="{
                           'filter-active-button': filtering.inRated,
                           'filter-passive-button': !filtering.inRated,
@@ -177,7 +178,7 @@ function onSortingOrderChange() {
                         In your Rated
                       </button>
                       <button
-                        v-if="loggedInUser"
+                        v-if="currentUser"
                         :class="{
                           'filter-active-button': filtering.inBookmarks,
                           'filter-passive-button': !filtering.inBookmarks,
@@ -231,7 +232,7 @@ function onSortingOrderChange() {
                     Rating
                   </div>
                   <div
-                    v-if="isLoggedIn"
+                    v-if="currentUser"
                     class="sorting-dropdown-option"
                     @click="onSortingChange('Your Rating')"
                   >
@@ -257,7 +258,7 @@ function onSortingOrderChange() {
             </div>
           </div>
         </div>
-        <div v-if="!isLoggedIn" class="header-right-login">
+        <div v-if="!currentUser" class="header-right-login">
           <div class="header-main-user show-bigger-than-md-flex">
             <NuxtLink to="/login"
               ><Button class="topbar-button secondary-button">Log In</Button>
@@ -274,12 +275,12 @@ function onSortingOrderChange() {
             </NuxtLink>
           </div>
         </div>
-        <div v-if="isLoggedIn" class="header-right-login">
+        <div v-if="currentUser" class="header-right-login">
           <div class="header-main-user show-bigger-than-md-flex">
-            <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
+            <NuxtLink v-if="currentUser" :to="'/user/' + currentUser.username"
               ><Button class="topbar-button"
                 ><i class="material-icons text-white">person</i>
-                <span>{{ loggedInUser.username }}</span></Button
+                <span>{{ currentUser.username }}</span></Button
               >
             </NuxtLink>
             <Button
@@ -290,7 +291,7 @@ function onSortingOrderChange() {
             </Button>
           </div>
           <div class="header-main-user show-between-sm-md">
-            <NuxtLink v-if="loggedInUser" :to="'/user/' + loggedInUser.username"
+            <NuxtLink v-if="currentUser" :to="'/user/' + currentUser.username"
               ><Button class="topbar-button"
                 ><i class="material-icons text-white">person</i></Button
               >

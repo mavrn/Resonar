@@ -68,7 +68,6 @@ const atInput = () => {
   for (const selectedGenre of queryGenres) {
     if (selectedGenre.length != 0) selectedGenres.push(selectedGenre.trim());
   }
-  console.log(selectedGenres);
   filtering.value.genres = selectedGenres;
   const query = queryGenres[queryGenres.length - 1].toLowerCase();
   genreSuggestions.value = [];

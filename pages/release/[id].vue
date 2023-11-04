@@ -42,7 +42,46 @@
       </div>
     </div>
     <div class="score-container">
-      <div class="score">{{ release.rating }}</div>
+      <div v-if="!isRating" class="score">{{ release.rating }}</div>
+      <Knob
+        v-else
+        v-model="roundedRating"
+        :min="0"
+        :max="10"
+        :step="0.1"
+        :size="190"
+      ></Knob>
+      <div class="score-buttons">
+        <button
+          v-if="currentUser && !isRating && userRating === undefined"
+          class="add-rating-button"
+          @click="isRating = !isRating"
+        >
+          <i class="material-icons plus-icon">add</i>
+        </button>
+        <button
+          v-if="isRating"
+          class="add-rating-button red"
+          @click="isRating = false"
+        >
+          <i class="material-icons plus-icon">close</i>
+        </button>
+        <button
+          v-if="currentUser && isRating"
+          class="add-rating-button green"
+          @click="addRating()"
+        >
+          <i class="material-icons plus-icon">check</i>
+        </button>
+        <button
+          v-if="userRating != undefined"
+          class="user-rating-button"
+          @click="removeRating"
+        >
+          <span class="user-rating">{{ userRating }}</span>
+          <i class="material-icons user-rating-delete-icon">close</i>
+        </button>
+      </div>
     </div>
     <div class="tracklist">
       <div class="tracklist-container">
@@ -52,29 +91,68 @@
         </div>
       </div>
     </div>
+
     <div class="comment-container">
-      <div v-for="comment in release.comments" class="comment">
-        <div class="comment-start">
-          <img :src="comment.user.picture" class="comment-avatar" />
-          <div class="user-info">
-            <p class="username">
-              {{ comment.user.username }}
-            </p>
-            <p>
-              {{
-                comment.created.toLocaleDateString(undefined, {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                })
-              }}
-            </p>
-          </div>
-          <div class="comment-content">
-            {{ comment.content }}
+      <div class="add-comment-container">
+        <textarea
+          class="add-comment-input"
+          v-if="currentUser"
+          v-model="commentInput"
+          placeholder="Add a comment"
+        ></textarea>
+        <button class="add-comment-button" @click="addComment">Post</button>
+      </div>
+      <div class="comment-wrapper" v-for="comment in release.comments">
+        <div class="comment">
+          <div class="comment-card">
+            <div class="comment-content">
+              <div class="comment-avatar">
+                <img class="avatar" :src="comment.picture" />
+              </div>
+              <div class="comment-main">
+                <div class="comment-top-row">
+                  <span class="comment-username">{{
+                    comment.user.username
+                  }}</span
+                  ><span class="comment-time">{{
+                    getTimeDescriptor(comment.created)
+                  }}</span>
+                  <div v-if="comment.rating != undefined" class="comment-score">
+                    {{ comment.rating }}
+                  </div>
+                </div>
+                <p class="comment-text">
+                  {{ comment.content }}
+                </p>
+              </div>
+            </div>
+            <div class="comment-footer">Reply</div>
           </div>
         </div>
-        <div class="comment-score">8.0</div>
+        <div class="reply" v-for="reply in comment.replies">
+          <div class="comment-card">
+            <div class="comment-content">
+              <div class="comment-avatar">
+                <img class="avatar" :src="reply.picture" />
+              </div>
+              <div class="comment-main">
+                <div class="comment-top-row">
+                  <span class="comment-username">{{ reply.user.username }}</span
+                  ><span class="comment-time">{{
+                    getTimeDescriptor(reply.created)
+                  }}</span>
+                  <div v-if="reply.rating != undefined" class="comment-score">
+                    {{ reply.rating }}
+                  </div>
+                </div>
+                <p class="comment-text">
+                  {{ reply.content }}
+                </p>
+              </div>
+            </div>
+            <div class="comment-footer">Reply</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -82,28 +160,82 @@
 
 <script setup>
 import { doc, getDoc } from 'firebase/firestore';
+import { useUserStore } from '../../store/currentUser';
 
-const props = defineProps({
-  loggedInUser: Object,
-  db: Object,
-});
-
+const db = useFirestore();
+const { currentUser } = storeToRefs(useUserStore());
 const routedRelease = useRoute().params.id;
 let release = ref(null);
+const isRating = ref(false);
+const userRating = ref(null);
+const selectedRating = ref(5);
+const commentInput = ref('');
+const roundedRating = computed({
+  get: () => selectedRating.value,
+  set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
+});
+
+function setUserRating() {
+  let newUserRating = undefined;
+  if (currentUser.value) {
+    for (const rating of currentUser.value.ratings) {
+      if (rating.release.uid == release.value.uid) {
+        newUserRating = rating.rating;
+      }
+    }
+  }
+  userRating.value = newUserRating;
+}
 
 onMounted(async () => {
-  const releaseDocument = doc(props.db, '/albums', routedRelease);
+  const releaseDocument = doc(db, '/albums', routedRelease);
   const snapshot = await getDoc(releaseDocument);
   if (snapshot) {
     release.value = new Album(snapshot);
     await release.value.resolveArtist();
-    await release.value.resolveComments(props.db);
-    await release.value.resolveTracklist(props.db);
-    console.log(release.value);
+    await release.value.resolveTracklist(db);
+    setUserRating();
+    release.value.resolveComments(db);
   } else {
     release.value = undefined;
   }
 });
+
+watch(
+  () => currentUser.value,
+  () => {
+    setUserRating();
+  }
+);
+
+async function addRating() {
+  isRating.value = false;
+  userRating.value = selectedRating.value;
+  release.value.rating = await currentUser.value.addRating(
+    db,
+    release.value,
+    selectedRating.value
+  );
+}
+
+async function addComment() {
+  console.log(commentInput.value, currentUser.value);
+  const newComment = await release.value.addComment(
+    db,
+    commentInput.value,
+    currentUser.value
+  );
+  release.value.comments.unshift(newComment);
+  commentInput.value = '';
+}
+
+async function removeRating() {
+  userRating.value = undefined;
+  release.value.rating = await currentUser.value.removeRating(
+    db,
+    release.value
+  );
+}
 </script>
 
 <style scoped>
@@ -111,9 +243,15 @@ onMounted(async () => {
   padding: 30px;
   display: grid;
   grid-template-columns: 0.5fr 1fr 0.5fr;
-  grid-template-rows: repeat(2, 1fr);
+  grid-template-rows: 1fr min-content;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 0.8fr 0.6fr 0.6fr min-content;
+    padding: 10px;
+    padding-top: 36px;
+  }
 }
 
 .cover-container {
@@ -122,8 +260,54 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  @media (max-width: 900px) {
+    grid-area: 1 / 1 / 2 / 2;
+  }
 }
 
+.info {
+  grid-area: 1 / 2 / 2 / 3;
+  font-size: 20px;
+  padding: 50px;
+  padding-left: 70px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Adjust the gap as needed */
+  @media (max-width: 900px) {
+    grid-area: 2 / 1 / 3 / 2;
+    padding: 0;
+    justify-content: center;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
+.score-container {
+  grid-area: 1 / 3 / 2 / 4;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  @media (max-width: 900px) {
+    grid-area: 3 / 1 / 4 / 2;
+  }
+}
+.tracklist {
+  grid-area: 2 / 1 / 3 / 2;
+  @media (max-width: 900px) {
+    grid-area: 4 / 1 / 5 / 2;
+  }
+}
+.comment-container {
+  grid-area: 2 / 2 / 3 / 4;
+  margin-top: 30px;
+  margin-left: 2rem;
+  width: 95%;
+  @media (max-width: 900px) {
+    grid-area: 5 / 1 / 6 / 2;
+    margin-left: 0;
+    width: 100%;
+  }
+}
 .links {
   display: block;
   padding: 20px;
@@ -142,16 +326,7 @@ onMounted(async () => {
   width: auto;
   border-radius: var(--border-radius);
   aspect-ratio: 1;
-}
-
-.info {
-  grid-area: 1 / 2 / 2 / 3;
-  font-size: 20px;
-  padding: 50px;
-  padding-left: 70px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Adjust the gap as needed */
+  box-shadow: 0 0 30px rgba(0, 0, 0, 1);
 }
 
 .info-row {
@@ -167,12 +342,6 @@ onMounted(async () => {
   font-size: 15px;
 }
 
-.score-container {
-  grid-area: 1 / 3 / 2 / 4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .score {
   height: 150px;
   width: 150px;
@@ -184,22 +353,98 @@ onMounted(async () => {
   font-size: 40px;
 }
 
+.user-rating-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 2px double black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 20px;
+  margin-top: 10px;
+  background: transparent;
+  position: relative;
+}
+
+.user-rating-button:before {
+  content: ''; /* Create an empty content element for the inner border */
+  border: 1px solid black; /* Set the inner border with your desired width and color */
+  border-radius: 50%;
+  position: absolute; /* Position it absolutely within the outer border */
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  z-index: -1; /* Place it behind the element's content */
+}
+
+.user-rating-delete-icon {
+  color: white;
+  display: none;
+}
+
+.user-rating-button:hover .user-rating {
+  display: none;
+}
+
+.user-rating-button:hover .user-rating-delete-icon {
+  display: inline;
+}
+
+.user-rating-button:hover {
+  background-color: black;
+}
+
+.score-buttons {
+  display: flex;
+  gap: 10px;
+}
+.add-rating-button {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  background-color: transparent;
+}
+
+.green {
+  border: 2px solid green;
+}
+.red {
+  border: 2px solid red;
+}
+
+.add-rating-button:hover {
+  color: white;
+  background-color: black;
+}
+
 .title {
   font-size: 30px;
   font-weight: 800;
   padding-bottom: 20px;
 }
 
-.tracklist {
-  grid-area: 2 / 1 / 3 / 2;
-}
-
 .tracklist-container {
   margin-top: 40px;
-  border: 2px solid black;
+  border: 1px solid black;
   border-radius: var(--border-radius);
   padding-left: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   padding-right: 10px;
+}
+
+.comment-content {
+  display: flex;
+  min-width: 100%;
+}
+
+.comment-main {
+  width: 100%;
 }
 
 .track {
@@ -210,61 +455,141 @@ onMounted(async () => {
   justify-content: space-between;
 }
 
-.comment-container {
-  grid-area: 2 / 2 / 3 / 4;
-  margin-top: 30px;
-  margin-left: 40px;
+.avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+}
+
+.add-comment-container {
+  margin-top: 10px;
+  margin-bottom: 5px;
+  width: 100%;
+  border: none;
+  border-bottom: 2px solid black;
+  display: flex;
+  padding-left: 10px;
+  padding-right: 20px;
+}
+
+.add-comment-container:focus-within {
+  background-color: white;
+  border: none;
+  border: 1px solid black;
+  border-radius: var(--border-radius);
+  min-width: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  align-items: center;
+  min-height: 50px;
+}
+
+.add-comment-input {
+  border: none;
+  width: 100%;
+  max-height: 20px;
+  font-family: 'Inter', sans-serif;
+}
+
+.add-comment-input:focus {
+  border: none;
+  outline: none;
+}
+
+.add-comment-button {
+  display: block;
+  background: transparent;
+  padding: 6px;
+  border-radius: var(--border-radius);
+  border: 1px solid black;
+  min-width: 60px;
+}
+
+.add-comment-input:focus + .add-comment-button {
+  display: block;
+}
+
+.add-comment-button:focus {
+  display: block;
 }
 
 .comment {
-  padding-left: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.reply::before {
+  content: '';
+  background-color: black;
+  position: absolute;
+  min-height: 100%;
+  width: 1px;
+  left: -10px;
+}
+
+.reply {
+  margin-left: 3.5rem;
+  margin-top: 10px;
+  position: relative;
+}
+
+.comment-username {
+  font-size: 20px;
+  padding-left: 10px;
+}
+
+.comment-time {
+  font-size: 12px;
+  padding-left: 5px;
+}
+
+.comment-text {
   padding-top: 10px;
-  padding-bottom: 10px;
+  padding-left: 10px;
+  width: 100%;
 }
-.comment-avatar {
-  width: 50px;
-  height: 50px;
+
+.comment-card {
+  padding: 20px;
+  background-color: white;
+  border: 1px solid black;
   border-radius: var(--border-radius);
+  min-width: 100%;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
 }
 
-.comment-start {
+.comment-footer {
   display: flex;
-  justify-content: center;
+  font-size: 0.7rem;
+  opacity: 0.6;
+  gap: 30px;
+  justify-content: flex-end;
   align-items: center;
-}
-.user-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  font-size: 14px;
 }
 
-.comment-content {
-  padding-left: 20px;
-}
-.username {
-  font-size: 18px;
-  font-weight: 700;
+.comment-top-row {
+  display: flex;
+  align-items: center;
 }
 
 .comment-score {
-  height: 50px;
-  width: 50px;
+  height: 34px;
+  width: 34px;
   border-radius: 50%;
-  border-style: solid;
-  border-width: 2px;
-  border-color: black;
+  border: 1px solid black;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 20px;
-  margin-right: 20px;
+  font-size: 14px;
+  flex-shrink: 0;
+  margin-left: auto;
   @media (max-width: 600px) {
     display: none;
   }
+}
+</style>
+
+<style>
+.p-knob-text {
+  fill: black;
+  font-size: 23px;
 }
 </style>

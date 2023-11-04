@@ -7,24 +7,12 @@
     >
       <div class="comment-card-row-1 show-bigger-than-md-block">
         Commented on {{ comment.release.title }} by
-        {{ comment.release.artist?.name }} on
-        {{
-          comment.created.toLocaleDateString(undefined, {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
-        }}
+        {{ comment.release.artist?.name }},
+        {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-1-sm show-smaller-than-md-block">
-        {{ comment.release.title }}, {{ comment.release.artist?.name }} on
-        {{
-          comment.created.toLocaleDateString(undefined, {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-          })
-        }}
+        {{ comment.release.title }}, {{ comment.release.artist?.name }},
+        {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-2">"{{ comment.content }}"</div>
       <div class="comment-card-col-1">

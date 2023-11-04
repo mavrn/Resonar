@@ -6,36 +6,33 @@ const location = ref('');
 const bio = ref('');
 const fileUpload = ref(null);
 
-const { db } = defineProps({ db: Object });
-
 let currentUser = null;
 onMounted(() => {
   currentUser = getAuth().currentUser;
-  console.log(currentUser);
 });
 
 const submit = async () => {
   if (!fileUpload.value) return;
 
   const files = fileUpload.value.files;
+  let fileName;
   if (files.length === 0) {
-    console.log('No file selected for upload.');
-    return;
+    fileName = 'avatar.png';
+  } else {
+    const storage = useFirebaseStorage();
+
+    const file = files[0];
+    const fileEnding = file.name.split('.')[1];
+    fileName = currentUser.uid + '.' + fileEnding;
+    const imageRef = storageRef(storage, '/images/' + fileName);
+    uploadBytes(imageRef, file)
+      .then((snapshot) => {
+        console.debug('Image uploaded successfully:', snapshot.ref.fullPath);
+      })
+      .catch((error) => {
+        console.error('Image upload error:', error);
+      });
   }
-
-  const storage = useFirebaseStorage();
-
-  const file = files[0];
-  const fileEnding = file.name.split('.')[1];
-  const fileName = currentUser.uid + '.' + fileEnding;
-  const imageRef = storageRef(storage, '/images/' + fileName);
-  uploadBytes(imageRef, file)
-    .then((snapshot) => {
-      console.log('Image uploaded successfully:', snapshot.ref.fullPath);
-    })
-    .catch((error) => {
-      console.error('Image upload error:', error);
-    });
   updateUser(db, currentUser.uid, {
     location: location.value,
     bio: bio.value,

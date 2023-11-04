@@ -1,6 +1,4 @@
-import { setDoc, doc } from 'firebase/firestore';
-import type { User } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
+import { setDoc, doc, Firestore } from 'firebase/firestore';
 
 export const createUser = async (
   db: Firestore,

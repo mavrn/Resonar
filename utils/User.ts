@@ -1,17 +1,24 @@
 import {
-  DocumentReference,
   getDoc,
   getDocs,
   Firestore,
   query,
   collection,
   orderBy,
+  addDoc,
+  setDoc,
+  doc,
+  Timestamp,
+  updateDoc,
+  increment,
+  where,
+  deleteDoc,
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 import { Album } from './Album';
 
 export class User {
-  uid: number;
+  uid: string;
   username: string;
   location: string;
   email: string;
@@ -22,7 +29,6 @@ export class User {
 
   constructor(doc?: DocumentData) {
     if (doc) {
-      console.log(doc);
       const docData = doc.data();
       this.uid = doc.id;
       this.username = docData.username;
@@ -35,35 +41,102 @@ export class User {
     }
   }
 
+  async update(db: Firestore, fields: Object) {
+    updateUser(db, this.uid, fields);
+  }
+
+  async addRating(db: Firestore, release: Album, rating: number) {
+    setDoc(doc(db, 'users/' + this.uid + '/ratings', release.uid), {
+      created: Timestamp.now(),
+      rating: rating,
+    });
+    const releaseDoc = await getDoc(doc(db, 'albums', release.uid));
+
+    if (release && releaseDoc.data()) {
+      const { ratingCount, score } = releaseDoc.data();
+      let newRating = 0;
+      if (ratingCount == 0) {
+        newRating = rating;
+      } else {
+        const newTotalRating = ratingCount * score + rating;
+        const newRatingCount = ratingCount + 1;
+        newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
+      }
+      await updateDoc(doc(db, 'albums', release.uid), {
+        ratingCount: increment(1),
+        score: newRating,
+      });
+      return newRating;
+    } else {
+      console.error('No release found with ID', release.uid);
+    }
+  }
+
+  async removeRating(db: Firestore, release: Album) {
+    const ratingDoc = await getDoc(
+      doc(db, 'users/' + this.uid + '/ratings', release.uid)
+    );
+    const oldRating = ratingDoc.data().rating;
+    deleteDoc(ratingDoc.ref);
+
+    const releaseDoc = await getDoc(doc(db, 'albums', release.uid));
+    if (release && releaseDoc.data()) {
+      const { ratingCount, score } = releaseDoc.data();
+      let newRating = 0;
+
+      const newTotalRating = ratingCount * score - oldRating;
+      const newRatingCount = ratingCount - 1;
+      if (newRatingCount != 0) {
+        newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
+      }
+      await updateDoc(doc(db, 'albums', release.uid), {
+        ratingCount: increment(-1),
+        score: newRating,
+      });
+      return newRating;
+    } else {
+      console.error('No release found with ID', release.uid);
+    }
+  }
+
   async resolve(db: Firestore) {
+    this.ratings = [];
+    this.comments = [];
     const ratings = collection(db, 'users/' + this.uid + '/ratings');
     const comments = collection(db, 'users/' + this.uid + '/comments');
     const ratingsQuery = query(ratings, orderBy('created', 'desc'));
     const commentsQuery = query(comments, orderBy('created', 'desc'));
-    getDocs(ratingsQuery).then((ratingsSnapshot) => {
-      ratingsSnapshot.forEach(async (rating) => {
+
+    const [ratingsSnapshot, commentsSnapshot] = await Promise.all([
+      getDocs(ratingsQuery),
+      getDocs(commentsQuery),
+    ]);
+
+    await Promise.all(
+      ratingsSnapshot.docs.map(async (rating) => {
         const data = rating.data();
-        const release = new Album(await getDoc(data.release));
+        const release = new Album(await getDoc(doc(db, 'albums/', rating.id)));
         await release.resolveArtist();
         this.ratings.push({
           rating: data.rating,
           release: release,
           created: new Date(data.created.seconds * 1000),
         });
-      });
-    });
-    getDocs(commentsQuery).then((commentsSnapshot) => {
-      commentsSnapshot.forEach(async (comment) => {
+      })
+    );
+
+    await Promise.all(
+      commentsSnapshot.docs.map(async (comment) => {
         const data = comment.data();
-        const release = new Album(await getDoc(data.parentRelease));
+        const release = new Album(await getDoc(data.release));
         await release.resolveArtist();
         this.comments.push({
           content: data.content,
           release: release,
           created: new Date(data.created.seconds * 1000),
         });
-      });
-    });
+      })
+    );
   }
 
   getAverageRating() {

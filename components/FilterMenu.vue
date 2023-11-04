@@ -155,6 +155,8 @@ const typeOptions = [
 <style>
 .none {
   opacity: 0;
+  height: 100px;
+  width: 100px;
 }
 
 .range {

@@ -13,6 +13,5 @@ export const loadImage = async (fileName) => {
     ''
   );
   const base64Image = btoa(binary);
-  console.log(imageFormat, fileName);
   return `data:image/${imageFormat};base64,${base64Image}`;
 };

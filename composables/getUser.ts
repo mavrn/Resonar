@@ -6,9 +6,8 @@ import {
   doc,
   query,
   where,
+  Firestore,
 } from 'firebase/firestore';
-
-import type { Firestore } from 'firebase/firestore';
 
 export const getUser = async (db: Firestore, username: string) => {
   const users = collection(db, 'users');

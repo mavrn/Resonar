@@ -9,6 +9,8 @@
 <script setup>
 import { getDoc, doc } from 'firebase/firestore';
 import { useFilteringStore } from '../store/filtering';
+
+const db = useFirestore()
 const filteringStore = useFilteringStore();
 const { filtering } = filteringStore;
 
@@ -18,11 +20,9 @@ const loadedResults = ref(0);
 const processing = ref(false);
 const props = defineProps({
   searchValue: String,
-  isLoggedIn: Boolean,
   index: Array,
   sorting: Object,
   remoteIndexLoaded: Boolean,
-  db: Object,
 });
 const emits = defineEmits(['update:searchValue']);
 const route = useRoute();
@@ -95,7 +95,7 @@ const resolveResults = async () => {
   } else {
     limitedResults.forEach(async (result, index) => {
       const [collectionPath, documentId] = result.reference.split('/');
-      const documentRef = doc(props.db, collectionPath, documentId);
+      const documentRef = doc(db, collectionPath, documentId);
       console.debug('Getting Doc', documentId);
       const relSnapshot = await getDoc(documentRef);
       const release = new Album(relSnapshot);
@@ -142,7 +142,7 @@ watch(filtering, () => {
 });
 
 const probeConnection = async () => {
-  const exampleDoc = doc(props.db, 'users', 'LYe0RNkQj3QYj2ojlpcYHryd4h43');
+  const exampleDoc = doc(db, 'users', 'LYe0RNkQj3QYj2ojlpcYHryd4h43');
   getDoc(exampleDoc).then(() => {
     connectionIsReady.value = true;
     console.debug('Firebase initialized.');
