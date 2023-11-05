@@ -49,10 +49,6 @@ const genres = [
   'Gospel',
 ];
 
-function toTitleCase(inputString: string) {
-  return inputString.charAt(0).toUpperCase() + inputString.slice(1);
-}
-
 const addToQuery = (suggestion: string) => {
   let query = genreQuery.value.split(',');
   query[query.length - 1] = suggestion;

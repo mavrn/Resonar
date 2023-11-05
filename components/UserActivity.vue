@@ -6,12 +6,12 @@
       :to="'/release/' + comment.release.uid"
     >
       <div class="comment-card-row-1 show-bigger-than-md-block">
-        Commented on {{ comment.release.title }} by
+        Commented on {{ comment.release.name }} by
         {{ comment.release.artist?.name }},
         {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-1-sm show-smaller-than-md-block">
-        {{ comment.release.title }}, {{ comment.release.artist?.name }},
+        {{ comment.release.name }}, {{ comment.release.artist?.name }},
         {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-2">"{{ comment.content }}"</div>

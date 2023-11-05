@@ -22,7 +22,7 @@
     </div>
     <div class="info">
       <div class="info-row">
-        <p class="title">{{ release.title }}</p>
+        <p class="title">{{ release.name }}</p>
       </div>
       <div class="info-row">
         <p class="descriptor">Artist</p>
@@ -30,7 +30,7 @@
       </div>
       <div class="info-row">
         <p class="descriptor">Type</p>
-        <p>Album</p>
+        <p>{{ toTitleCase(release.type) }}</p>
       </div>
       <div class="info-row">
         <p class="descriptor">Genres</p>
@@ -93,10 +93,9 @@
     </div>
 
     <div class="comment-container">
-      <div class="add-comment-container">
+      <div v-if="currentUser" class="add-comment-container">
         <textarea
           class="add-comment-input"
-          v-if="currentUser"
           v-model="commentInput"
           placeholder="Add a comment"
         ></textarea>
@@ -126,7 +125,14 @@
                 </p>
               </div>
             </div>
-            <div class="comment-footer">Reply</div>
+            <div class="comment-footer">
+              <a>Reply</a>
+              <a
+                v-if="currentUser.uid == comment.user.uid"
+                @click="removeComment(comment.uid)"
+                >Delete</a
+              >
+            </div>
           </div>
         </div>
         <div class="reply" v-for="reply in comment.replies">
@@ -150,7 +156,14 @@
                 </p>
               </div>
             </div>
-            <div class="comment-footer">Reply</div>
+            <div class="comment-footer">
+              <a>Reply</a>
+              <a
+                v-if="currentUser.uid == comment.user.uid"
+                @click="removeComment(comment.uid)"
+                >Delete</a
+              >
+            </div>
           </div>
         </div>
       </div>
@@ -191,7 +204,7 @@ onMounted(async () => {
   const releaseDocument = doc(db, '/albums', routedRelease);
   const snapshot = await getDoc(releaseDocument);
   if (snapshot) {
-    release.value = new Album(snapshot);
+    release.value = new Release(snapshot);
     await release.value.resolveArtist();
     await release.value.resolveTracklist(db);
     setUserRating();
@@ -219,7 +232,6 @@ async function addRating() {
 }
 
 async function addComment() {
-  console.log(commentInput.value, currentUser.value);
   const newComment = await release.value.addComment(
     db,
     commentInput.value,
@@ -235,6 +247,13 @@ async function removeRating() {
     db,
     release.value
   );
+}
+
+async function removeComment(commentID) {
+  release.value.comments = release.value.comments.filter(
+    (comment) => comment.uid !== commentID
+  );
+  release.value.removeComment(db, commentID);
 }
 </script>
 
@@ -560,7 +579,7 @@ async function removeRating() {
   display: flex;
   font-size: 0.7rem;
   opacity: 0.6;
-  gap: 30px;
+  gap: 10px;
   justify-content: flex-end;
   align-items: center;
 }

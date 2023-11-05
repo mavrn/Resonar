@@ -14,4 +14,10 @@ export class Artist {
       this.name = docData.name;
     }
   }
+
+  resolveAllLocal(uid: number, avatar: string, name: string) {
+    this.uid = uid;
+    this.avatar = avatar;
+    this.name = name;
+  }
 }

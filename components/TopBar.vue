@@ -9,8 +9,7 @@ const props = defineProps({
   remoteIndexLoaded: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
-const {currentUser} = storeToRefs(useUserStore());
-
+const { currentUser } = storeToRefs(useUserStore());
 
 const sorting = ref('Popular');
 const sortingOrder = ref(-1);
@@ -31,9 +30,6 @@ function toCamelCase(inputString: string) {
     .replace(/^(.)/, (match) => match.toLowerCase());
 }
 
-function toTitleCase(inputString: string) {
-  return inputString.charAt(0).toUpperCase() + inputString.slice(1);
-}
 function onSortingChange(newSorting: string) {
   sorting.value = newSorting;
   newSorting = toCamelCase(newSorting);
@@ -55,10 +51,7 @@ function onSortingOrderChange() {
     <NuxtLink to="/">
       <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
     /></NuxtLink>
-    <div
-      v-if="!currentUser"
-      class="header-main-user show-smaller-than-sm-flex"
-    >
+    <div v-if="!currentUser" class="header-main-user show-smaller-than-sm-flex">
       <NuxtLink to="/login"
         ><Button class="topbar-button secondary-button"
           ><i class="material-icons text-white">login</i>

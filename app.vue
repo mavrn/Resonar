@@ -62,11 +62,11 @@ const resolveJson = async () => {
   } else {
     console.debug('Didnt find ratings.');
     remoteIndexLoaded.value = false;
-    resolveRemoteRatings();
+    resolveRemoteIndex();
   }
 };
 
-const resolveRemoteRatings = async () => {
+const resolveRemoteIndex = async () => {
   index.value.forEach(async (element) => {
     const [collectionPath, documentId] = element.reference.split('/');
     const documentRef = doc(db, collectionPath, documentId);

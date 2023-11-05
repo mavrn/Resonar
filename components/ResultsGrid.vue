@@ -5,15 +5,19 @@
         <li
           v-for="i in Math.max(
             0,
-            Math.min(loadedResults + 5, results.length - 1)
+            Math.min(loadedResults + 5, results.length)
           )"
           :key="i"
           class="release-item col-3"
         >
-          <LazyResultCard
-            v-if="results[i] && results[i] instanceof Album"
-            :release="results[i]"
+          <ReleaseCard
+            v-if="results[i - 1] && results[i - 1] instanceof Release"
+            :release="results[i - 1]"
           />
+          <ArtistCard
+            v-else-if="results[i - 1] && results[i - 1] instanceof Artist"
+            :artist="results[i - 1]"
+          ></ArtistCard>
           <Skeleton v-else class="skeleton" />
         </li>
       </ul>
@@ -39,7 +43,7 @@ const debounce = (func, delay) => {
 };
 
 function handleScroll() {
-  const loadingThreshold = window.innerWidth < 600 ? 55 : 70
+  const loadingThreshold = window.innerWidth < 600 ? 55 : 70;
   const scrollTop =
     document.documentElement.scrollTop || document.body.scrollTop;
   const scrollHeight =

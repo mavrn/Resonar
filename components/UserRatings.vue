@@ -7,7 +7,7 @@
     >
       <div class="rating-card-info">
         <div class="rating-card-release">
-          <p>{{ rating.release.title }}</p>
+          <p>{{ rating.release.name }}</p>
           <p>{{ rating.release.artist?.name }}</p>
           <p class="date">
             {{

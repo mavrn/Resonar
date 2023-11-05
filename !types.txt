@@ -2,7 +2,7 @@ Release (releases/)
     title: string
     artist: Artist
     type: string ["single", "album"]
-    uid: string
+    uid: string / reference: reference (index.json)
     date: Date
     rating: number [0.0-10.0]
     genres: string[main genre, ... ]
@@ -15,7 +15,7 @@ Release (releases/)
 
 Artist (artists/)
     name: string
-    uid: string
+    uid: string / reference: reference (index.json)
     picture: string
 
 User (users/)

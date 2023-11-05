@@ -15,7 +15,7 @@ import {
   deleteDoc,
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
-import { Album } from './Album';
+import { Release } from './Release';
 
 export class User {
   uid: string;
@@ -24,8 +24,8 @@ export class User {
   email: string;
   picture: string;
   created: string;
-  comments: { content: string; created: Date; release: Album }[];
-  ratings: { rating: number; release: Album; created: Date }[];
+  comments: { content: string; created: Date; release: Release }[];
+  ratings: { rating: number; release: Release; created: Date }[];
 
   constructor(doc?: DocumentData) {
     if (doc) {
@@ -45,7 +45,7 @@ export class User {
     updateUser(db, this.uid, fields);
   }
 
-  async addRating(db: Firestore, release: Album, rating: number) {
+  async addRating(db: Firestore, release: Release, rating: number) {
     setDoc(doc(db, 'users/' + this.uid + '/ratings', release.uid), {
       created: Timestamp.now(),
       rating: rating,
@@ -72,7 +72,7 @@ export class User {
     }
   }
 
-  async removeRating(db: Firestore, release: Album) {
+  async removeRating(db: Firestore, release: Release) {
     const ratingDoc = await getDoc(
       doc(db, 'users/' + this.uid + '/ratings', release.uid)
     );
@@ -115,7 +115,9 @@ export class User {
     await Promise.all(
       ratingsSnapshot.docs.map(async (rating) => {
         const data = rating.data();
-        const release = new Album(await getDoc(doc(db, 'albums/', rating.id)));
+        const release = new Release(
+          await getDoc(doc(db, 'albums/', rating.id))
+        );
         await release.resolveArtist();
         this.ratings.push({
           rating: data.rating,
@@ -128,7 +130,7 @@ export class User {
     await Promise.all(
       commentsSnapshot.docs.map(async (comment) => {
         const data = comment.data();
-        const release = new Album(await getDoc(data.release));
+        const release = new Release(await getDoc(data.release));
         await release.resolveArtist();
         this.comments.push({
           content: data.content,

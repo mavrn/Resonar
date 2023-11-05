@@ -10,7 +10,7 @@
 import { getDoc, doc } from 'firebase/firestore';
 import { useFilteringStore } from '../store/filtering';
 
-const db = useFirestore()
+const db = useFirestore();
 const filteringStore = useFilteringStore();
 const { filtering } = filteringStore;
 
@@ -78,17 +78,25 @@ const resolveResults = async () => {
     limitedResults.forEach(async (result, index) => {
       const [collectionPath, documentId] = result.reference.split('/');
       console.debug('Getting Release locally', documentId);
-      const release = new Album();
-      release.resolveAllLocal(
-        documentId,
-        result.artist,
-        result.name,
-        result.cover,
-        result.year,
-        result.score
-      );
+      let newItem;
+      if (result.type == 'artist') {
+        newItem = new Artist();
+        newItem.resolveAllLocal(documentId, result.picture, result.name);
+      } else {
+        newItem = new Release();
+        newItem.resolveAllLocal(
+          documentId,
+          result.artist,
+          result.name,
+          result.cover,
+          result.year,
+          result.score,
+          result.type
+        );
+      }
+
       loadedResults.value += 1;
-      results.value[currLoaded + index] = release;
+      results.value[currLoaded + index] = newItem;
       console.debug('Done, populated index', currLoaded + index);
       processing.value = false;
     });
@@ -98,10 +106,15 @@ const resolveResults = async () => {
       const documentRef = doc(db, collectionPath, documentId);
       console.debug('Getting Doc', documentId);
       const relSnapshot = await getDoc(documentRef);
-      const release = new Album(relSnapshot);
-      release.resolveArtistLocal(result.artist);
+      let newItem;
+      if (result.type == 'artist') {
+        newItem = new Artist(relSnapshot);
+      } else {
+        newItem = new Release(relSnapshot);
+        newItem.resolveArtistLocal(result.artist);
+      }
       loadedResults.value += 1;
-      results.value[currLoaded + index] = release;
+      results.value[currLoaded + index] = newItem;
       console.debug('Done, populated index', currLoaded + index);
       processing.value = false;
     });
