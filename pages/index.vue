@@ -82,6 +82,9 @@ const resolveResults = async () => {
       if (result.type == 'artist') {
         newItem = new Artist();
         newItem.resolveAllLocal(documentId, result.picture, result.name);
+      } else if (result.type == 'user') {
+        newItem = new User();
+        newItem.resolveAllLocal(documentId, result.name, result.picture);
       } else {
         newItem = new Release();
         newItem.resolveAllLocal(
@@ -102,6 +105,7 @@ const resolveResults = async () => {
     });
   } else {
     limitedResults.forEach(async (result, index) => {
+      console.log(result);
       const [collectionPath, documentId] = result.reference.split('/');
       const documentRef = doc(db, collectionPath, documentId);
       console.debug('Getting Doc', documentId);
@@ -109,6 +113,9 @@ const resolveResults = async () => {
       let newItem;
       if (result.type == 'artist') {
         newItem = new Artist(relSnapshot);
+      } else if (result.type == 'user') {
+        newItem = new User();
+        newItem.resolveAllLocal(documentId, result.name, result.picture);
       } else {
         newItem = new Release(relSnapshot);
         newItem.resolveArtistLocal(result.artist);

@@ -18,6 +18,10 @@
             v-else-if="results[i - 1] && results[i - 1] instanceof Artist"
             :artist="results[i - 1]"
           ></ArtistCard>
+          <UserCard
+            v-else-if="results[i - 1] && results[i - 1] instanceof User"
+            :user="results[i - 1]"
+          ></UserCard>
           <Skeleton v-else class="skeleton" />
         </li>
       </ul>

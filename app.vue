@@ -2,8 +2,8 @@
 import type { Auth } from 'firebase/auth';
 import type { DocumentData } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
-import { collection, getDoc, doc, getFirestore } from 'firebase/firestore';
-import { ref as storageRef } from 'firebase/storage';
+import { collection, getDoc, doc, query, getDocs } from 'firebase/firestore';
+import { getMetadata, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { useUserStore } from './store/currentUser';
 
 const { setUser } = useUserStore();
@@ -11,10 +11,13 @@ const db = useFirestore();
 const searchValue = ref('');
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
-const index = ref<Array<{ rating: number; reference: string }>>([]);
-
-const remoteFieldsLoaded = ref(0);
+const index = ref<Array<Object>>([]);
+let remoteJSONTooOld = false;
+let localJSONFound = false;
+let localJSONTooOld = false;
 const remoteIndexLoaded = ref<boolean | null>(null);
+const storage = useFirebaseStorage();
+const jsonRef = storageRef(storage, 'index.json');
 
 let auth: Auth;
 
@@ -24,8 +27,6 @@ const fetchRemoteJson = async () => {
     method: 'GET',
     headers: new Headers({}),
   };
-  const storage = useFirebaseStorage();
-  const jsonRef = storageRef(storage, 'index.json');
   console.debug('Getting URL...');
   const url = await new Promise((resolve, reject) => {
     const storageUrl = useStorageFileUrl(jsonRef);
@@ -46,34 +47,93 @@ const fetchRemoteJson = async () => {
   }
 };
 
+const updateRemoteIndex = async () => {
+  console.debug('Starting upload...');
+  const json = JSON.stringify(index.value);
+  const storage = useFirebaseStorage();
+  const jsonRef = storageRef(storage, 'index.json');
+  const blob = new Blob([json], { type: 'application/json' });
+  await uploadBytes(jsonRef, blob);
+  console.debug('Upload complete.');
+};
+
 const resolveJson = async () => {
-  const indexProbe = localStorage.getItem('index');
-  if (indexProbe) {
-    console.debug('Found index in local storage.');
-    index.value = JSON.parse(indexProbe);
+  getMetadata(jsonRef).then((metadata) => {
+    const timeDiff =
+      new Date().getTime() - new Date(metadata.timeCreated).getTime();
+    const minutesAgo = Math.floor(timeDiff / (1000 * 60));
+    if (minutesAgo > 5) {
+      console.debug('Remote JSON is too old.');
+      remoteJSONTooOld = true;
+    } else {
+      console.debug('Remote JSON not too old.');
+    }
+  });
+  const localLastUpdate = localStorage.getItem('lastUpdate');
+  if (localLastUpdate) {
+    const timeDiff = new Date().getTime() - new Date(localLastUpdate).getTime();
+    const minutesAgo = Math.floor(timeDiff / (1000 * 60));
+    if (minutesAgo > 5) {
+      console.debug('Local JSON found, but too old');
+      localJSONTooOld = true;
+      localJSONFound = true;
+    } else {
+      console.debug('Local JSON found and new.');
+      localJSONFound = true;
+      localJSONTooOld = false;
+      index.value = JSON.parse(localStorage.getItem('index'));
+    }
   } else {
     console.debug('Didnt find index in local storage.');
-    index.value = await fetchRemoteJson();
+    localJSONFound = false;
+    localJSONTooOld = true;
   }
-  console.debug('Testing for ratings...');
-  if ('rating' in index.value[0]) {
-    console.debug('Ratings found! Enabling rating sort');
+
+  if (!localJSONFound) {
+    console.debug('Getting JSON from remote...');
+    index.value = await fetchRemoteJson();
+    console.debug('Done.');
+  }
+  if (!localJSONTooOld) {
     remoteIndexLoaded.value = true;
   } else {
-    console.debug('Didnt find ratings.');
-    remoteIndexLoaded.value = false;
-    resolveRemoteIndex();
+    console.debug('Updating local index.');
+    await resolveRemoteIndex();
+    console.debug('Done.');
+    remoteIndexLoaded.value = true;
   }
 };
 
 const resolveRemoteIndex = async () => {
-  index.value.forEach(async (element) => {
-    const [collectionPath, documentId] = element.reference.split('/');
-    const documentRef = doc(db, collectionPath, documentId);
-    const relSnapshot = await getDoc(documentRef);
-    element.rating = relSnapshot?.data?.()?.score;
-    remoteFieldsLoaded.value += 1;
+  index.value = index.value.filter((element) => {
+    return element.type !== 'user';
   });
+  const q = query(collection(db, 'users'));
+  const users = await getDocs(q);
+  users.forEach((user) => {
+    const userData = user.data();
+    index.value.push({
+      name: userData.username,
+      picture: userData.picture,
+      type: 'user',
+      reference: 'users/' + user.id,
+    });
+  });
+  const promises = index.value.map(async (element) => {
+    if (['album, single'].includes(element.type)) {
+      const [collectionPath, documentId] = element.reference.split('/');
+      const documentRef = doc(db, collectionPath, documentId);
+      const relSnapshot = await getDoc(documentRef);
+      element.rating = relSnapshot?.data?.()?.score;
+    }
+    return element;
+  });
+
+  await Promise.all(promises);
+  console.debug('Saving JSON locally...');
+  localStorage.setItem('index', JSON.stringify(index.value));
+  localStorage.setItem('lastUpdate', JSON.stringify(new Date().toISOString()));
+  console.debug('Done!');
 };
 
 onMounted(() => {
@@ -81,7 +141,9 @@ onMounted(() => {
   auth = getAuth();
   onAuthStateChanged(auth, async (user) => {
     if (user) {
-      const newUser = new User(await getDoc(doc(collection(db, 'users'), user.uid)));
+      const newUser = new User(
+        await getDoc(doc(collection(db, 'users'), user.uid))
+      );
       await newUser.resolve(db);
       setUser(newUser);
     } else {
@@ -100,14 +162,16 @@ watch(
   }
 );
 
-watch(remoteFieldsLoaded, async (oldVal, newVal) => {
-  if (newVal == index.value.length - 1) {
-    remoteIndexLoaded.value = true;
-    console.debug('Saving JSON...');
-    localStorage.setItem('index', JSON.stringify(index.value));
-    console.debug('Done!');
+watch(
+  () => remoteIndexLoaded.value,
+  async () => {
+    if (remoteIndexLoaded.value && remoteJSONTooOld) {
+      console.debug('Updating remote index.');
+      await updateRemoteIndex();
+      console.debug('Done.');
+    }
   }
-});
+);
 
 const handleSortingChange = (newSorting: string, order: number) => {
   sorting.value = { field: newSorting, order: order };

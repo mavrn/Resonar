@@ -17,6 +17,8 @@ export const getResults = (
   sorting?: { field: string; order: number },
   filtering?: Filter
 ) => {
+
+  console.log(index);
   if (!index) {
     return [];
   }

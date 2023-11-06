@@ -151,4 +151,10 @@ export class User {
       return 'No ratings yet.';
     }
   }
+
+  resolveAllLocal(uid: string, username: string, picture: string) {
+    this.uid = uid;
+    this.username = username;
+    this.picture = picture;
+  }
 }

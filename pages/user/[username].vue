@@ -218,10 +218,6 @@ onMounted(async () => {
   align-items: center;
   gap: 10px;
 }
-
-.menu-link {
-  text-decoration: none;
-}
 .menu-button {
   display: flex;
   justify-content: center;

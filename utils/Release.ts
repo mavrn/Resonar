@@ -236,6 +236,65 @@ export class Release {
     );
   }
 
+  async removeReply(db: Firestore, replyID: string, parentID: string) {
+    const commentToDelete = await getDoc(
+      doc(
+        db,
+        'albums/' + this.uid + '/comments/' + parentID + '/replies',
+        replyID
+      )
+    );
+    const commentUserID = commentToDelete.data().user.id;
+    deleteDoc(commentToDelete.ref);
+    deleteDoc(
+      (await getDoc(doc(db, 'users/' + commentUserID + '/comments', replyID)))
+        .ref
+    );
+  }
+
+  async addReply(
+    db: Firestore,
+    parentID: string,
+    newContent: string,
+    newUser: User
+  ) {
+    const userRef = doc(db, 'users/', newUser.uid);
+    const releaseRef = doc(db, 'albums/', this.uid);
+    const comment = await addDoc(
+      collection(
+        db,
+        'albums/' + this.uid + '/comments/' + parentID + '/replies'
+      ),
+      { content: newContent, created: Timestamp.now(), user: userRef }
+    );
+    await setDoc(doc(db, 'users/' + newUser.uid + '/comments', comment.id), {
+      content: newContent,
+      created: Timestamp.now(),
+      release: releaseRef,
+    });
+    const ratingDoc = await getDoc(
+      doc(db, 'users/' + newUser.uid + '/ratings', this.uid)
+    );
+    let rating;
+    if (ratingDoc.exists()) {
+      rating = ratingDoc.data().rating;
+    } else {
+      rating = undefined;
+    }
+    const imageData = await loadImage(newUser.picture);
+    return new Comment(
+      comment.id,
+      newContent,
+      (Date.now() - 1000) / 1000,
+      undefined,
+      rating,
+      undefined,
+      newUser,
+      undefined,
+      imageData
+    );
+  }
+
   resolveArtistLocal(artistName: string) {
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName);

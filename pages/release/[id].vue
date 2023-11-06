@@ -105,14 +105,18 @@
         <div class="comment">
           <div class="comment-card">
             <div class="comment-content">
-              <div class="comment-avatar">
+              <NuxtLink
+                class="comment-avatar"
+                :to="'/user/' + comment.user.username"
+              >
                 <img class="avatar" :src="comment.picture" />
-              </div>
+              </NuxtLink>
               <div class="comment-main">
                 <div class="comment-top-row">
-                  <span class="comment-username">{{
-                    comment.user.username
-                  }}</span
+                  <NuxtLink
+                    class="comment-username"
+                    :to="'/user/' + comment.user.username"
+                    >{{ comment.user.username }}</NuxtLink
                   ><span class="comment-time">{{
                     getTimeDescriptor(comment.created)
                   }}</span>
@@ -125,25 +129,47 @@
                 </p>
               </div>
             </div>
-            <div class="comment-footer">
-              <a>Reply</a>
+            <div v-if="isReplyingTo != comment.uid" class="comment-footer">
               <a
-                v-if="currentUser.uid == comment.user.uid"
+                v-if="currentUser"
+                @click="
+                  isReplyingTo = comment.uid;
+                  isReplyingToParent = comment.uid;
+                "
+                class="footer-link"
+                >Reply</a
+              >
+              <a
+                v-if="currentUser?.uid == comment.user.uid"
                 @click="removeComment(comment.uid)"
+                class="footer-link"
                 >Delete</a
               >
+            </div>
+            <div v-else class="reply-footer">
+              <input
+                class="reply-input"
+                :placeholder="'@' + comment.user.username"
+                v-model="replyInput"
+              />
+              <button class="reply-button" @click="addReply()">
+                <i class="material-icons">check</i>
+              </button>
+              <button class="reply-button" @click="isReplyingTo = null">
+                <i class="material-icons">close</i>
+              </button>
             </div>
           </div>
         </div>
         <div class="reply" v-for="reply in comment.replies">
           <div class="comment-card">
             <div class="comment-content">
-              <div class="comment-avatar">
+              <NuxtLink class="comment-avatar" :to="'/user/' + reply.user.username">
                 <img class="avatar" :src="reply.picture" />
-              </div>
+              </NuxtLink>
               <div class="comment-main">
                 <div class="comment-top-row">
-                  <span class="comment-username">{{ reply.user.username }}</span
+                  <NuxtLink class="comment-username" :to="'/user/' + reply.user.username">{{ reply.user.username }}</NuxtLink
                   ><span class="comment-time">{{
                     getTimeDescriptor(reply.created)
                   }}</span>
@@ -156,13 +182,41 @@
                 </p>
               </div>
             </div>
-            <div class="comment-footer">
-              <a>Reply</a>
+            <div v-if="isReplyingTo != reply.uid" class="comment-footer">
               <a
-                v-if="currentUser.uid == comment.user.uid"
-                @click="removeComment(comment.uid)"
+                v-if="currentUser"
+                @click="
+                  isReplyingTo = reply.uid;
+                  isReplyingToParent = comment.uid;
+                "
+                class="footer-link"
+                >Reply</a
+              >
+              <a
+                v-if="currentUser?.uid == reply.user.uid"
+                @click="removeReply(reply.uid, comment.uid)"
+                class="footer-link"
                 >Delete</a
               >
+            </div>
+            <div v-else class="reply-footer">
+              <input
+                class="reply-input"
+                :placeholder="'@' + reply.user.username"
+                v-model="replyInput"
+              />
+              <button class="reply-button" @click="addReply()">
+                <i class="material-icons">check</i>
+              </button>
+              <button
+                class="reply-button"
+                @click="
+                  isReplyingTo = null;
+                  isReplyingToParent = null;
+                "
+              >
+                <i class="material-icons">close</i>
+              </button>
             </div>
           </div>
         </div>
@@ -183,6 +237,9 @@ const isRating = ref(false);
 const userRating = ref(null);
 const selectedRating = ref(5);
 const commentInput = ref('');
+const isReplyingTo = ref(null);
+const isReplyingToParent = ref(null);
+const replyInput = ref('');
 const roundedRating = computed({
   get: () => selectedRating.value,
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
@@ -224,6 +281,11 @@ watch(
 async function addRating() {
   isRating.value = false;
   userRating.value = selectedRating.value;
+  currentUser.value.ratings.push({
+    rating: userRating.value,
+    release: release.value,
+    created: new Date(),
+  });
   release.value.rating = await currentUser.value.addRating(
     db,
     release.value,
@@ -241,7 +303,26 @@ async function addComment() {
   commentInput.value = '';
 }
 
+async function addReply() {
+  const commentIndex = release.value.comments.findIndex(
+    (comment) => comment.uid == isReplyingToParent.value
+  );
+  const newComment = await release.value.addReply(
+    db,
+    isReplyingToParent.value,
+    replyInput.value,
+    currentUser.value
+  );
+  release.value.comments[commentIndex].replies.push(newComment);
+  isReplyingToParent.value = null;
+  isReplyingTo.value = null;
+  replyInput.value = '';
+}
+
 async function removeRating() {
+  currentUser.value.ratings = currentUser.value.ratings.filter(
+    (rating) => rating.release.uid !== release.value.uid
+  );
   userRating.value = undefined;
   release.value.rating = await currentUser.value.removeRating(
     db,
@@ -254,6 +335,16 @@ async function removeComment(commentID) {
     (comment) => comment.uid !== commentID
   );
   release.value.removeComment(db, commentID);
+}
+
+async function removeReply(replyID, parentID) {
+  const commentIndex = release.value.comments.findIndex(
+    (comment) => comment.uid == parentID
+  );
+  release.value.comments[commentIndex].replies = release.value.comments[
+    commentIndex
+  ].replies.filter((reply) => reply.uid !== replyID);
+  release.value.removeReply(db, replyID, parentID);
 }
 </script>
 
@@ -515,7 +606,7 @@ async function removeComment(commentID) {
 }
 
 .add-comment-button {
-  display: block;
+  display: none;
   background: transparent;
   padding: 6px;
   border-radius: var(--border-radius);
@@ -523,7 +614,7 @@ async function removeComment(commentID) {
   min-width: 60px;
 }
 
-.add-comment-input:focus + .add-comment-button {
+.add-comment-container:focus-within .add-comment-button {
   display: block;
 }
 
@@ -553,6 +644,8 @@ async function removeComment(commentID) {
 .comment-username {
   font-size: 20px;
   padding-left: 10px;
+  text-decoration: none;
+  color: black;
 }
 
 .comment-time {
@@ -584,6 +677,40 @@ async function removeComment(commentID) {
   align-items: center;
 }
 
+.reply-footer {
+  width: 100%;
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reply-input {
+  width: 90%;
+  border: none;
+  border-bottom: 1px solid black;
+  padding: 5px;
+}
+
+.reply-input:focus {
+  outline: none;
+}
+
+.reply-button {
+  border-radius: var(--border-radius);
+  border: none;
+  background: transparent;
+}
+
+.reply-button:hover {
+  background-color: rgba(0, 0, 0, 0.3);
+  color: white;
+}
+
+.reply-input::placeholder {
+  opacity: 50%;
+}
+
 .comment-top-row {
   display: flex;
   align-items: center;
@@ -603,6 +730,16 @@ async function removeComment(commentID) {
   @media (max-width: 600px) {
     display: none;
   }
+}
+
+.footer-link {
+  cursor: pointer;
+  opacity: 60%;
+}
+
+.footer-link:hover {
+  cursor: pointer;
+  opacity: 100%;
 }
 </style>
 
