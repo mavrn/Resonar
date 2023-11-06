@@ -93,6 +93,9 @@ const resolveJson = async () => {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
     console.debug('Done.');
+    if (!remoteJSONTooOld) {
+      localJSONTooOld = false;
+    }
   }
   if (!localJSONTooOld) {
     remoteIndexLoaded.value = true;
@@ -105,11 +108,11 @@ const resolveJson = async () => {
 };
 
 const resolveRemoteIndex = async () => {
+  const q = query(collection(db, 'users'));
+  const users = await getDocs(q);
   index.value = index.value.filter((element) => {
     return element.type !== 'user';
   });
-  const q = query(collection(db, 'users'));
-  const users = await getDocs(q);
   users.forEach((user) => {
     const userData = user.data();
     index.value.push({
@@ -120,7 +123,7 @@ const resolveRemoteIndex = async () => {
     });
   });
   const promises = index.value.map(async (element) => {
-    if (['album, single'].includes(element.type)) {
+    if (['album', 'single'].includes(element.type)) {
       const [collectionPath, documentId] = element.reference.split('/');
       const documentRef = doc(db, collectionPath, documentId);
       const relSnapshot = await getDoc(documentRef);
