@@ -335,7 +335,7 @@ function onSortingOrderChange() {
 header {
   position: sticky;
   top: 0;
-  background-color: transparent;
+  background-color: var(--primary-bg);
   display: block;
   text-align: start;
   line-height: 200%;
