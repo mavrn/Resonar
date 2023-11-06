@@ -67,6 +67,7 @@ Figure {
 
 Figure:hover {
   opacity: 85%;
+  transform: scale(1.01);
 }
 
 .figure-link {

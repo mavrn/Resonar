@@ -101,7 +101,11 @@
         ></textarea>
         <button class="add-comment-button" @click="addComment">Post</button>
       </div>
-      <div class="comment-wrapper" v-for="comment in release.comments">
+      <div
+        class="comment-wrapper"
+        v-for="comment in release.comments"
+        :key="comment.uid"
+      >
         <div class="comment">
           <div class="comment-card">
             <div class="comment-content">
@@ -164,12 +168,18 @@
         <div class="reply" v-for="reply in comment.replies">
           <div class="comment-card">
             <div class="comment-content">
-              <NuxtLink class="comment-avatar" :to="'/user/' + reply.user.username">
+              <NuxtLink
+                class="comment-avatar"
+                :to="'/user/' + reply.user.username"
+              >
                 <img class="avatar" :src="reply.picture" />
               </NuxtLink>
               <div class="comment-main">
                 <div class="comment-top-row">
-                  <NuxtLink class="comment-username" :to="'/user/' + reply.user.username">{{ reply.user.username }}</NuxtLink
+                  <NuxtLink
+                    class="comment-username"
+                    :to="'/user/' + reply.user.username"
+                    >{{ reply.user.username }}</NuxtLink
                   ><span class="comment-time">{{
                     getTimeDescriptor(reply.created)
                   }}</span>
@@ -475,18 +485,33 @@ async function removeReply(replyID, parentID) {
   margin-top: 10px;
   background: transparent;
   position: relative;
+  transition: all 0.3s;
+  animation: pulse 0.6s 1;
 }
 
 .user-rating-button:before {
-  content: ''; /* Create an empty content element for the inner border */
-  border: 1px solid black; /* Set the inner border with your desired width and color */
+  content: '';
+  border: 1px solid black;
   border-radius: 50%;
-  position: absolute; /* Position it absolutely within the outer border */
+  position: absolute;
   top: 2px;
   left: 2px;
   right: 2px;
   bottom: 2px;
-  z-index: -1; /* Place it behind the element's content */
+  z-index: -1;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+
+  100% {
+    transfor: scale(1);
+  }
 }
 
 .user-rating-delete-icon {
@@ -504,6 +529,7 @@ async function removeReply(replyID, parentID) {
 
 .user-rating-button:hover {
   background-color: black;
+  transform: scale(1.1);
 }
 
 .score-buttons {
@@ -519,18 +545,28 @@ async function removeReply(replyID, parentID) {
   justify-content: center;
   margin-top: 10px;
   background-color: transparent;
-}
-
-.green {
-  border: 2px solid green;
-}
-.red {
-  border: 2px solid red;
+  transition: all 0.3s;
 }
 
 .add-rating-button:hover {
   color: white;
   background-color: black;
+  transform: scale(1.1);
+}
+
+.green {
+  background-color: transparent;
+  border: 2px solid green;
+}
+.green:hover {
+  background-color: rgba(88, 143, 86, 0.5);
+}
+.red {
+  border: 2px solid red;
+}
+
+.red:hover {
+  background-color: rgba(212, 68, 68, 0.5);
 }
 
 .title {
@@ -551,6 +587,19 @@ async function removeReply(replyID, parentID) {
 .comment-content {
   display: flex;
   min-width: 100%;
+}
+
+.comment-wrapper {
+  animation: slide 0.5s 1;
+}
+
+@keyframes slide {
+  0% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0);
+  }
 }
 
 .comment-main {

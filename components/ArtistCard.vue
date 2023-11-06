@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="artist-info-row-2">
-        <img class="type-icon" src="../assets/person.png" />
+        <img class="type-icon" src="../assets/mic.png" />
         <span>Artist</span>
       </div>
     </div>
@@ -48,11 +48,12 @@ Figure {
   position: relative;
   display: block;
   transition: all 0.3s;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6)
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
 }
 
 Figure:hover {
   opacity: 85%;
+  transform: scale(1.01);
 }
 
 .figure-link {

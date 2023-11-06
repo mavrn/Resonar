@@ -18,7 +18,7 @@
       </div>
       <div class="user-info-row-2">
         <img class="type-icon" src="../assets/person.png" />
-        <span>user</span>
+        <span>User</span>
       </div>
     </div>
   </div>
@@ -57,6 +57,7 @@ Figure {
 
 Figure:hover {
   opacity: 85%;
+  transform: scale(1.01);
 }
 
 .figure-link {
@@ -101,8 +102,8 @@ Figure:hover {
 
 .skeleton {
   aspect-ratio: 1;
-  width: 100% !important; 
-  height: auto !important; 
+  width: 100% !important;
+  height: auto !important;
   object-fit: cover;
   border: none;
   display: block;
