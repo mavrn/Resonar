@@ -78,7 +78,9 @@ Section {
 }
 
 .block {
-  margin-top: clamp(0px, 3vw, 10px);
+  margin-top: clamp(0px, 3vh, 20px);
+  margin-left: clamp(0px, 3vw, 100px);
+  margin-right: clamp(0px, 3vw, 100px);
 }
 
 .inner {

@@ -6,12 +6,11 @@
       :to="'/release/' + comment.release.uid"
     >
       <div class="comment-card-row-1 show-bigger-than-md-block">
-        Commented on {{ comment.release.name }} by
-        {{ comment.release.artist?.name }},
+        Commented on {{ comment.release.name }}<br>
         {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-1-sm show-smaller-than-md-block">
-        {{ comment.release.name }}, {{ comment.release.artist?.name }},
+        {{ comment.release.name }}<br>
         {{ getTimeDescriptor(comment.created) }}
       </div>
       <div class="comment-card-row-2">"{{ comment.content }}"</div>
@@ -32,15 +31,13 @@ defineProps({ user: User });
 }
 .comment-card {
   display: grid;
-  grid-template-columns: 1fr 0.3fr;
-  @media (max-width: 800px) {
-    grid-template-columns: 1fr 0.1fr;
-  }
+  grid-template-columns: minmax(0, 1000px) minmax(0, 100px);
   grid-template-rows: 1fr 1fr;
   padding: 10px;
   margin-top: 10px;
   border-radius: var(--border-radius);
   text-decoration: none;
+  min-width: 300px;
   color: black;
   outline: 1px solid black;
 }
@@ -51,6 +48,7 @@ defineProps({ user: User });
 
 .comment-card-row-1 {
   grid-area: 1 / 1 / 2 / 2;
+  font-size: 12px;
 }
 
 .comment-card-row-1-sm {
@@ -74,5 +72,6 @@ defineProps({ user: User });
   width: auto;
   aspect-ratio: 1;
   border-radius: var(--border-radius);
+  margin-left: 40px;
 }
 </style>

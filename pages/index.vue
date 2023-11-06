@@ -14,7 +14,7 @@ const db = useFirestore();
 const filteringStore = useFilteringStore();
 const { filtering } = filteringStore;
 
-const limit = 12;
+const limit = 20;
 const results = ref([]);
 const loadedResults = ref(0);
 const processing = ref(false);
@@ -93,9 +93,10 @@ const resolveResults = async () => {
           result.name,
           result.cover,
           result.year,
-          result.score,
+          result.rating,
           result.type
         );
+        newItem.resolveArtist();
       }
 
       loadedResults.value += 1;
@@ -105,7 +106,6 @@ const resolveResults = async () => {
     });
   } else {
     limitedResults.forEach(async (result, index) => {
-      console.log(result);
       const [collectionPath, documentId] = result.reference.split('/');
       const documentRef = doc(db, collectionPath, documentId);
       console.debug('Getting Doc', documentId);
@@ -119,6 +119,7 @@ const resolveResults = async () => {
       } else {
         newItem = new Release(relSnapshot);
         newItem.resolveArtistLocal(result.artist);
+        newItem.resolveArtist();
       }
       loadedResults.value += 1;
       results.value[currLoaded + index] = newItem;

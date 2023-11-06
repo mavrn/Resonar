@@ -8,7 +8,7 @@
       <div class="rating-card-info">
         <div class="rating-card-release">
           <p>{{ rating.release.name }}</p>
-          <p>{{ rating.release.artist?.name }}</p>
+          <p class="artist">{{ rating.release.artist?.name }}</p>
           <p class="date">
             {{
               ' ' +
@@ -16,9 +16,9 @@
             }}
           </p>
         </div>
-        <div class="rating-card-score">{{ rating.rating }}</div>
       </div>
       <div class="rating-card-end">
+        <div class="rating-card-score">{{ rating.rating }}</div>
         <img class="cover" :src="rating.release.cover" />
         <div class="rating-card-score-sm">{{ rating.rating }}</div>
       </div>
@@ -35,15 +35,19 @@ defineProps({ user: User });
   padding: 10px;
 }
 .rating-card {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1000px) minmax(0, 170px);
+  grid-template-rows: 1fr;
   padding: 10px;
   margin-top: 10px;
   border-radius: var(--border-radius);
-  background-color: #e9f2ef;
   text-decoration: none;
+  min-width: 300px;
   color: black;
-  gap: 10px;
-  justify-content: space-between;
+  outline: 1px solid black;
+  @media (max-width: 599px) {
+    grid-template-columns:  minmax(0, 1000px) minmax(0, 80px);;
+  }
 }
 
 .rating-card:hover {
@@ -58,10 +62,17 @@ defineProps({ user: User });
 .date {
   font-size: 13px;
   padding-top: 15px;
+  opacity: 70%;
 }
 
+.artist {
+  opacity: 90%;
+  font-size: 17px;
+}
 .rating-card-end {
   align-items: center;
+  justify-content: flex-end;
+  display: flex;
 }
 
 .rating-card-info {
@@ -69,8 +80,8 @@ defineProps({ user: User });
   align-items: center;
 }
 .rating-card-score {
-  height: 90px;
-  width: 90px;
+  height: 60px;
+  width: 60px;
   border-radius: 50%;
   border-style: solid;
   border-width: 2px;
@@ -78,15 +89,15 @@ defineProps({ user: User });
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
+  font-size: 25px;
   margin-right: 20px;
-  @media (max-width: 600px) {
+  @media (max-width: 599px) {
     display: none;
   }
 }
 .rating-card-score-sm {
-  height: 90px;
-  width: 90px;
+  height: 60px;
+  width: 60px;
   border-radius: 50%;
   border-style: solid;
   border-width: 2px;
@@ -94,7 +105,7 @@ defineProps({ user: User });
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 30px;
+  font-size: 25px;
   margin-right: 20px;
   @media (min-width: 600px) {
     display: none;

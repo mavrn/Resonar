@@ -1,15 +1,15 @@
 <template>
   <UserActivity
-    v-if="selectedComponent == 'User Activity'"
+    v-if="selectedComponent == 'Activity'"
     :user="user"
   ></UserActivity>
-  <UserInfo v-if="selectedComponent == 'User Info'" :user="user"></UserInfo>
+  <UserInfo v-if="selectedComponent == 'Info'" :user="user"></UserInfo>
   <UserSettings
     v-if="selectedComponent == 'Account Settings'"
     :user="user"
   ></UserSettings>
   <UserRatings
-    v-if="selectedComponent == 'Rated Releases'"
+    v-if="selectedComponent == 'Ratings'"
     :user="user"
   ></UserRatings>
 </template>

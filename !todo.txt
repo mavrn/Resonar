@@ -89,32 +89,12 @@ Next:
     -Onboarding, image upload: Location, Bio, Image done
     -Ability to add Comments and Ratings, Replies done
     -Searching for Singles and Artists done
-    -Searching for Users
-    -Artist page, Release page for Singles
+    -Searching for Users done 
+    -Artist page, Release page for Singles done
+    -User Page rework done
     -Album, Artist, Single + Mobil refinement
     -User Settings
-    -User Page rework
     -Datatype unification
     -Database building
     -Code cleaning
     -Documentation
-
-
-
-JSON Updater:
-
-    1. Keep track of how old JSON is
-    2. If older than five minutes:
-        -Fetch ratings and users
-        -Write into index
-        -Save to local and send to remote
-
-Prüfe, ob JSON in local store:
-
-Ja:
-Prüfe, ob JSON neu:
-Ja:
-Nichts
-Nein:
-1. Download JSON remote
-2

@@ -7,13 +7,13 @@ const routedUser = useRoute().params.username;
 const foundUser = ref(null);
 const isLoggedInUser = ref(false);
 const menuOptions = ref([
-  { name: 'User Info', icon: 'info' },
+  { name: 'Info', icon: 'info' },
   {
-    name: 'User Activity',
+    name: 'Activity',
     icon: 'forum',
   },
   {
-    name: 'Rated Releases',
+    name: 'Ratings',
     icon: 'star',
   },
   {
@@ -21,7 +21,7 @@ const menuOptions = ref([
     icon: 'settings',
   },
 ]);
-const selectedOption = ref('User Info');
+const selectedOption = ref('Info');
 const imageSrc = ref('');
 
 onMounted(async () => {
@@ -39,11 +39,16 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="profile-wrapper show-bigger-than-lg-block">
+  <div class="profile-wrapper show-bigger-than-lg-flex">
     <div v-if="foundUser" class="profile-container">
-      <div class="avatar-wrapper">
-        <img v-if="imageSrc" class="avatar" :src="imageSrc" />
-        <Skeleton v-else class="skeleton" />
+      <div class="user-info">
+        <div class="avatar-wrapper">
+          <img v-if="imageSrc" class="avatar" :src="imageSrc" />
+          <Skeleton v-else class="skeleton" />
+        </div>
+        <div class="username">
+          {{ foundUser.username }}
+        </div>
       </div>
       <div class="menu-wrapper">
         <Button
@@ -58,14 +63,12 @@ onMounted(async () => {
         </Button>
       </div>
       <div class="menu-box">
-        <p class="username">{{ foundUser.username }}</p>
         <UserContainer
           :user="foundUser"
           :selectedComponent="selectedOption"
         ></UserContainer>
       </div>
     </div>
-
     <NotFound v-if="foundUser == false" element="User" />
   </div>
   <div class="profile-wrapper-sm show-smaller-than-lg-flex">
@@ -102,13 +105,11 @@ onMounted(async () => {
 
 <style scoped>
 .profile-wrapper {
-  padding: 100px;
-  padding-left: 100px;
-  padding-right: 100px;
+  justify-content: center;
 }
 
 .profile-wrapper-sm {
-  padding: 50px;
+  padding: 20px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -125,27 +126,52 @@ onMounted(async () => {
   justify-content: center;
 }
 .profile-container {
-  display: grid;
-  grid-template-columns: 0.4fr 1fr;
-  grid-template-rows: 0.9fr 0.1fr;
-  grid-row-gap: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  max-width: 800px;
+  border-radius: var(--border-radius);
 }
 
 .avatar-wrapper {
-  grid-area: 1 / 1 / 2 / 2;
   overflow: hidden;
-  display: flex;
   justify-content: center;
-  align-items: flex-start;
-  aspect-ratio: 1;
 }
-
 .avatar {
   aspect-ratio: 1;
-  width: clamp(200px, 80%, 100%);
-  height: clamp(200px, 80%, 100%);
   border-radius: 50%;
   object-fit: cover;
+  height: 200px;
+}
+.user-info {
+  align-items: center;
+  gap: 30px;
+}
+
+.menu-wrapper {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+.menu-button {
+  display: flex;
+  justify-content: center;
+  width: 160px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.menu-box {
+  display: flex;
+  justify-content: center;
+  height: 100%;
+  min-width: 400px;
+  grid-area: 3 / 1 / 4 / 3;
 }
 
 .skeleton {
@@ -189,7 +215,7 @@ onMounted(async () => {
   padding-right: 5px;
   margin-left: 4px;
   margin-right: 4px;
-  @media (max-width: 774px) {
+  @media (max-width: 790px) {
     width: 16vw;
     height: 40px;
     position: sticky;
@@ -198,48 +224,25 @@ onMounted(async () => {
 
 .menu-button-content-md {
   display: none;
-  @media (min-width: 775px) {
+  @media (min-width: 791px) {
     display: block;
   }
 }
 
 .menu-button-content-sm {
   display: none;
-  @media (max-width: 774px) {
+  @media (max-width: 790px) {
     display: block;
   }
 }
 
-.menu-wrapper {
-  grid-area: 2 / 1 / 3 / 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  gap: 10px;
-}
-.menu-button {
-  display: flex;
-  justify-content: center;
-  width: 160px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-.menu-box {
-  height: 100%;
-  width: 100%;
-  outline: 1px solid black;
-  border-radius: 10px;
-  grid-area: 1 / 2 / 3 / 3;
-}
-
 .menu-box-sm {
   width: 75vw;
-  outline: 1px solid black;
   border-radius: 10px;
   padding-top: 10px;
   padding-bottom: 10px;
+  display: flex;
+  justify-content: center;
   @media (max-width: 550px) {
     width: 90vw;
   }
