@@ -12,6 +12,7 @@ const searchValue = ref('');
 const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const index = ref<Array<Object>>([]);
+let remoteJSONFound = false;
 let remoteJSONTooOld = false;
 let localJSONFound = false;
 let localJSONTooOld = false;
@@ -58,7 +59,15 @@ const updateRemoteIndex = async () => {
 };
 
 const resolveJson = async () => {
-  getMetadata(jsonRef).then((metadata) => {
+  let metadata;
+  try {
+    metadata = await getMetadata(jsonRef);
+    remoteJSONFound = true;
+  } catch (error) {
+    console.log('Remote JSON not found.');
+    remoteJSONFound = false;
+  }
+  if (remoteJSONFound) {
     const timeDiff =
       new Date().getTime() - new Date(metadata.timeCreated).getTime();
     const minutesAgo = Math.floor(timeDiff / (1000 * 60));
@@ -68,7 +77,7 @@ const resolveJson = async () => {
     } else {
       console.debug('Remote JSON not too old.');
     }
-  });
+  }
   const localLastUpdate = localStorage.getItem('lastUpdate');
   if (localLastUpdate) {
     const timeDiff = new Date().getTime() - new Date(localLastUpdate).getTime();
@@ -81,7 +90,6 @@ const resolveJson = async () => {
       console.debug('Local JSON found and new.');
       localJSONFound = true;
       localJSONTooOld = false;
-      index.value = JSON.parse(localStorage.getItem('index'));
     }
   } else {
     console.debug('Didnt find index in local storage.');
@@ -89,22 +97,92 @@ const resolveJson = async () => {
     localJSONTooOld = true;
   }
 
-  if (!localJSONFound) {
+  if (!remoteJSONFound) {
+    console.log('Building a remote index...');
+    await buildRemoteIndex();
+    remoteIndexLoaded.value = true;
+    console.log('Uploading JSON...');
+    await updateRemoteIndex();
+    console.log('Index done by R1.');
+  } else if (remoteJSONTooOld || !remoteJSONFound) {
+    console.log('Updating the remote index...');
+    await resolveRemoteIndex();
+    remoteIndexLoaded.value = true;
+    console.log('Uploading JSON...');
+    await updateRemoteIndex();
+    console.log('Index done by R2.');
+  } else if (!localJSONFound || localJSONTooOld) {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
-    console.debug('Done.');
-    if (!remoteJSONTooOld) {
-      localJSONTooOld = false;
-    }
-  }
-  if (!localJSONTooOld) {
     remoteIndexLoaded.value = true;
+    console.debug('Saving JSON locally...');
+    localStorage.setItem('index', JSON.stringify(index.value));
+    localStorage.setItem(
+      'lastUpdate',
+      JSON.stringify(new Date().toISOString())
+    );
+    console.debug('Index done by R3.');
   } else {
-    console.debug('Updating local index.');
-    await resolveRemoteIndex();
-    console.debug('Done.');
+    index.value = JSON.parse(localStorage.getItem('index'));
     remoteIndexLoaded.value = true;
+    console.log('Index done by R4.');
   }
+};
+
+const buildRemoteIndex = async () => {
+  const releases = await getDocs(query(collection(db, 'releases')));
+  const artists = await getDocs(query(collection(db, 'artists')));
+  const users = await getDocs(query(collection(db, 'users')));
+  index.value = [];
+
+  await Promise.all(
+    releases.docs.map(async (release) => {
+      const releaseData = release.data();
+      if (releaseData.artist) {
+        const artistRef = releaseData.artist;
+        const artistDoc = await getDoc(artistRef);
+        if (artistDoc.exists()) {
+          releaseData.artist = artistDoc.data().name;
+        }
+      }
+      index.value.push({
+        name: releaseData.name,
+        relevance: releaseData.relevance,
+        rating: releaseData.rating,
+        artist: releaseData.artist,
+        cover: releaseData.cover,
+        year: releaseData.year?.toDate()?.getFullYear(),
+        type: releaseData.type || 'release',
+        genres: releaseData.genres,
+        reference: `releases/${release.id}`,
+      });
+    })
+  );
+  await Promise.all(artists.docs.map((artist) => {
+        const artistData = artist.data();
+        index.value.push({
+            name: artistData.name,
+            picture: artistData.picture,
+            type: 'artist',
+            reference: `artists/${artist.id}`,
+        });
+    }));
+
+    await Promise.all(users.docs.map((user) => {
+        const userData = user.data();
+        index.value.push({
+            name: userData.username,
+            picture: userData.picture,
+            type: 'user',
+            reference: `users/${user.id}`,
+        });
+    }));
+  
+
+  console.debug('Saving JSON locally...');
+  localStorage.setItem('index', JSON.stringify(index.value));
+  localStorage.setItem('lastUpdate', JSON.stringify(new Date().toISOString()));
+  console.debug('Done!');
 };
 
 const resolveRemoteIndex = async () => {
@@ -127,7 +205,7 @@ const resolveRemoteIndex = async () => {
       const [collectionPath, documentId] = element.reference.split('/');
       const documentRef = doc(db, collectionPath, documentId);
       const relSnapshot = await getDoc(documentRef);
-      element.rating = relSnapshot?.data?.()?.score;
+      element.rating = relSnapshot?.data?.()?.rating;
     }
     return element;
   });
@@ -147,7 +225,7 @@ onMounted(() => {
       const newUser = new User(
         await getDoc(doc(collection(db, 'users'), user.uid))
       );
-      await newUser.resolve(db);
+      //await newUser.resolve(db);
       setUser(newUser);
     } else {
       setUser(null);
@@ -162,17 +240,6 @@ watch(
       path: '/',
       query: { search: encodeURIComponent(searchValue.value) },
     });
-  }
-);
-
-watch(
-  () => remoteIndexLoaded.value,
-  async () => {
-    if (remoteIndexLoaded.value && remoteJSONTooOld) {
-      console.debug('Updating remote index.');
-      await updateRemoteIndex();
-      console.debug('Done.');
-    }
   }
 );
 

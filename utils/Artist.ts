@@ -10,7 +10,7 @@ export class Artist {
     if (doc) {
       const docData = doc.data();
       this.uid = doc.id;
-      this.avatar = docData.avatar;
+      this.avatar = docData.picture;
       this.name = docData.name;
     }
   }

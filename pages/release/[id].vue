@@ -34,11 +34,11 @@
       </div>
       <div class="info-row">
         <p class="descriptor">Genres</p>
-        <p>Rock</p>
+        <p>{{ release.genres.join(', ') }}</p>
       </div>
       <div class="info-row">
         <p class="descriptor">Date</p>
-        <p>{{ release.date }}</p>
+        <p>{{ formatDate(release.date.toDate()) }}</p>
       </div>
     </div>
     <div class="score-container">
@@ -255,6 +255,14 @@ const roundedRating = computed({
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
 });
 
+function formatDate(date) {
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
+  const year = date.getFullYear();
+
+  return `${day}.${month}.${year}`;
+}
+
 function setUserRating() {
   let newUserRating = undefined;
   if (currentUser.value) {
@@ -268,7 +276,7 @@ function setUserRating() {
 }
 
 onMounted(async () => {
-  const releaseDocument = doc(db, '/albums', routedRelease);
+  const releaseDocument = doc(db, '/releases', routedRelease);
   const snapshot = await getDoc(releaseDocument);
   if (snapshot) {
     release.value = new Release(snapshot);

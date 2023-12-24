@@ -50,21 +50,21 @@ export class User {
       created: Timestamp.now(),
       rating: rating,
     });
-    const releaseDoc = await getDoc(doc(db, 'albums', release.uid));
+    const releaseDoc = await getDoc(doc(db, 'releases', release.uid));
 
     if (release && releaseDoc.data()) {
-      const { ratingCount, score } = releaseDoc.data();
+      const { ratingCount, rating } = releaseDoc.data();
       let newRating = 0;
       if (ratingCount == 0) {
         newRating = rating;
       } else {
-        const newTotalRating = ratingCount * score + rating;
+        const newTotalRating = ratingCount * rating + rating;
         const newRatingCount = ratingCount + 1;
         newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
       }
-      await updateDoc(doc(db, 'albums', release.uid), {
+      await updateDoc(doc(db, 'releases', release.uid), {
         ratingCount: increment(1),
-        score: newRating,
+        rating: newRating,
       });
       return newRating;
     } else {
@@ -79,19 +79,19 @@ export class User {
     const oldRating = ratingDoc.data().rating;
     deleteDoc(ratingDoc.ref);
 
-    const releaseDoc = await getDoc(doc(db, 'albums', release.uid));
+    const releaseDoc = await getDoc(doc(db, 'releases', release.uid));
     if (release && releaseDoc.data()) {
-      const { ratingCount, score } = releaseDoc.data();
+      const { ratingCount, rating } = releaseDoc.data();
       let newRating = 0;
 
-      const newTotalRating = ratingCount * score - oldRating;
+      const newTotalRating = ratingCount * rating - oldRating;
       const newRatingCount = ratingCount - 1;
       if (newRatingCount != 0) {
         newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
       }
-      await updateDoc(doc(db, 'albums', release.uid), {
+      await updateDoc(doc(db, 'releases', release.uid), {
         ratingCount: increment(-1),
-        score: newRating,
+        rating: newRating,
       });
       return newRating;
     } else {
@@ -116,7 +116,7 @@ export class User {
       ratingsSnapshot.docs.map(async (rating) => {
         const data = rating.data();
         const release = new Release(
-          await getDoc(doc(db, 'albums/', rating.id))
+          await getDoc(doc(db, 'releases/', rating.id))
         );
         await release.resolveArtist();
         this.ratings.push({

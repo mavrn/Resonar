@@ -51,7 +51,7 @@ export class Release {
       this.cover = docData.cover;
       this.date = docData.date;
       this.name = docData.name;
-      this.rating = docData.score;
+      this.rating = docData.rating;
       this.comments = [];
       this.tracklist = [];
       this.genres = docData.genres;
@@ -63,18 +63,23 @@ export class Release {
   }
 
   async resolveArtist() {
-    return new Promise((resolve, reject) => {
-      getDoc(this.artistUnresolved)
-        .then((artistSnapshot) => {
-          this.artist = new Artist(artistSnapshot);
-          resolve(this);
-        })
-        .catch(reject);
-    });
+    if (this.artistUnresolved) {
+      return new Promise((resolve, reject) => {
+        getDoc(this.artistUnresolved)
+          .then((artistSnapshot) => {
+            this.artist = new Artist(artistSnapshot);
+            resolve(this);
+          })
+          .catch(reject);
+      });
+    } else {
+      this.artist = new Artist();
+      this.artist.name = '';
+    }
   }
 
   async resolveComments(db: Firestore) {
-    const comments = collection(db, 'albums/' + this.uid + '/comments');
+    const comments = collection(db, 'releases/' + this.uid + '/comments');
     const commentsQuery = query(comments);
     const commentsSnapshot = await getDocs(commentsQuery);
 
@@ -82,7 +87,7 @@ export class Release {
       const commentData = comment.data();
       const replyIndex = collection(
         db,
-        'albums/' + this.uid + '/comments/' + comment.id + '/replies'
+        'releases/' + this.uid + '/comments/' + comment.id + '/replies'
       );
       const replyQuery = query(replyIndex, orderBy('created', 'asc'));
       const replyDocs = await getDocs(replyQuery);
@@ -166,7 +171,7 @@ export class Release {
   async resolveTracklist(db: Firestore) {
     const tracklistCollection = collection(
       db,
-      'albums/' + this.uid + '/tracklist'
+      'releases/' + this.uid + '/tracklist'
     );
     const tracklistQuery = query(tracklistCollection, orderBy('index', 'asc'));
     getDocs(tracklistQuery).then((tracklistSnapshot) => {
@@ -182,7 +187,7 @@ export class Release {
   }
 
   async addComment(db: Firestore, content: string, user: User) {
-    const releaseRef = doc(db, 'albums/', this.uid);
+    const releaseRef = doc(db, 'releases/', this.uid);
     const docRef = await addDoc(
       collection(db, 'users/' + user.uid + '/comments'),
       {
@@ -194,7 +199,7 @@ export class Release {
     const commentID = docRef.id;
 
     const userRef = doc(db, 'users/', user.uid);
-    setDoc(doc(db, 'albums/' + this.uid + '/comments', commentID), {
+    setDoc(doc(db, 'releases/' + this.uid + '/comments', commentID), {
       created: Timestamp.now(),
       content: content,
       user: userRef,
@@ -226,7 +231,7 @@ export class Release {
 
   async removeComment(db: Firestore, commentID: string) {
     const commentToDelete = await getDoc(
-      doc(db, 'albums/' + this.uid + '/comments', commentID)
+      doc(db, 'releases/' + this.uid + '/comments', commentID)
     );
     const commentUserID = commentToDelete.data().user.id;
     deleteDoc(commentToDelete.ref);
@@ -240,7 +245,7 @@ export class Release {
     const commentToDelete = await getDoc(
       doc(
         db,
-        'albums/' + this.uid + '/comments/' + parentID + '/replies',
+        'releases/' + this.uid + '/comments/' + parentID + '/replies',
         replyID
       )
     );
@@ -259,11 +264,11 @@ export class Release {
     newUser: User
   ) {
     const userRef = doc(db, 'users/', newUser.uid);
-    const releaseRef = doc(db, 'albums/', this.uid);
+    const releaseRef = doc(db, 'releases/', this.uid);
     const comment = await addDoc(
       collection(
         db,
-        'albums/' + this.uid + '/comments/' + parentID + '/replies'
+        'releases/' + this.uid + '/comments/' + parentID + '/replies'
       ),
       { content: newContent, created: Timestamp.now(), user: userRef }
     );
@@ -297,25 +302,25 @@ export class Release {
 
   resolveArtistLocal(artistName: string) {
     this.artist = new Artist();
-    this.artist.name = toTitleCase(artistName);
+    this.artist.name = toTitleCase(artistName || '');
   }
 
   resolveAllLocal(
-    uid: string,
-    artistName: string,
-    title: string,
-    cover: string,
-    year: number,
-    score: number,
-    type: string
+    uid: string | null | undefined,
+    artistName: string | null | undefined,
+    title: string | null | undefined,
+    cover: string | null | undefined,
+    year: number | null | undefined,
+    rating: number | null | undefined,
+    type: string | null | undefined
   ) {
-    this.uid = uid;
+    this.uid = uid || '';
     this.artist = new Artist();
-    this.artist.name = toTitleCase(artistName);
-    this.name = title;
-    this.cover = cover;
-    this.date = String(year);
-    this.rating = score;
-    this.type = type;
+    this.artist.name = toTitleCase(artistName || '');
+    this.name = title || '';
+    this.cover = cover || '';
+    this.date = year ? String(year) : '';
+    this.rating = rating || 0;
+    this.type = type || '';
   }
 }

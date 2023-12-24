@@ -1,22 +1,24 @@
 Release (releases/)
-    title: string
+    name: string
     artist: Artist
     type: string ["single", "album"]
     uid: string / reference: reference (index.json)
     date: Date
     rating: number [0.0-10.0]
-    genres: string[main genre, ... ]
-    comments: {user: User, content: string, score: number, created: Date, {replies}[]}[]
+    genres: string[main genre, secondary1, secondary2, ... ]
     cover: string
+    relevance: number [0-100]
+    ratingCount: number = relevance
     tracklist?type=album: {title: string, duration: string, index: number}[]
     spotify?: string
     apple?: string
-
+    comments: {user: User, content: string, score: number, created: Date, {replies}[]}[]
 
 Artist (artists/)
     name: string
     uid: string / reference: reference (index.json)
     picture: string
+
 
 User (users/)
     username: string

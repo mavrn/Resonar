@@ -85,16 +85,26 @@ Oli Checkliste:
     
 
 Next:
-    -Filter Mobil done
-    -Onboarding, image upload: Location, Bio, Image done
-    -Ability to add Comments and Ratings, Replies done
-    -Searching for Singles and Artists done
-    -Searching for Users done 
-    -Artist page, Release page for Singles done
-    -User Page rework done
-    -Album, Artist, Single + Mobil refinement
-    -User Settings
-    -Datatype unification
-    -Database building
-    -Code cleaning
-    -Documentation
+    
+-Score auf 3 anstatt 2 reihen
+-User Settings + Dark Mode
+-Genres
+-Sortierung auf Mobile
+-Fix Register "db is not defined"
+
+Test local JSON for existance
+    Test local JSON for last update
+Test remote JSON for existance
+    Test remote JSON for last update
+
+If remote JSON does not exist: R1
+    Download whole index, set to local, upload.
+
+If remote JSON is too old: R2
+    Download partial database, update local index, upload to remote //ensures remote is up to date
+
+Else if local JSON does not exist OR is too old: R3
+    Download JSON from remote
+
+Else: R4
+    Set index to local index

@@ -71,7 +71,7 @@ export const getResults = (
       results.sort((a, b) => {
         const aValue: number = a.relevance;
         const bValue: number = b.relevance;
-        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
+        return sorting.order === -1 ? aValue - bValue : bValue - aValue;
       });
     } else if (sorting.field === 'rating') {
       results.sort((a, b) => {

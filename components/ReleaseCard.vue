@@ -25,9 +25,16 @@
         </div>
       </div>
       <div class="release-info-row-3">
-        <img v-if="release?.type === 'album'" class="type-icon" src="../assets/album.png" />
+        <img
+          v-if="release?.type === 'album'"
+          class="type-icon"
+          src="../assets/album.png"
+        />
         <img v-else class="type-icon" src="../assets/single.png" />
-        <span>{{ toTitleCase(release?.type) }} | Rock | {{ release?.date }}</span>
+        <span
+          >{{ toTitleCase(release?.type) }} | {{ release?.genres[0] }} |
+          {{ getYear(release?.date) }}</span
+        >
       </div>
       <div class="release-info-col-1">
         <div class="rating-container">
@@ -39,6 +46,14 @@
 </template>
 
 <script setup lang="ts">
+import { Timestamp } from 'firebase/firestore';
+function getYear(date: number | Timestamp) {
+  if (typeof date === 'number') {
+    return date;
+  } else {
+    return date.toDate().getFullYear();
+  }
+}
 defineProps({
   release: Object,
 });
@@ -62,7 +77,7 @@ Figure {
   position: relative;
   display: block;
   transition: all 0.3s;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7)
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
 }
 
 Figure:hover {
