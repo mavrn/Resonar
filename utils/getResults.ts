@@ -18,7 +18,6 @@ export const getResults = (
   filtering?: Filter
 ) => {
 
-  console.log(index);
   if (!index) {
     return [];
   }

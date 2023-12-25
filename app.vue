@@ -104,7 +104,9 @@ const resolveJson = async () => {
     console.log('Uploading JSON...');
     await updateRemoteIndex();
     console.log('Index done by R1.');
-  } else if (remoteJSONTooOld || !remoteJSONFound) {
+  } else if (remoteJSONTooOld) {
+    console.debug('Getting JSON from remote...');
+    index.value = await fetchRemoteJson();
     console.log('Updating the remote index...');
     await resolveRemoteIndex();
     remoteIndexLoaded.value = true;
@@ -151,33 +153,36 @@ const buildRemoteIndex = async () => {
         rating: releaseData.rating,
         artist: releaseData.artist,
         cover: releaseData.cover,
-        year: releaseData.year?.toDate()?.getFullYear(),
+        year: releaseData.date?.toDate()?.getFullYear(),
         type: releaseData.type || 'release',
         genres: releaseData.genres,
         reference: `releases/${release.id}`,
       });
     })
   );
-  await Promise.all(artists.docs.map((artist) => {
-        const artistData = artist.data();
-        index.value.push({
-            name: artistData.name,
-            picture: artistData.picture,
-            type: 'artist',
-            reference: `artists/${artist.id}`,
-        });
-    }));
+  await Promise.all(
+    artists.docs.map((artist) => {
+      const artistData = artist.data();
+      index.value.push({
+        name: artistData.name,
+        picture: artistData.picture,
+        type: 'artist',
+        reference: `artists/${artist.id}`,
+      });
+    })
+  );
 
-    await Promise.all(users.docs.map((user) => {
-        const userData = user.data();
-        index.value.push({
-            name: userData.username,
-            picture: userData.picture,
-            type: 'user',
-            reference: `users/${user.id}`,
-        });
-    }));
-  
+  await Promise.all(
+    users.docs.map((user) => {
+      const userData = user.data();
+      index.value.push({
+        name: userData.username,
+        picture: userData.picture,
+        type: 'user',
+        reference: `users/${user.id}`,
+      });
+    })
+  );
 
   console.debug('Saving JSON locally...');
   localStorage.setItem('index', JSON.stringify(index.value));
@@ -200,17 +205,17 @@ const resolveRemoteIndex = async () => {
       reference: 'users/' + user.id,
     });
   });
-  const promises = index.value.map(async (element) => {
-    if (['album', 'single'].includes(element.type)) {
-      const [collectionPath, documentId] = element.reference.split('/');
-      const documentRef = doc(db, collectionPath, documentId);
-      const relSnapshot = await getDoc(documentRef);
-      element.rating = relSnapshot?.data?.()?.rating;
-    }
-    return element;
-  });
-
-  await Promise.all(promises);
+  await Promise.all(
+    index.value.map(async (element) => {
+      if (['album', 'single'].includes(element.type)) {
+        const [collectionPath, documentId] = element.reference.split('/');
+        const documentRef = doc(db, collectionPath, documentId);
+        const relSnapshot = await getDoc(documentRef);
+        element.rating = relSnapshot?.data?.()?.rating;
+      }
+      return element;
+    })
+  );
   console.debug('Saving JSON locally...');
   localStorage.setItem('index', JSON.stringify(index.value));
   localStorage.setItem('lastUpdate', JSON.stringify(new Date().toISOString()));
@@ -225,7 +230,7 @@ onMounted(() => {
       const newUser = new User(
         await getDoc(doc(collection(db, 'users'), user.uid))
       );
-      //await newUser.resolve(db);
+      await newUser.resolve(db);
       setUser(newUser);
     } else {
       setUser(null);

@@ -10,7 +10,7 @@
         <div class="release-info-row-1-left">
           <strong>
             <NuxtLink class="title" :to="'/release/' + release?.uid">{{
-              release?.name
+              abbreviate(release?.name)
             }}</NuxtLink></strong
           >
         </div>
@@ -32,13 +32,18 @@
         />
         <img v-else class="type-icon" src="../assets/single.png" />
         <span
-          >{{ toTitleCase(release?.type) }} | {{ release?.genres[0] }} |
-          {{ getYear(release?.date) }}</span
+          >{{ toTitleCase(release?.type) }} |
+          {{
+            release && release.genres && release.genres[0]
+              ? release.genres[0]
+              : 'N/A'
+          }}
+          | {{ getYear(release?.date) }}</span
         >
       </div>
       <div class="release-info-col-1">
         <div class="rating-container">
-          {{ release?.rating }}
+          {{ release?.rating.toFixed(1) }}
         </div>
       </div>
     </div>
@@ -47,14 +52,24 @@
 
 <script setup lang="ts">
 import { Timestamp } from 'firebase/firestore';
-function getYear(date: number | Timestamp) {
+function getYear(date: number | Timestamp | Date) {
   if (typeof date === 'number') {
     return date;
-  } else {
+  } else if (date instanceof Date) {
+    return date.getFullYear();
+  } else if (date instanceof Timestamp) {
     return date.toDate().getFullYear();
+  } else {
+    return '';
   }
 }
-defineProps({
+function abbreviate(name: string): string {
+  if (name.length > 25) {
+    return name.substring(0, 24) + '...';
+  }
+  return name;
+}
+const props = defineProps({
   release: Object,
 });
 </script>

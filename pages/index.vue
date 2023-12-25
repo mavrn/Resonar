@@ -94,7 +94,8 @@ const resolveResults = async () => {
           result.cover,
           result.year,
           result.rating,
-          result.type
+          result.type,
+          result.genres
         );
         newItem.resolveArtist();
       }

@@ -36,7 +36,7 @@ export class Release {
   artist: Artist | null;
   name: string;
   cover: string;
-  date: string;
+  date: Date;
   rating: number;
   ratingCount: number;
   genres: string[];
@@ -53,7 +53,7 @@ export class Release {
       this.name = docData.name;
       this.rating = docData.rating;
       this.comments = [];
-      this.tracklist = [];
+      this.tracklist = docData.tracklist;
       this.genres = docData.genres;
       this.artistUnresolved = docData.artist;
       this.ratingCount = docData.ratingCount;
@@ -63,6 +63,9 @@ export class Release {
   }
 
   async resolveArtist() {
+    if (this.artist) {
+      return;
+    }
     if (this.artistUnresolved) {
       return new Promise((resolve, reject) => {
         getDoc(this.artistUnresolved)
@@ -165,24 +168,6 @@ export class Release {
       if (!inserted) {
         this.comments.push(newComment);
       }
-    });
-  }
-
-  async resolveTracklist(db: Firestore) {
-    const tracklistCollection = collection(
-      db,
-      'releases/' + this.uid + '/tracklist'
-    );
-    const tracklistQuery = query(tracklistCollection, orderBy('index', 'asc'));
-    getDocs(tracklistQuery).then((tracklistSnapshot) => {
-      tracklistSnapshot.forEach((track) => {
-        const trackData = track.data();
-        this.tracklist.push({
-          title: trackData.title,
-          duration: trackData.duration,
-          index: trackData.index,
-        });
-      });
     });
   }
 
@@ -310,17 +295,19 @@ export class Release {
     artistName: string | null | undefined,
     title: string | null | undefined,
     cover: string | null | undefined,
-    year: number | null | undefined,
+    year: number,
     rating: number | null | undefined,
-    type: string | null | undefined
+    type: string | null | undefined,
+    genres: string[] | null | undefined
   ) {
     this.uid = uid || '';
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName || '');
     this.name = title || '';
     this.cover = cover || '';
-    this.date = year ? String(year) : '';
+    this.date = new Date(year, 0, 1);
     this.rating = rating || 0;
     this.type = type || '';
+    this.genres = genres || [];
   }
 }

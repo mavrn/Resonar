@@ -42,7 +42,7 @@
       </div>
     </div>
     <div class="score-container">
-      <div v-if="!isRating" class="score">{{ release.rating }}</div>
+      <div v-if="!isRating" class="score">{{ release.rating.toFixed(1) }}</div>
       <Knob
         v-else
         v-model="roundedRating"
@@ -281,7 +281,6 @@ onMounted(async () => {
   if (snapshot) {
     release.value = new Release(snapshot);
     await release.value.resolveArtist();
-    await release.value.resolveTracklist(db);
     setUserRating();
     release.value.resolveComments(db);
   } else {
