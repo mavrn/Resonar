@@ -144,14 +144,15 @@ const buildRemoteIndex = async () => {
         const artistRef = releaseData.artist;
         const artistDoc = await getDoc(artistRef);
         if (artistDoc.exists()) {
-          releaseData.artist = artistDoc.data().name;
+          releaseData.artistName = artistDoc.data().name;
         }
       }
       index.value.push({
         name: releaseData.name,
         relevance: releaseData.relevance,
         rating: releaseData.rating,
-        artist: releaseData.artist,
+        artist: releaseData.artist ? releaseData.artist.id : "undefined",
+        artistName: releaseData.artistName,
         cover: releaseData.cover,
         year: releaseData.date?.toDate()?.getFullYear(),
         type: releaseData.type || 'release',

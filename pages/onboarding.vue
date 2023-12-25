@@ -1,19 +1,17 @@
 <script setup>
 import { getAuth, updateCurrentUser } from 'firebase/auth';
 import { ref as storageRef, uploadBytes } from 'firebase/storage';
+import { useUserStore } from '../store/currentUser';
 
+const userStore = useUserStore();
+const db = useFirestore();
 const location = ref('');
 const bio = ref('');
 const fileUpload = ref(null);
 
-let currentUser = null;
-onMounted(() => {
-  currentUser = getAuth().currentUser;
-});
-
 const submit = async () => {
   if (!fileUpload.value) return;
-
+  const currentUser = userStore.currentUser;
   const files = fileUpload.value.files;
   let fileName;
   if (files.length === 0) {
@@ -33,6 +31,7 @@ const submit = async () => {
         console.error('Image upload error:', error);
       });
   }
+  console.log('updating user uid', currentUser.uid, 'with', location, bio);
   updateUser(db, currentUser.uid, {
     location: location.value,
     bio: bio.value,

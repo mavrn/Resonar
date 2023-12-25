@@ -63,9 +63,6 @@ export class Release {
   }
 
   async resolveArtist() {
-    if (this.artist) {
-      return;
-    }
     if (this.artistUnresolved) {
       return new Promise((resolve, reject) => {
         getDoc(this.artistUnresolved)
@@ -285,24 +282,27 @@ export class Release {
     );
   }
 
-  resolveArtistLocal(artistName: string) {
+  resolveArtistLocal(artistName: string, artistID: string) {
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName || '');
+    this.artist.uid = artistID;
   }
 
   resolveAllLocal(
     uid: string | null | undefined,
-    artistName: string | null | undefined,
+    artistID: string | null | undefined,
     title: string | null | undefined,
     cover: string | null | undefined,
     year: number,
     rating: number | null | undefined,
     type: string | null | undefined,
-    genres: string[] | null | undefined
+    genres: string[] | null | undefined,
+    artistName: string,
   ) {
     this.uid = uid || '';
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName || '');
+    this.artist.uid = artistID;
     this.name = title || '';
     this.cover = cover || '';
     this.date = new Date(year, 0, 1);

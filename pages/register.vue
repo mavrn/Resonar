@@ -7,6 +7,7 @@ import {
   updateProfile,
 } from 'firebase/auth';
 
+const db = useFirestore()
 const router = useRouter();
 const email = ref('');
 const username = ref('');

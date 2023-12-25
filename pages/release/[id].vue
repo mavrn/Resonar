@@ -14,7 +14,7 @@
         <a
           v-if="release.apple"
           class="link-button"
-          :href="release.applie"
+          :href="release.apple"
           target="_blank"
           ><img src="../../assets/spotify.png"
         /></a>
@@ -26,7 +26,11 @@
       </div>
       <div class="info-row">
         <p class="descriptor">Artist</p>
-        <p>{{ release.artist?.name }}</p>
+        <NuxtLink
+          :to="'/artist/' + release.artist?.uid"
+          class="no-decoration"
+          >{{ release.artist?.name }}</NuxtLink
+        >
       </div>
       <div class="info-row">
         <p class="descriptor">Type</p>
@@ -96,9 +100,11 @@
       <div v-if="currentUser" class="add-comment-container">
         <textarea
           class="add-comment-input"
+          ref="commentarea"
           v-model="commentInput"
           placeholder="Add a comment"
-        ></textarea>
+          @input="resizeArea()"
+        />
         <button class="add-comment-button" @click="addComment">Post</button>
       </div>
       <div
@@ -250,6 +256,7 @@ const commentInput = ref('');
 const isReplyingTo = ref(null);
 const isReplyingToParent = ref(null);
 const replyInput = ref('');
+const commentarea = ref(null);
 const roundedRating = computed({
   get: () => selectedRating.value,
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
@@ -294,6 +301,13 @@ watch(
     setUserRating();
   }
 );
+
+function resizeArea() {
+  if (commentarea.value) {
+    commentarea.value.style.height = '30px';
+    commentarea.value.style.height = commentarea.value.scrollHeight + 10 + 'px';
+  }
+}
 
 async function addRating() {
   isRating.value = false;
@@ -636,24 +650,22 @@ async function removeReply(replyID, parentID) {
   display: flex;
   padding-left: 10px;
   padding-right: 20px;
-}
-
-.add-comment-container:focus-within {
   background-color: white;
   border: none;
   border: 1px solid black;
   border-radius: var(--border-radius);
-  min-width: 100%;
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
   align-items: center;
-  min-height: 50px;
 }
 
 .add-comment-input {
+  padding-top: 15px;
+  padding-bottom: 5px;
+  padding-right: 10px;
   border: none;
   width: 100%;
-  max-height: 20px;
   font-family: 'Inter', sans-serif;
+  resize: vertical;
 }
 
 .add-comment-input:focus {
@@ -727,7 +739,7 @@ async function removeReply(replyID, parentID) {
 .comment-footer {
   display: flex;
   font-size: 0.7rem;
-  opacity: 0.6;
+  opacity: 1;
   gap: 10px;
   justify-content: flex-end;
   align-items: center;
@@ -796,6 +808,11 @@ async function removeReply(replyID, parentID) {
 .footer-link:hover {
   cursor: pointer;
   opacity: 100%;
+}
+
+.no-decoration {
+  text-decoration: none;
+  color: black;
 }
 </style>
 

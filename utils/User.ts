@@ -45,27 +45,30 @@ export class User {
     updateUser(db, this.uid, fields);
   }
 
-  async addRating(db: Firestore, release: Release, rating: number) {
+  async addRating(db: Firestore, release: Release, ratingToAdd: number) {
     setDoc(doc(db, 'users/' + this.uid + '/ratings', release.uid), {
       created: Timestamp.now(),
-      rating: rating,
+      rating: ratingToAdd,
     });
     const releaseDoc = await getDoc(doc(db, 'releases', release.uid));
 
     if (release && releaseDoc.data()) {
       const { ratingCount, rating } = releaseDoc.data();
+      const newRatingCount = ratingCount + 1;
       let newRating = 0;
       if (ratingCount == 0) {
         newRating = rating;
       } else {
-        const newTotalRating = ratingCount * rating + rating;
-        const newRatingCount = ratingCount + 1;
-        newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
+        const newTotalRating = ratingCount * rating + ratingToAdd;
+        newRating = newTotalRating / newRatingCount;
       }
+      console.log("Adding rating, current rating is", rating, "current ct is", ratingCount);
+      
       await updateDoc(doc(db, 'releases', release.uid), {
-        ratingCount: increment(1),
+        ratingCount: newRatingCount,
         rating: newRating,
       });
+      console.log("Added rating, current rating is", newRating, "current ct is", newRatingCount);
       return newRating;
     } else {
       console.error('No release found with ID', release.uid);
@@ -83,16 +86,27 @@ export class User {
     if (release && releaseDoc.data()) {
       const { ratingCount, rating } = releaseDoc.data();
       let newRating = 0;
-
+      console.log(
+        'Removing Rating, current rating is',
+        rating,
+        'current ct is',
+        ratingCount
+      );
       const newTotalRating = ratingCount * rating - oldRating;
       const newRatingCount = ratingCount - 1;
       if (newRatingCount != 0) {
-        newRating = parseFloat((newTotalRating / newRatingCount).toFixed(1));
+        newRating = newTotalRating / newRatingCount;
       }
       await updateDoc(doc(db, 'releases', release.uid), {
-        ratingCount: increment(-1),
+        ratingCount: newRatingCount,
         rating: newRating,
       });
+      console.log(
+        'Removed Rating, current rating is',
+        newRating,
+        'current ct is',
+        newRatingCount
+      );
       return newRating;
     } else {
       console.error('No release found with ID', release.uid);

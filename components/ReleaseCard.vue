@@ -150,7 +150,7 @@ Figure:hover {
 }
 
 .release-info-col-1 {
-  grid-area: 1 / 2 / 3 / 4;
+  grid-area: 1 / 2 / 4 / 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,8 +174,8 @@ Figure:hover {
 }
 
 .rating-container {
-  height: 40px;
-  width: 40px;
+  height: 45px;
+  width: 45px;
   border-radius: 50%;
   border-style: solid;
   border-width: 2px;
@@ -183,6 +183,6 @@ Figure:hover {
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 17px;
+  font-size: 18px;
 }
 </style>

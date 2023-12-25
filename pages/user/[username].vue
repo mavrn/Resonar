@@ -30,7 +30,8 @@ onMounted(async () => {
       foundUser.value = false;
     } else {
       foundUser.value = new User(user);
-      foundUser.value.resolve(db);
+      await foundUser.value.resolve(db);
+      console.log(foundUser);
       imageSrc.value = await loadImage(foundUser.value.picture);
       isLoggedInUser.value = currentUser.uid == foundUser.uid;
     }

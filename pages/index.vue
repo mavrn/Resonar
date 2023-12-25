@@ -95,9 +95,9 @@ const resolveResults = async () => {
           result.year,
           result.rating,
           result.type,
-          result.genres
+          result.genres,
+          result.artistName
         );
-        newItem.resolveArtist();
       }
 
       loadedResults.value += 1;
@@ -119,8 +119,7 @@ const resolveResults = async () => {
         newItem.resolveAllLocal(documentId, result.name, result.picture);
       } else {
         newItem = new Release(relSnapshot);
-        newItem.resolveArtistLocal(result.artist);
-        newItem.resolveArtist();
+        newItem.resolveArtistLocal(result.artistName, result.artist);
       }
       loadedResults.value += 1;
       results.value[currLoaded + index] = newItem;

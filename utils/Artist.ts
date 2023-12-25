@@ -4,7 +4,7 @@ import type { DocumentData } from 'firebase/firestore';
 export class Artist {
   avatar: string;
   name: string;
-  uid: number;
+  uid: string;
 
   constructor(doc?: DocumentData) {
     if (doc) {
@@ -15,7 +15,7 @@ export class Artist {
     }
   }
 
-  resolveAllLocal(uid: number, avatar: string, name: string) {
+  resolveAllLocal(uid: string, avatar: string, name: string) {
     this.uid = uid;
     this.avatar = avatar;
     this.name = name;
