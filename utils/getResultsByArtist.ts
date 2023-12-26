@@ -11,14 +11,12 @@ export const getResultsByArtist = (
     cover?: string;
     picture?: string;
   }[],
-  searchQuery: string
+  id: string
 ) => {
   if (!index) {
     return [];
   }
-  let results = index.filter(
-    (item) => item.artist?.toLowerCase() === searchQuery.toLowerCase()
-  );
+  let results = index.filter((item) => item.artist === id);
   results.sort((a, b) => b.year - a.year);
   return results;
 };

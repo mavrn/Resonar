@@ -9,27 +9,37 @@ const location = ref('');
 const bio = ref('');
 const fileUpload = ref(null);
 
+const hasPicture = async (user) => {
+  console.log(user);
+  const foundUser = await getUser(db, user.username);
+  console.log('haspic found user', foundUser);
+  return Boolean(foundUser.data().picture);
+};
+
 const submit = async () => {
   if (!fileUpload.value) return;
   const currentUser = userStore.currentUser;
   const files = fileUpload.value.files;
   let fileName;
-  if (files.length === 0) {
-    fileName = 'avatar.png';
-  } else {
-    const storage = useFirebaseStorage();
+  if (!(await hasPicture(currentUser))) {
+    if (files.length === 0) {
+      console.log('Reverted to default avatar.');
+      fileName = 'avatar.jpg';
+    } else {
+      const storage = useFirebaseStorage();
 
-    const file = files[0];
-    const fileEnding = file.name.split('.')[1];
-    fileName = currentUser.uid + '.' + fileEnding;
-    const imageRef = storageRef(storage, '/images/' + fileName);
-    uploadBytes(imageRef, file)
-      .then((snapshot) => {
-        console.debug('Image uploaded successfully:', snapshot.ref.fullPath);
-      })
-      .catch((error) => {
-        console.error('Image upload error:', error);
-      });
+      const file = files[0];
+      const fileEnding = file.name.split('.')[1];
+      fileName = currentUser.uid + '.' + fileEnding;
+      const imageRef = storageRef(storage, '/images/' + fileName);
+      uploadBytes(imageRef, file)
+        .then((snapshot) => {
+          console.debug('Image uploaded successfully:', snapshot.ref.fullPath);
+        })
+        .catch((error) => {
+          console.error('Image upload error:', error);
+        });
+    }
   }
   console.log('updating user uid', currentUser.uid, 'with', location, bio);
   updateUser(db, currentUser.uid, {

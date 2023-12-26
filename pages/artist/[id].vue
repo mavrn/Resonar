@@ -1,5 +1,6 @@
 <template>
-  <NotFound v-if="artist == undefined" element="Album" />
+  <NotFound v-if="artist === undefined" element="Album" />
+  <Loading v-else-if="artist === null"></Loading>
   <div v-else class="wrapper">
     <div class="main-grid">
       <div class="info-row">
@@ -21,7 +22,6 @@
 
 <script setup>
 import { doc, getDoc } from 'firebase/firestore';
-import { useUserStore } from '../../store/currentUser';
 
 const props = defineProps({ index: Array });
 
@@ -35,13 +35,13 @@ onMounted(async () => {
   const snapshot = await getDoc(artistDocument);
   if (snapshot) {
     artist.value = new Artist(snapshot);
-    releases.value = getResultsByArtist(props.index, artist.value.name);
+    releases.value = getResultsByArtist(props.index, artist.value.uid);
     releases.value.forEach(async (release, index) => {
       const [collectionPath, documentId] = release.reference.split('/');
       const documentRef = doc(db, collectionPath, documentId);
       const relSnapshot = await getDoc(documentRef);
       const newRelease = new Release(relSnapshot);
-      newRelease.resolveArtistLocal(release.artist);
+      newRelease.resolveArtistLocal(release.artistName, release.artist);
       newRelease.resolveArtist();
       releases.value[index] = newRelease;
     });
@@ -53,15 +53,12 @@ onMounted(async () => {
 
 <style scoped>
 .main-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 0.6fr 1fr;
-  grid-column-gap: 0px;
-  grid-row-gap: 0px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .info-row {
-  grid-area: 1 / 2 / 2 / 3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -96,8 +93,6 @@ onMounted(async () => {
 }
 
 .discography-grid {
-  grid-area: 2 / 1 / 3 / 4;
-  display: flex;
-  justify-content: center;
+  min-width: 50vw;
 }
 </style>

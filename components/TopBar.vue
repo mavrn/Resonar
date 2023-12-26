@@ -49,7 +49,7 @@ function onSortingOrderChange() {
   </Transition>
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
     <NuxtLink to="/">
-      <img class="header-logo-sm" src="../assets/sonar-logo.png" alt="Logo"
+      <img class="header-logo-sm" src="../assets/logo-lm.png" alt="Logo"
     /></NuxtLink>
     <div v-if="!currentUser" class="header-main-user show-smaller-than-sm-flex">
       <NuxtLink to="/login"
@@ -70,7 +70,7 @@ function onSortingOrderChange() {
     <div class="inner">
       <div class="header-main">
         <NuxtLink class="show-bigger-than-lg-flex" to="/">
-          <img class="header-logo" src="../assets/sonar-logo.png" alt="Logo" />
+          <img class="header-logo" src="../assets/logo-lm.png" alt="Logo" />
         </NuxtLink>
         <div class="header-search">
           <div class="search-bar-field">

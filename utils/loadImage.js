@@ -1,6 +1,13 @@
 import { getStorage, ref as storageRef, getBytes } from 'firebase/storage';
 
+function isURL(str) {
+  return str.split('.').length >= 3;
+}
+
 export const loadImage = async (fileName) => {
+  if (isURL(fileName)) {
+    return fileName;
+  }
   const storage = getStorage();
   const store = storageRef(storage, `images/${fileName}`);
   const imageFormat = fileName.split('.')[1];

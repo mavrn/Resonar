@@ -1,8 +1,9 @@
 <template>
-  <NotFound v-if="release == undefined" element="Album" />
+  <NotFound v-if="release === undefined" element="Album" />
+  <Loading v-else-if="release === null"></Loading>
   <div v-else class="release-wrapper">
     <div class="cover-container">
-      <img class="cover" :src="release.cover" />
+      <img class="cover" :src="release?.cover" />
       <div v-if="release.spotify || release.apple" class="links">
         <a
           v-if="release.spotify"
@@ -38,15 +39,15 @@
       </div>
       <div class="info-row">
         <p class="descriptor">Genres</p>
-        <p>{{ release.genres.join(', ') }}</p>
+        <p>{{ release?.genres?.join(', ') }}</p>
       </div>
       <div class="info-row">
         <p class="descriptor">Date</p>
-        <p>{{ formatDate(release.date.toDate()) }}</p>
+        <p>{{ formatDate(release.date?.toDate()) }}</p>
       </div>
     </div>
     <div class="score-container">
-      <div v-if="!isRating" class="score">{{ release.rating.toFixed(1) }}</div>
+      <div v-if="!isRating" class="score">{{ release.rating?.toFixed(1) }}</div>
       <Knob
         v-else
         v-model="roundedRating"
@@ -263,6 +264,9 @@ const roundedRating = computed({
 });
 
 function formatDate(date) {
+  if (!date) {
+    return '';
+  }
   const day = String(date.getDate()).padStart(2, '0');
   const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
   const year = date.getFullYear();
@@ -285,7 +289,7 @@ function setUserRating() {
 onMounted(async () => {
   const releaseDocument = doc(db, '/releases', routedRelease);
   const snapshot = await getDoc(releaseDocument);
-  if (snapshot) {
+  if (snapshot.exists()) {
     release.value = new Release(snapshot);
     await release.value.resolveArtist();
     setUserRating();

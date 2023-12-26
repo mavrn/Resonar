@@ -176,9 +176,8 @@ onMounted(async () => {
 }
 
 .skeleton {
-  aspect-ratio: 1;
-  width: clamp(200px, 80%, 100%) !important;
-  height: clamp(200px, 80%, 100%) !important;
+  width: 200px !important;
+  height: 200px !important;
   border-radius: 50%;
   position: relative;
 }

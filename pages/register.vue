@@ -7,34 +7,54 @@ import {
   updateProfile,
 } from 'firebase/auth';
 
-const db = useFirestore()
+const db = useFirestore();
 const router = useRouter();
 const email = ref('');
 const username = ref('');
+const errMsg = ref();
 const password = ref('');
 const auth = getAuth();
 const register = () => {
+  if (getUser(username.value)) {
+    errMsg.value = 'Username taken.';
+    return;
+  }
   createUserWithEmailAndPassword(auth, email.value, password.value)
     .then(async (userCredentials) => {
-        console.debug('Successfully registered!');
-        await createUser(db, username.value, email.value, userCredentials.user.uid);
-        navigateTo('/onboarding');
+      console.debug('Successfully registered!');
+      await createUser(
+        db,
+        username.value,
+        email.value,
+        userCredentials.user.uid
+      );
+      navigateTo('/onboarding');
     })
     .catch((error) => {
       console.debug(error.code);
-      alert(error.message);
+      errMsg.value = error.message;
     });
 };
 const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)
-    .then((data) => {
+    .then(async (userCredentials) => {
+      console.log(userCredentials);
+      await createUser(
+        db,
+        userCredentials.user.displayName,
+        userCredentials.user.email,
+        userCredentials.user.uid
+      );
+      await updateUser(db, userCredentials.user.uid, {
+        picture: userCredentials.user.photoURL,
+      });
       console.debug('Successfully registered!');
-      router.push('./');
+      navigateTo('/onboarding');
     })
     .catch((error) => {
       console.debug(error.code);
-      alert(error.message);
+      errMsg.value = error.message;
     });
 };
 </script>
@@ -67,7 +87,7 @@ const signInWithGoogle = () => {
             type="password"
           />
         </div>
-
+        <p v-if="errMsg" class="error-message">{{ errMsg }}</p>
         <Button class="login-button" type="submit">Register</Button>
         <p class="text-divider">OR</p>
         <Button
@@ -127,5 +147,10 @@ form {
   width: auto;
   padding-right: 5px;
   padding-top: 2px;
+}
+
+.error-message {
+  color: red;
+  padding-bottom: 15px;
 }
 </style>

@@ -12,9 +12,24 @@ const router = useRouter();
 const email = ref('');
 const password = ref('');
 const errMsg = ref();
+const db = useFirestore();
+
+function isValidEmail(email: string) {
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return regex.test(email);
+}
 
 const signIn = async () => {
-  signInWithEmailAndPassword(getAuth(), email.value, password.value)
+  let emailToSearch = email.value;
+  if (!isValidEmail(email.value)) {
+    const foundUser = await getUser(db, email.value);
+    if (!foundUser) {
+      errMsg.value = "Couldn't find Username.";
+      return;
+    }
+    emailToSearch = foundUser.data().email;
+  }
+  signInWithEmailAndPassword(getAuth(), emailToSearch, password.value)
     .then((data) => {
       console.debug('Successfully signed in!');
       router.push('./');
@@ -55,7 +70,11 @@ const signInRedirect = async () => {
           <span class="p-inputgroup-addon">
             <i class="material-icons">person</i>
           </span>
-          <InputText placeholder="E-Mail or Username" v-model="email" type="text" />
+          <InputText
+            placeholder="E-Mail or Username"
+            v-model="email"
+            type="text"
+          />
         </div>
         <div class="input-field p-inputgroup" style="padding-bottom: 20px">
           <span class="p-inputgroup-addon">
@@ -125,5 +144,10 @@ form {
   width: auto;
   padding-right: 5px;
   padding-top: 2px;
+}
+
+.error-message {
+  color: red;
+  padding-bottom: 15px;
 }
 </style>
