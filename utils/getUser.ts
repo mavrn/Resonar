@@ -1,9 +1,6 @@
 import {
   collection,
   getDocs,
-  addDoc,
-  deleteDoc,
-  doc,
   query,
   where,
   Firestore,

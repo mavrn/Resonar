@@ -9,14 +9,13 @@ import { useUserStore } from './store/currentUser';
 const { setUser } = useUserStore();
 const db = useFirestore();
 const searchValue = ref('');
-const sorting = ref({ field: 'popular', order: -1 });
 const router = useRouter();
 const index = ref<Array<Object>>([]);
 let remoteJSONFound = false;
 let remoteJSONTooOld = false;
 let localJSONFound = false;
 let localJSONTooOld = false;
-const remoteIndexLoaded = ref<boolean | null>(null);
+const remoteIndexLoaded = ref<boolean | undefined>(undefined);
 const storage = useFirebaseStorage();
 const jsonRef = storageRef(storage, 'index.json');
 
@@ -151,7 +150,7 @@ const buildRemoteIndex = async () => {
         name: releaseData.name,
         relevance: releaseData.relevance,
         rating: releaseData.rating,
-        artist: releaseData.artist ? releaseData.artist.id : "undefined",
+        artist: releaseData.artist ? releaseData.artist.id : 'undefined',
         artistName: releaseData.artistName,
         cover: releaseData.cover,
         year: releaseData.date?.toDate()?.getFullYear(),
@@ -249,29 +248,23 @@ watch(
   }
 );
 
-const handleSortingChange = (newSorting: string, order: number) => {
-  sorting.value = { field: newSorting, order: order };
-  console.debug('Sorting changed to', sorting.value);
-};
-
 const handleSignOut = async () => {
   signOut(auth);
 };
 </script>
 
 <template>
+  <Title>Resonar</Title>
   <div class="header-fixed">
     <div class="wrapper">
       <TopBar
         v-model:search-value="searchValue"
         :handleSignOut="handleSignOut"
-        :handleSortingChange="handleSortingChange"
         :remoteIndexLoaded="remoteIndexLoaded"
       />
       <NuxtPage
         v-model:searchValue="searchValue"
         :index="index"
-        :sorting="sorting"
         :remoteIndexLoaded="remoteIndexLoaded"
       ></NuxtPage>
     </div>

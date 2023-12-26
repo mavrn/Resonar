@@ -4,18 +4,16 @@ import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
   signInWithPopup,
-  updateProfile,
 } from 'firebase/auth';
 
 const db = useFirestore();
-const router = useRouter();
 const email = ref('');
 const username = ref('');
 const errMsg = ref();
 const password = ref('');
 const auth = getAuth();
-const register = () => {
-  if (getUser(username.value)) {
+const register = async () => {
+  if (await getUser(db, username.value)) {
     errMsg.value = 'Username taken.';
     return;
   }

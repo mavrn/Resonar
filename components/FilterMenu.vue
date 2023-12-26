@@ -40,7 +40,22 @@
       :options="typeOptions"
       class="dropdown"
     />
-    <GenreFilter class="genre-filter"></GenreFilter>
+    <div class="sorting-field">
+      <Dropdown
+        v-model="filtering.sorting"
+        inputId="sorting"
+        :options="sortingOptions"
+        class="dropdown-rest"
+      />
+      <button class="sorting-order-button" @click="onClickSortingOrder()">
+        <svg
+          :class="{ 'order-arrow': true, down: filtering.sortingOrder == -1 }"
+          viewBox="0 0 20 20"
+        >
+          <use href="../assets/arrow.svg#arrow"></use>
+        </svg>
+      </button>
+    </div>
     <div class="button-field">
       <button
         :class="{
@@ -69,12 +84,20 @@ import { useFilteringStore } from '../store/filtering';
 const { filtering } = storeToRefs(useFilteringStore());
 
 const type = ref('All');
+const sorting = ref('Relevance');
+
+function onClickSortingOrder() {
+  filtering.value.sortingOrder = -filtering.value.sortingOrder;
+}
+
 watch(
   () => type.value,
   () => {
     filtering.value.type = type.value.toLowerCase();
   }
 );
+
+const sortingOptions = ['Relevance', 'Release Date', 'Rating', 'Alphabetical'];
 
 const typeOptions = [
   'All',
@@ -105,6 +128,34 @@ const typeOptions = [
   padding: 10px;
   margin-top: 20px;
 }
+
+.order-arrow {
+  height: auto;
+  width: 15px;
+  transition: transform 0.3s;
+  fill: white;
+}
+
+.order-arrow.down {
+  transform: scaleY(-1) translateY(-4px);
+  transition: transform 0.3s;
+}
+
+.sorting-field {
+  display: flex;
+  align-items: center;
+}
+.sorting-order-button {
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: white;
+  border: 1px solid white;
+  margin-left: 10px;
+  width: 40px;
+  height: 40px;
+  padding: 0px;
+}
+
 .filter-passive-button {
   border-radius: var(--border-radius);
   background: transparent;
@@ -141,14 +192,9 @@ const typeOptions = [
 }
 
 .dropdown {
-  width: 200px;
+  width: 210px;
   margin-bottom: 30px;
   margin-top: 30px;
-}
-
-.genre-filter {
-  max-width: 400px;
-  width: 100%;
 }
 </style>
 

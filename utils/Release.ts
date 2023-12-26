@@ -297,7 +297,7 @@ export class Release {
     rating: number | null | undefined,
     type: string | null | undefined,
     genres: string[] | null | undefined,
-    artistName: string,
+    artistName: string
   ) {
     this.uid = uid || '';
     this.artist = new Artist();

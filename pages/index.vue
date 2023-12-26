@@ -1,5 +1,13 @@
 <template>
+  <div
+    v-if="results.length == 0 && doneFlag && remoteIndexLoaded"
+    class="not-found-text"
+  >
+    No results found.
+  </div>
+  <Loading v-else-if="loadedResults == 0" />
   <ResultsGrid
+    v-else
     :results="results"
     :update="resolveResults"
     :loadedResults="loadedResults"
@@ -12,16 +20,19 @@ import { useFilteringStore } from '../store/filtering';
 
 const db = useFirestore();
 const filteringStore = useFilteringStore();
+import { useUserStore } from '../store/currentUser';
 const { filtering } = filteringStore;
 
+
+const { currentUser } = storeToRefs(useUserStore());
 const limit = 20;
 const results = ref([]);
 const loadedResults = ref(0);
 const processing = ref(false);
+const doneFlag = ref(false);
 const props = defineProps({
   searchValue: String,
   index: Array,
-  sorting: Object,
   remoteIndexLoaded: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
@@ -39,6 +50,7 @@ const debounce = (func, delay) => {
 };
 
 const resolveResults = async () => {
+  doneFlag.value = false;
   console.debug('Resolve called while loadedresults is', loadedResults.value);
   if (processing.value) {
     console.debug('Rejected. Reason: Still preprocessing.');
@@ -53,86 +65,48 @@ const resolveResults = async () => {
     return;
   }
   console.debug('Accepted.');
-  let local;
-  if (!props.remoteIndexLoaded) {
-    console.debug(
-      'Showing local results. Reason: Index not yet fetched from remote.'
-    );
-    local = true;
-  } else if (!connectionIsReady.value) {
-    console.debug(
-      'Showing local results. Reason: Firebase connection still initializing.'
-    );
-    local = true;
-  } else {
-    console.debug('Showing remote results.');
-    local = false;
-  }
   processing.value = true;
   const limitedResults = results.value.slice(
     loadedResults.value,
     loadedResults.value + limit
   );
   const currLoaded = loadedResults.value;
-  if (local) {
-    limitedResults.forEach(async (result, index) => {
-      const [collectionPath, documentId] = result.reference.split('/');
-      console.debug('Getting Release locally', documentId);
-      let newItem;
-      if (result.type == 'artist') {
-        newItem = new Artist();
-        newItem.resolveAllLocal(documentId, result.picture, result.name);
-      } else if (result.type == 'user') {
-        newItem = new User();
-        newItem.resolveAllLocal(documentId, result.name, result.picture);
-      } else {
-        newItem = new Release();
-        newItem.resolveAllLocal(
-          documentId,
-          result.artist,
-          result.name,
-          result.cover,
-          result.year,
-          result.rating,
-          result.type,
-          result.genres,
-          result.artistName
-        );
-      }
-
-      loadedResults.value += 1;
-      results.value[currLoaded + index] = newItem;
-      console.debug('Done, populated index', currLoaded + index);
-      processing.value = false;
-    });
-  } else {
-    limitedResults.forEach(async (result, index) => {
-      const [collectionPath, documentId] = result.reference.split('/');
-      const documentRef = doc(db, collectionPath, documentId);
-      console.debug('Getting Doc', documentId);
-      const relSnapshot = await getDoc(documentRef);
-      let newItem;
-      if (result.type == 'artist') {
-        newItem = new Artist(relSnapshot);
-      } else if (result.type == 'user') {
-        newItem = new User();
-        newItem.resolveAllLocal(documentId, result.name, result.picture);
-      } else {
-        newItem = new Release(relSnapshot);
-        newItem.resolveArtistLocal(result.artistName, result.artist);
-      }
-      loadedResults.value += 1;
-      results.value[currLoaded + index] = newItem;
-      console.debug('Done, populated index', currLoaded + index);
-      processing.value = false;
-    });
-  }
+  limitedResults.forEach(async (result, index) => {
+    const [collectionPath, documentId] = result.reference.split('/');
+    console.debug('Getting Release locally', documentId);
+    let newItem;
+    if (result.type == 'artist') {
+      newItem = new Artist();
+      newItem.resolveAllLocal(documentId, result.picture, result.name);
+    } else if (result.type == 'user') {
+      newItem = new User();
+      newItem.resolveAllLocal(documentId, result.name, result.picture);
+    } else {
+      newItem = new Release();
+      newItem.resolveAllLocal(
+        documentId,
+        result.artist,
+        result.name,
+        result.cover,
+        result.year,
+        result.rating,
+        result.type,
+        result.genres,
+        result.artistName
+      );
+    }
+    loadedResults.value += 1;
+    results.value[currLoaded + index] = newItem;
+    console.debug('Done, populated index', currLoaded + index);
+    processing.value = false;
+  });
 };
 
-const updateResultsUnl = async (searchValue, index, sorting) => {
+const updateResultsUnl = async (searchValue, index) => {
   loadedResults.value = 0;
-  results.value = getResults(index, searchValue, sorting, filtering);
+  results.value = await getResults(db, index, searchValue, filtering, currentUser.value);
   resolveResults();
+  doneFlag.value = true;
 };
 
 const updateResults = debounce(updateResultsUnl, 150);
@@ -140,26 +114,19 @@ const updateResults = debounce(updateResultsUnl, 150);
 watch(
   () => props.searchValue,
   () => {
-    updateResults(props.searchValue, props.index, props.sorting);
+    updateResults(props.searchValue, props.index);
   }
 );
 
 watch(
   () => props.index,
   () => {
-    updateResults(props.searchValue, props.index, props.sorting);
-  }
-);
-
-watch(
-  () => props.sorting,
-  () => {
-    updateResults(props.searchValue, props.index, props.sorting);
+    updateResults(props.searchValue, props.index);
   }
 );
 
 watch(filtering, () => {
-  updateResults(props.searchValue, props.index, props.sorting);
+  updateResults(props.searchValue, props.index);
 });
 
 const probeConnection = async () => {
@@ -180,4 +147,12 @@ onMounted(() => {
 });
 </script>
 
-<style scoped></style>
+<style scoped>
+.not-found-text {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 100px;
+}
+</style>

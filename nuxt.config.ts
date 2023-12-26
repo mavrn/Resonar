@@ -1,3 +1,4 @@
+
 export default defineNuxtConfig({
   experimental: {
     renderJsonPayloads: false,
@@ -25,7 +26,7 @@ export default defineNuxtConfig({
         'Skeleton',
         'InputText',
         'FileUpload',
-        'Knob'
+        'Knob',
       ],
       exclude: undefined,
     },

@@ -10,11 +10,12 @@ const props = defineProps({
 });
 const emits = defineEmits(['update:searchValue']);
 const { currentUser } = storeToRefs(useUserStore());
-
-const sorting = ref('Popular');
-const sortingOrder = ref(-1);
 const showFilterMenu = ref(false);
+const filterOverlayRef = ref<null | HTMLElement>(null);
+const overlayToggleRef = ref<null | HTMLElement>(null);
 const { filtering } = storeToRefs(useFilteringStore());
+const sorting = ref('Relevance');
+const sortingOrder = ref(-1);
 
 const computedSearchValue = computed({
   get: () => props.searchValue,
@@ -23,27 +24,47 @@ const computedSearchValue = computed({
   },
 });
 
-function toCamelCase(inputString: string) {
-  return inputString
-    .replace(/\s(.)/g, (_, match) => match.toUpperCase())
-    .replace(/\s/g, '')
-    .replace(/^(.)/, (match) => match.toLowerCase());
+function closeOverlay() {
+  showFilterMenu.value = false;
 }
+
+watch(showFilterMenu, (newValue) => {
+  if (newValue) {
+    document.addEventListener('click', handleOutsideClick);
+    document.addEventListener('touchstart', handleOutsideClick);
+  } else {
+    document.removeEventListener('click', handleOutsideClick);
+    document.removeEventListener('touchstart', handleOutsideClick);
+  }
+});
+
+const handleOutsideClick = (event: Event) => {
+  if (
+    !filterOverlayRef.value?.contains(event.target as Node) &&
+    !overlayToggleRef.value?.contains(event.target as Node)
+  ) {
+    closeOverlay();
+  }
+};
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleOutsideClick);
+  document.removeEventListener('touchstart', handleOutsideClick);
+});
 
 function onSortingChange(newSorting: string) {
   sorting.value = newSorting;
-  newSorting = toCamelCase(newSorting);
-  props.handleSortingChange?.(newSorting, sortingOrder);
+  filtering.value.sorting = newSorting;
 }
 
 function onSortingOrderChange() {
   sortingOrder.value = -sortingOrder.value;
-  props.handleSortingChange?.(toCamelCase(sorting.value), sortingOrder.value);
+  filtering.value.sortingOrder = sortingOrder.value;
 }
 </script>
 <template>
   <Transition mode="out-in">
-    <div v-if="showFilterMenu" class="filter-overlay">
+    <div v-if="showFilterMenu" class="filter-overlay" ref="filterOverlayRef">
       <FilterMenu :filtering="filtering"></FilterMenu>
     </div>
   </Transition>
@@ -181,12 +202,6 @@ function onSortingOrderChange() {
                         In your Bookmarks
                       </button>
                     </div>
-                    <div class="filter-genre-field">
-                      <GenreFilter
-                        class="genre-filter"
-                        v-model="filtering.genres"
-                      ></GenreFilter>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -207,9 +222,9 @@ function onSortingOrderChange() {
                 <div class="sorting-dropdown-options">
                   <div
                     class="sorting-dropdown-option"
-                    @click="onSortingChange('Popular')"
+                    @click="onSortingChange('Relevance')"
                   >
-                    Popular
+                    Relevance
                   </div>
                   <div
                     class="sorting-dropdown-option"
@@ -241,7 +256,10 @@ function onSortingOrderChange() {
               </div>
             </div>
 
-            <div class="show-smaller-than-lg-block filter-field">
+            <div
+              class="show-smaller-than-lg-block filter-field"
+              ref="overlayToggleRef"
+            >
               <Button
                 class="filter-button secondary-button"
                 @click="showFilterMenu = !showFilterMenu"
@@ -443,9 +461,6 @@ header {
   fill: gray;
 }
 
-.genre-filter {
-  width: 100%;
-}
 .order-button {
   position: relative;
   align-items: center;
@@ -551,13 +566,6 @@ header {
 
 .filter-type-field {
   margin: 2px;
-}
-
-.filter-genre-field {
-  margin: 2px;
-  margin-top: 5px;
-  padding: 5px;
-  padding-top: 10px;
 }
 
 .filter-combi-field {

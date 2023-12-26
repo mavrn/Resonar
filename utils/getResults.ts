@@ -1,9 +1,16 @@
-import { Filter } from '../utils/Filter';
+import { Filter } from './Filter';
+import { User } from './User';
+import { getRatingsByUser } from './getRatingsByUser';
+import { Firestore, QueryDocumentSnapshot } from 'firebase/firestore';
 
-export const getResults = (
+function getRatingById(snapshots: QueryDocumentSnapshot[], targetID: string) {
+  return snapshots.find((snapshot) => snapshot.id === targetID)?.data().rating;
+}
+export const getResults = async (
+  db: Firestore,
   index: {
     name: string;
-    artist: string;
+    artistName: string;
     reference: string;
     genres: string[];
     year: number;
@@ -14,34 +21,32 @@ export const getResults = (
     picture?: string;
   }[],
   searchQuery: string,
-  sorting?: { field: string; order: number },
-  filtering?: Filter
+  filtering: Filter,
+  currentUser: User
 ) => {
-
   if (!index) {
     return [];
   }
+  console.log(filtering);
   console.debug('Filtering...');
   searchQuery = searchQuery.toLowerCase();
   let results = index.filter(
     (item) =>
       item.name.toLowerCase().includes(searchQuery) ||
-      item.artist?.toLowerCase().includes(searchQuery)
+      item.artistName?.toLowerCase().includes(searchQuery) ||
+      item.genres?.some((str) => str?.toLowerCase()?.includes(searchQuery))
   );
   if (filtering) {
     if (filtering.type != 'all') {
       if (filtering.type == 'releases') {
-        results = results.filter((item) => ['album', 'single'].includes(item.type));
+        results = results.filter((item) =>
+          ['album', 'single'].includes(item.type)
+        );
       } else {
         results = results.filter(
           (item) => item.type === filtering.type.slice(0, -1)
         );
       }
-    }
-    if (filtering.genres.length != 0 && filtering.genres[0] != '') {
-      results = results.filter((item) =>
-        item.genres.every((genre) => filtering.genres.includes(genre))
-      );
     }
     if (filtering.yearRange[0] != 1950 || filtering.yearRange[1] != 2023) {
       results = results.filter(
@@ -57,32 +62,45 @@ export const getResults = (
           item.rating <= filtering.ratingRange[1]
       );
     }
+    if (
+      (filtering.inRated || filtering.sorting == 'Your Rating') &&
+      currentUser
+    ) {
+      const currentUserRatedDocs = await getRatingsByUser(db, currentUser);
+      console.log(currentUserRatedDocs);
+      results = results.filter((result) => {
+        const referencePart = result.reference.split('/')[1];
+        return currentUserRatedDocs?.some((doc) => doc.id === referencePart);
+      });
+    }
   }
-  if (sorting) {
+  if (filtering.sorting) {
     console.debug('Sorting...');
-    if (sorting.field === 'releaseDate') {
+    if (filtering.sorting === 'Release Date') {
       results.sort((a, b) => {
         const aValue: number = a.year;
         const bValue: number = b.year;
-        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
+        return filtering.sortingOrder === 1 ? aValue - bValue : bValue - aValue;
       });
-    } else if (sorting.field === 'popular') {
+    } else if (filtering.sorting === 'Relevance') {
       results.sort((a, b) => {
         const aValue: number = a.relevance;
         const bValue: number = b.relevance;
-        return sorting.order === -1 ? aValue - bValue : bValue - aValue;
+        return filtering.sortingOrder === -1
+          ? aValue - bValue
+          : bValue - aValue;
       });
-    } else if (sorting.field === 'rating') {
+    } else if (filtering.sorting === 'Rating') {
       results.sort((a, b) => {
         const aValue: number = a.rating;
         const bValue: number = b.rating;
-        return sorting.order === 1 ? aValue - bValue : bValue - aValue;
+        return filtering.sortingOrder === 1 ? aValue - bValue : bValue - aValue;
       });
-    } else if (sorting.field === 'alphabetical') {
+    } else if (filtering.sorting === 'Alphabetical') {
       results.sort((a, b) => {
         const aValue: string = a.name.toLowerCase();
         const bValue: string = b.name.toLowerCase();
-        if (sorting.order === -1) {
+        if (filtering.sortingOrder === -1) {
           if (aValue < bValue) return -1;
           if (aValue > bValue) return 1;
           return 0;
@@ -91,6 +109,19 @@ export const getResults = (
           if (bValue > aValue) return 1;
           return 0;
         }
+      });
+    } else if (filtering.sorting === 'Your Rating') {
+      const currentUserRatedDocs = await getRatingsByUser(db, currentUser);
+      results.sort((a, b) => {
+        const aValue = getRatingById(
+          currentUserRatedDocs,
+          a.reference.split('/')[1]
+        );
+        const bValue = getRatingById(
+          currentUserRatedDocs,
+          b.reference.split('/')[1]
+        );
+        return filtering.sortingOrder === 1 ? aValue - bValue : bValue - aValue;
       });
     }
   }

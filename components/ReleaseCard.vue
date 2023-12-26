@@ -2,27 +2,21 @@
   <div class="release-card">
     <figure>
       <NuxtLink :to="'/release/' + release?.uid" class="figure-link">
-        <img :src="release?.cover" alt="" class="figure-image" />
+        <img :src="release?.cover" alt="" class="figure-image" ref="image" />
       </NuxtLink>
     </figure>
     <div class="release-info-wrapper">
       <div class="release-info-row-1">
-        <div class="release-info-row-1-left">
-          <strong>
-            <NuxtLink class="title" :to="'/release/' + release?.uid">{{
-              abbreviate(release?.name)
-            }}</NuxtLink></strong
-          >
-        </div>
+        <strong>
+          <NuxtLink :to="'/release/' + release?.uid"
+            ><span class="title">{{ release?.name }}</span></NuxtLink
+          ></strong
+        >
       </div>
       <div class="release-info-row-2">
-        <div class="release-info-row-2-left">
-          <NuxtLink
-            class="artist-name"
-            :to="'/artist/' + release?.artist?.uid"
-            >{{ release?.artist?.name }}</NuxtLink
-          >
-        </div>
+        <NuxtLink class="artist-name" :to="'/artist/' + release?.artist?.uid">{{
+          release?.artist?.name
+        }}</NuxtLink>
       </div>
       <div class="release-info-row-3">
         <img
@@ -52,6 +46,9 @@
 
 <script setup lang="ts">
 import { Timestamp } from 'firebase/firestore';
+
+const image = ref<null | HTMLElement>(null);
+
 function getYear(date: number | Timestamp | Date) {
   if (typeof date === 'number') {
     return date;
@@ -63,12 +60,25 @@ function getYear(date: number | Timestamp | Date) {
     return '';
   }
 }
-function abbreviate(name: string): string {
-  if (name.length > 25) {
-    return name.substring(0, 24) + '...';
+
+const updateWidth = () => {
+  if (image.value) {
+    document.documentElement.style.setProperty(
+      '--image-width',
+      `${image.value.offsetWidth * 0.8}px`
+    );
   }
-  return name;
-}
+};
+
+onMounted(() => {
+  updateWidth();
+  window.addEventListener('resize', updateWidth);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', updateWidth);
+});
+
 const props = defineProps({
   release: Object,
 });
@@ -118,24 +128,34 @@ Figure:hover {
   display: grid;
   grid-template-columns: 1fr 0.2fr;
   grid-template-rows: 1fr 0.9fr 0.3fr;
+  max-width: 100%;
 }
 
 .release-info-row-1 {
   grid-area: 1 / 1 / 2 / 2;
   display: flex;
   padding-top: 4px;
-}
-
-.release-info-row-1-left {
-  flex: 1;
-  display: flex;
-  align-items: flex-end;
   padding-left: 5px;
   font-size: 18px;
+  max-width: 100%;
 }
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  max-width: var(--image-width);
+}
+
 .release-info-row-2 {
   grid-area: 2 / 1 / 3 / 2;
   display: flex;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 1px;
+  font-size: 16px;
 }
 
 .release-info-row-3 {
@@ -154,14 +174,6 @@ Figure:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.release-info-row-2-left {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding-left: 1px;
-  font-size: 16px;
 }
 
 .type-icon {

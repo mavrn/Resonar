@@ -25,25 +25,32 @@
       <div class="info-row">
         <p class="title">{{ release.name }}</p>
       </div>
-      <div class="info-row">
-        <p class="descriptor">Artist</p>
-        <NuxtLink
-          :to="'/artist/' + release.artist?.uid"
-          class="no-decoration"
-          >{{ release.artist?.name }}</NuxtLink
-        >
-      </div>
-      <div class="info-row">
-        <p class="descriptor">Type</p>
-        <p>{{ toTitleCase(release.type) }}</p>
-      </div>
-      <div class="info-row">
-        <p class="descriptor">Genres</p>
-        <p>{{ release?.genres?.join(', ') }}</p>
-      </div>
-      <div class="info-row">
-        <p class="descriptor">Date</p>
-        <p>{{ formatDate(release.date?.toDate()) }}</p>
+      <div class="metadata">
+        <div class="info-row">
+          <p class="descriptor">Artist</p>
+          <NuxtLink
+            :to="'/artist/' + release.artist?.uid"
+            class="no-decoration"
+            >{{ release.artist?.name }}</NuxtLink
+          >
+        </div>
+        <div class="info-row">
+          <p class="descriptor">Type</p>
+          <p>{{ toTitleCase(release.type) }}</p>
+        </div>
+        <div class="info-row">
+          <p class="descriptor">Genres</p>
+          <div class="genres">
+            <p v-if="release?.genres?.length > 0">{{ release?.genres[0] }}</p>
+            <p v-if="release?.genres?.length > 1" class="subgenres">
+              {{ release?.genres?.slice(1)?.join(', ') }}
+            </p>
+          </div>
+        </div>
+        <div class="info-row">
+          <p class="descriptor">Date</p>
+          <p>{{ formatDate(release.date?.toDate()) }}</p>
+        </div>
       </div>
     </div>
     <div class="score-container">
@@ -263,16 +270,7 @@ const roundedRating = computed({
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
 });
 
-function formatDate(date) {
-  if (!date) {
-    return '';
-  }
-  const day = String(date.getDate()).padStart(2, '0');
-  const month = String(date.getMonth() + 1).padStart(2, '0'); // January is 0!
-  const year = date.getFullYear();
 
-  return `${day}.${month}.${year}`;
-}
 
 function setUserRating() {
   let newUserRating = undefined;
@@ -393,7 +391,7 @@ async function removeReply(replyID, parentID) {
   grid-row-gap: 10px;
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
-    grid-template-rows: 1fr 0.8fr 0.6fr 0.6fr min-content;
+    grid-template-rows: 1fr 0.8fr 0.6fr min-content min-content;
     padding: 10px;
     padding-top: 36px;
   }
@@ -424,8 +422,33 @@ async function removeReply(replyID, parentID) {
     justify-content: center;
     padding-left: 5px;
     padding-right: 5px;
+    align-items: center;
   }
 }
+
+.info-row {
+  display: flex;
+  align-items: center;
+}
+
+.descriptor {
+  min-width: 80px;
+  padding-right: 10px;
+  text-align: left;
+  opacity: 70%;
+  font-size: 15px;
+}
+
+.subgenres {
+  font-size: 12px;
+}
+
+.metadata {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .score-container {
   grid-area: 1 / 3 / 2 / 4;
   display: flex;
@@ -472,19 +495,6 @@ async function removeReply(replyID, parentID) {
   border-radius: var(--border-radius);
   aspect-ratio: 1;
   box-shadow: 0 0 30px rgba(0, 0, 0, 1);
-}
-
-.info-row {
-  display: flex;
-  align-items: center;
-}
-
-.descriptor {
-  width: 80px; /* Adjust the width as needed */
-  padding-right: 10px; /* Adjust the padding as needed */
-  text-align: left;
-  opacity: 70%;
-  font-size: 15px;
 }
 
 .score {
