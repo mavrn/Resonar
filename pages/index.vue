@@ -23,7 +23,6 @@ const filteringStore = useFilteringStore();
 import { useUserStore } from '../store/currentUser';
 const { filtering } = filteringStore;
 
-
 const { currentUser } = storeToRefs(useUserStore());
 const limit = 20;
 const results = ref([]);
@@ -37,7 +36,6 @@ const props = defineProps({
 });
 const emits = defineEmits(['update:searchValue']);
 const route = useRoute();
-const connectionIsReady = ref(false);
 
 const debounce = (func, delay) => {
   let timeoutId;
@@ -54,14 +52,17 @@ const resolveResults = async () => {
   console.debug('Resolve called while loadedresults is', loadedResults.value);
   if (processing.value) {
     console.debug('Rejected. Reason: Still preprocessing.');
+    doneFlag.value = true;
     return;
   }
   if (loadedResults.value == results.value.length) {
     console.debug('Rejected. Reason: All results loaded already.');
+    doneFlag.value = true;
     return;
   }
   if (loadedResults.value % limit != 0) {
     console.debug('Rejected. Reason: Still processing some docs.');
+    doneFlag.value = true;
     return;
   }
   console.debug('Accepted.');
@@ -96,6 +97,7 @@ const resolveResults = async () => {
       );
     }
     loadedResults.value += 1;
+    doneFlag.value = true;
     results.value[currLoaded + index] = newItem;
     console.debug('Done, populated index', currLoaded + index);
     processing.value = false;
@@ -104,9 +106,14 @@ const resolveResults = async () => {
 
 const updateResultsUnl = async (searchValue, index) => {
   loadedResults.value = 0;
-  results.value = await getResults(db, index, searchValue, filtering, currentUser.value);
+  results.value = await getResults(
+    db,
+    index,
+    searchValue,
+    filtering,
+    currentUser.value
+  );
   resolveResults();
-  doneFlag.value = true;
 };
 
 const updateResults = debounce(updateResultsUnl, 150);
@@ -129,16 +136,8 @@ watch(filtering, () => {
   updateResults(props.searchValue, props.index);
 });
 
-const probeConnection = async () => {
-  const exampleDoc = doc(db, 'users', 'LYe0RNkQj3QYj2ojlpcYHryd4h43');
-  getDoc(exampleDoc).then(() => {
-    connectionIsReady.value = true;
-    console.debug('Firebase initialized.');
-  });
-};
 
 onMounted(() => {
-  probeConnection();
   const param = route.query.search;
   if (param) {
     emits('update:searchValue', param);

@@ -39,8 +39,31 @@ watch(showFilterMenu, (newValue) => {
 });
 
 const handleOutsideClick = (event: Event) => {
+  const overlayElement = filterOverlayRef.value;
+
+  if (!overlayElement) {
+    return;
+  }
+
+  const rect = overlayElement.getBoundingClientRect();
+  let isInsideOverlay;
+  if (event instanceof MouseEvent) {
+    const mouseEvent = event as MouseEvent;
+    isInsideOverlay =
+      mouseEvent.clientX >= rect.left &&
+      mouseEvent.clientX <= rect.right &&
+      mouseEvent.clientY >= rect.top &&
+      mouseEvent.clientY <= rect.bottom;
+  } else if (event instanceof TouchEvent) {
+    const touch = event.touches[0];
+    isInsideOverlay =
+      touch.clientX >= rect.left &&
+      touch.clientX <= rect.right &&
+      touch.clientY >= rect.top &&
+      touch.clientY <= rect.bottom;
+  }
   if (
-    !filterOverlayRef.value?.contains(event.target as Node) &&
+    !isInsideOverlay &&
     !overlayToggleRef.value?.contains(event.target as Node)
   ) {
     closeOverlay();
@@ -512,12 +535,28 @@ header {
 .filter-dropdown {
   position: relative;
   display: inline-flex;
-  width: 200px;
+  width:180px;
   cursor: pointer;
   border: none;
   border-radius: var(--border-radius);
   background: transparent;
   user-select: none;
+}
+
+.expand-arrow {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  z-index: 2;
+  transform: translateY(-50%);
+  transition: transform 0.3s;
+  display: inline-block;
+  height: auto;
+  fill: black;
+}
+
+.filter-dropdown .expand-arrow {
+  right: 13px;
 }
 
 .filter-dropdown:hover .expand-arrow {
@@ -635,17 +674,7 @@ header {
 .sorting-dropdown-option:hover {
   color: gray;
 }
-.expand-arrow {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  z-index: 2;
-  transform: translateY(-50%);
-  transition: transform 0.3s;
-  display: inline-block;
-  height: auto;
-  fill: black;
-}
+
 
 .dropdown-selected {
   position: relative;

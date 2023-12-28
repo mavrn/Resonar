@@ -26,6 +26,7 @@ export class User {
   created: string;
   comments: { content: string; created: Date; release: Release }[];
   ratings: { rating: number; release: Release; created: Date }[];
+  bio: string;
 
   constructor(doc?: DocumentData) {
     if (doc) {
@@ -34,6 +35,7 @@ export class User {
       this.username = docData.username;
       this.location = docData.location;
       this.picture = docData.picture;
+      this.bio = docData.bio;
       this.created = docData.created;
       this.email = docData.email;
       this.comments = [];
@@ -62,13 +64,23 @@ export class User {
         const newTotalRating = ratingCount * rating + ratingToAdd;
         newRating = newTotalRating / newRatingCount;
       }
-      console.log("Adding rating, current rating is", rating, "current ct is", ratingCount);
-      
+      console.log(
+        'Adding rating, current rating is',
+        rating,
+        'current ct is',
+        ratingCount
+      );
+
       await updateDoc(doc(db, 'releases', release.uid), {
         ratingCount: newRatingCount,
         rating: newRating,
       });
-      console.log("Added rating, current rating is", newRating, "current ct is", newRatingCount);
+      console.log(
+        'Added rating, current rating is',
+        newRating,
+        'current ct is',
+        newRatingCount
+      );
       return newRating;
     } else {
       console.error('No release found with ID', release.uid);

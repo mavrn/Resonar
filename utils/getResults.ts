@@ -86,7 +86,7 @@ export const getResults = async (
       results.sort((a, b) => {
         const aValue: number = a.relevance;
         const bValue: number = b.relevance;
-        return filtering.sortingOrder === -1
+        return filtering.sortingOrder === 1
           ? aValue - bValue
           : bValue - aValue;
       });

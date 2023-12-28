@@ -103,16 +103,16 @@ const resolveJson = async () => {
     console.log('Uploading JSON...');
     await updateRemoteIndex();
     console.log('Index done by R1.');
-  } else if (remoteJSONTooOld) {
-    console.debug('Getting JSON from remote...');
-    index.value = await fetchRemoteJson();
-    console.log('Updating the remote index...');
-    await resolveRemoteIndex();
-    remoteIndexLoaded.value = true;
-    console.log('Uploading JSON...');
-    await updateRemoteIndex();
-    console.log('Index done by R2.');
-  } else if (!localJSONFound || localJSONTooOld) {
+  } //else if (remoteJSONTooOld) {
+    //console.debug('Getting JSON from remote...');
+    //index.value = await fetchRemoteJson();
+    //console.log('Updating the remote index...');
+    //await resolveRemoteIndex();
+    //remoteIndexLoaded.value = true;
+    //console.log('Uploading JSON...');
+    //await updateRemoteIndex();
+    //console.log('Index done by R2.');}
+   else if (!localJSONFound || localJSONTooOld) {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
     remoteIndexLoaded.value = true;

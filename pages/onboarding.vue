@@ -65,25 +65,21 @@ const submit = async () => {
 
         <div class="input-field p-inputgroup">
           <span class="p-inputgroup-addon">
-            <i class="material-icons">mail</i>
+            <i class="material-icons">import_contacts</i>
           </span>
+          <InputText placeholder="Bio" v-model="bio" />
+        </div>
+        <div class="upload-wrapper">
+            <i class="material-icons image-ico">image</i>
           <FileUpload
             mode="basic"
             ref="fileUpload"
             name="demo[]"
             accept="image/*"
             chooseLabel="Browse"
-            class="upload"
+            class="upload secondary-button"
           />
         </div>
-
-        <div class="input-field p-inputgroup" style="padding-bottom: 20px">
-          <span class="p-inputgroup-addon">
-            <i class="material-icons">import_contacts</i>
-          </span>
-          <InputText placeholder="Bio" v-model="bio" />
-        </div>
-
         <Button class="login-button" type="submit" @click="submit"
           >Submit</Button
         >
@@ -127,6 +123,21 @@ form {
 }
 
 .upload {
-  width: 200px;
+  scale: 80%;
+}
+
+.image-ico {
+  font-size: 28px;
+  margin-right: 15px;
+  opacity: 0.7;
+}
+.upload-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 300px;
+  width: 70%;
+  margin-left: 20px;
+  margin-bottom: 20px;
 }
 </style>

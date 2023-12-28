@@ -5,7 +5,7 @@
   ></UserActivity>
   <UserInfo v-if="selectedComponent == 'Info'" :user="user"></UserInfo>
   <UserSettings
-    v-if="selectedComponent == 'Account Settings'"
+    v-if="selectedComponent == 'Account'"
     :user="user"
   ></UserSettings>
   <UserRatings
@@ -15,6 +15,7 @@
 </template>
 
 <script setup lang="ts">
+
 defineProps({
   user: User,
   selectedComponent: String,

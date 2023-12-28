@@ -16,11 +16,8 @@ const menuOptions = ref([
     name: 'Ratings',
     icon: 'star',
   },
-  {
-    name: 'Account Settings',
-    icon: 'settings',
-  },
 ]);
+
 const selectedOption = ref('Info');
 const imageSrc = ref('');
 
@@ -31,9 +28,14 @@ onMounted(async () => {
     } else {
       foundUser.value = new User(user);
       await foundUser.value.resolve(db);
-      console.log(foundUser);
-      imageSrc.value = await loadImage(foundUser.value.picture);
       isLoggedInUser.value = currentUser.uid == foundUser.uid;
+      if (isLoggedInUser.value) {
+        menuOptions.value.push({
+          name: 'Account',
+          icon: 'settings',
+        });
+      }
+      imageSrc.value = await loadImage(foundUser.value.picture);
     }
   });
 });
@@ -99,9 +101,8 @@ onMounted(async () => {
         ></UserContainer>
       </div>
     </div>
-
-    <NotFound v-if="foundUser == undefined" element="User" />
   </div>
+  <NotFound v-if="foundUser == false" element="User" />
 </template>
 
 <style scoped>
@@ -253,5 +254,12 @@ onMounted(async () => {
   padding-top: 10px;
   text-align: center;
   font-weight: 600;
+}
+
+.flex {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>

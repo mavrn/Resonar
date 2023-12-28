@@ -1,5 +1,9 @@
 <template>
   <div class="attribute-wrapper">
+    <p v-if="user?.bio && user?.bio != ''" class="user-bio-wrapper">
+      <i class="material-icons">edit</i>
+      <span class="attribute-content">{{ user?.bio }}</span>
+    </p>
     <p class="user-attribute">
       <i class="material-icons">person</i
       ><span class="attribute-name">Username</span
@@ -64,6 +68,14 @@ i {
   opacity: 0.6;
 }
 
+.user-bio-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
 .attribute-content {
   justify-self: right;
   flex: 0 0 auto;
