@@ -10,14 +10,14 @@
           class="link-button"
           :href="release.spotify"
           target="_blank"
-          ><img src="../../assets/spotify.png"
+          ><img src="../../assets/spotify-lm.png"
         /></a>
         <a
           v-if="release.apple"
           class="link-button"
           :href="release.apple"
           target="_blank"
-          ><img src="../../assets/spotify.png"
+          ><img src="../../assets/spotify-lm.png"
         /></a>
       </div>
     </div>
@@ -62,10 +62,14 @@
         :max="10"
         :step="0.1"
         :size="190"
-        :pt="isDark ? {
-          value: { style: { stroke: 'white' } },
-          range: { style: { stroke: 'rgb(104, 104, 104)' } },
-        } : undefined"
+        :pt="
+          isDark
+            ? {
+                value: { style: { stroke: 'white' } },
+                range: { style: { stroke: 'rgb(104, 104, 104)' } },
+              }
+            : undefined
+        "
       ></Knob>
       <div class="score-buttons">
         <button
@@ -257,7 +261,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { useUserStore } from '../../store/currentUser';
 
-const isDark = document.documentElement.getAttribute('data-theme') == "dark";
+const isDark = document.documentElement.getAttribute('data-theme') == 'dark';
 const db = useFirestore();
 const { currentUser } = storeToRefs(useUserStore());
 const routedRelease = useRoute().params.id;
