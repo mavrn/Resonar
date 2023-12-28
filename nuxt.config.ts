@@ -9,7 +9,12 @@ export default defineNuxtConfig({
       enabled: true,
     },
   },
-  modules: ['nuxt-vuefire', 'nuxt-primevue', '@pinia/nuxt'],
+  modules: [
+    'nuxt-vuefire',
+    'nuxt-primevue',
+    '@pinia/nuxt',
+    '@nuxt/test-utils/module',
+  ],
   primevue: {
     usePrimeVue: true,
     options: {
