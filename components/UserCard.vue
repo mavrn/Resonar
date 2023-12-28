@@ -17,7 +17,12 @@
         </div>
       </div>
       <div class="user-info-row-2">
-        <img class="type-icon" :src="getPicName('person', isDarkMode)" />
+        <img
+          v-if="isDarkMode"
+          class="type-icon"
+          src="../assets/person-dm.png"
+        />
+        <img v-else class="type-icon" src="../assets/person-lm.png" />
         <span>User</span>
       </div>
     </div>

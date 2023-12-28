@@ -20,11 +20,25 @@
       </div>
       <div class="release-info-row-3">
         <img
-          v-if="release?.type === 'album'"
+          v-if="release?.type === 'album' && isDarkMode"
           class="type-icon"
-          :src="getPicName('album', isDarkMode)"
+          src="../assets/album-dm.png"
         />
-        <img v-else class="type-icon" :src="getPicName('single', isDarkMode)" />
+        <img
+          v-if="release?.type === 'album' && !isDarkMode"
+          class="type-icon"
+          src="../assets/album-lm.png"
+        />
+        <img
+          v-if="release?.type === 'single' && isDarkMode"
+          class="type-icon"
+          src="../assets/single-dm.png"
+        />
+        <img
+          v-if="release?.type === 'single' && !isDarkMode"
+          class="type-icon"
+          src="../assets/single-lm.png"
+        />
         <span
           >{{ toTitleCase(release?.type) }} |
           {{
@@ -79,7 +93,7 @@ onBeforeUnmount(() => {
 
 const props = defineProps({
   release: Object,
-  isDarkMode: Boolean
+  isDarkMode: Boolean,
 });
 </script>
 

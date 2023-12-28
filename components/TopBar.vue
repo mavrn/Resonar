@@ -95,9 +95,16 @@ function onSortingOrderChange() {
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
     <NuxtLink :to="{ path: '/', query: {} }">
       <img
+        v-if="isDarkMode"
         class="header-logo-sm"
         @click="computedSearchValue = ''"
-        :src="getPicName('logo', isDarkMode)"
+        src="../assets/logo-dm.png"
+        alt="Logo" />
+      <img
+        v-else
+        class="header-logo-sm"
+        @click="computedSearchValue = ''"
+        src="../assets/logo-lm.png"
         alt="Logo"
     /></NuxtLink>
     <div v-if="!currentUser" class="header-main-user show-smaller-than-sm-flex">
@@ -123,9 +130,17 @@ function onSortingOrderChange() {
           :to="{ path: '/', query: {} }"
         >
           <img
+            v-if="isDarkMode"
             class="header-logo"
             @click="computedSearchValue = ''"
-            :src="getPicName('logo', isDarkMode)"
+            src="../assets/logo-dm.png"
+            alt="Logo"
+          />
+          <img
+            v-else
+            class="header-logo"
+            @click="computedSearchValue = ''"
+            src="../assets/logo-lm.png"
             alt="Logo"
           />
         </NuxtLink>

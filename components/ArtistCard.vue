@@ -16,7 +16,8 @@
         </div>
       </div>
       <div class="artist-info-row-2">
-        <img class="type-icon" :src="getPicName('mic', isDarkMode)" />
+        <img v-if="isDarkMode" class="type-icon" src="../assets/mic-dm.png" />
+        <img v-else class="type-icon" src="../assets/mic-lm.png" />
         <span>Artist</span>
       </div>
     </div>
