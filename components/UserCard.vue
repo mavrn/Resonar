@@ -17,7 +17,7 @@
         </div>
       </div>
       <div class="user-info-row-2">
-        <img class="type-icon" src="../assets/person.png" />
+        <img class="type-icon" :src="getPicName('person', isDarkMode)" />
         <span>User</span>
       </div>
     </div>
@@ -27,6 +27,7 @@
 <script setup lang="ts">
 const props = defineProps({
   user: User,
+  isDarkMode: Boolean,
 });
 const imageData = ref<string | null>(null);
 onMounted(async () => {

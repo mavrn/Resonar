@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="artist-info-row-2">
-        <img class="type-icon" src="../assets/mic.png" />
+        <img class="type-icon" :src="getPicName('mic', isDarkMode)" />
         <span>Artist</span>
       </div>
     </div>
@@ -27,6 +27,7 @@
 import { Artist } from '#imports';
 defineProps({
   artist: Artist,
+  isDarkMode: Boolean,
 });
 </script>
 

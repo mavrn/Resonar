@@ -22,9 +22,9 @@
         <img
           v-if="release?.type === 'album'"
           class="type-icon"
-          src="../assets/album.png"
+          :src="getPicName('album', isDarkMode)"
         />
-        <img v-else class="type-icon" src="../assets/single.png" />
+        <img v-else class="type-icon" :src="getPicName('single', isDarkMode)" />
         <span
           >{{ toTitleCase(release?.type) }} |
           {{
@@ -46,9 +46,7 @@
 
 <script setup lang="ts">
 import { Timestamp } from 'firebase/firestore';
-
 const image = ref<null | HTMLElement>(null);
-
 function getYear(date: number | Timestamp | Date) {
   if (typeof date === 'number') {
     return date;
@@ -81,6 +79,7 @@ onBeforeUnmount(() => {
 
 const props = defineProps({
   release: Object,
+  isDarkMode: Boolean
 });
 </script>
 
@@ -112,7 +111,6 @@ Figure:hover {
 
 .figure-link {
   display: block;
-  color: black;
 }
 
 .figure-image {
@@ -128,6 +126,7 @@ Figure:hover {
   display: grid;
   grid-template-columns: 1fr 0.2fr;
   grid-template-rows: 1fr 0.9fr 0.3fr;
+  color: black;
   max-width: 100%;
 }
 

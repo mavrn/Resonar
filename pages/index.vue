@@ -11,6 +11,7 @@
     :results="results"
     :update="resolveResults"
     :loadedResults="loadedResults"
+    :isDarkMode="isDarkMode"
   />
 </template>
 
@@ -33,6 +34,7 @@ const props = defineProps({
   searchValue: String,
   index: Array,
   remoteIndexLoaded: Boolean,
+  isDarkMode: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
 const route = useRoute();
@@ -52,7 +54,6 @@ const resolveResults = async () => {
   console.debug('Resolve called while loadedresults is', loadedResults.value);
   if (processing.value) {
     console.debug('Rejected. Reason: Still preprocessing.');
-    doneFlag.value = true;
     return;
   }
   if (loadedResults.value == results.value.length) {
@@ -62,7 +63,6 @@ const resolveResults = async () => {
   }
   if (loadedResults.value % limit != 0) {
     console.debug('Rejected. Reason: Still processing some docs.');
-    doneFlag.value = true;
     return;
   }
   console.debug('Accepted.');
@@ -106,6 +106,9 @@ const resolveResults = async () => {
 
 const updateResultsUnl = async (searchValue, index) => {
   loadedResults.value = 0;
+  if (index.length == 0) {
+    return;
+  }
   results.value = await getResults(
     db,
     index,
@@ -135,7 +138,6 @@ watch(
 watch(filtering, () => {
   updateResults(props.searchValue, props.index);
 });
-
 
 onMounted(() => {
   const param = route.query.search;

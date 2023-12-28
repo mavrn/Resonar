@@ -89,11 +89,17 @@ const signInRedirect = async () => {
 
         <p v-if="errMsg" class="error-message">{{ errMsg }}</p>
         <Button class="login-button" type="submit">Sign In</Button>
-        <p class="text-divider">Or</p>
+        <p class="text-divider">OR</p>
         <Button class="secondary-button google-button" @click="signInRedirect">
           <img class="google-logo" src="../assets/google.svg" />
           Sign in With Google
         </Button>
+        <p class="text-divider show-smaller-than-md-block">OR</p>
+        <Button class="show-smaller-than-md-block">
+          <NuxtLink :to="'/register'" class="register-text"
+            >Register a new account</NuxtLink
+          ></Button
+        >
       </form>
     </div>
   </div>
@@ -135,6 +141,8 @@ form {
 
 .text-divider {
   font-size: 12px;
+  margin-top: 3px;
+  margin-bottom: 3px;
 }
 .google-button {
   padding: 7px;
@@ -149,5 +157,9 @@ form {
 .error-message {
   color: red;
   padding-bottom: 15px;
+}
+.register-text {
+  color: white;
+  text-decoration: none;
 }
 </style>

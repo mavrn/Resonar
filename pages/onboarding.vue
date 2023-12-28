@@ -40,13 +40,21 @@ const submit = async () => {
           console.error('Image upload error:', error);
         });
     }
+
+    console.log('updating user uid', currentUser.uid, 'with', location, bio);
+    updateUser(db, currentUser.uid, {
+      location: location.value,
+      bio: bio.value,
+      picture: fileName,
+    });
   }
-  console.log('updating user uid', currentUser.uid, 'with', location, bio);
-  updateUser(db, currentUser.uid, {
-    location: location.value,
-    bio: bio.value,
-    picture: fileName,
-  });
+  else {
+    console.log('updating user uid', currentUser.uid, 'with', location, bio);
+    updateUser(db, currentUser.uid, {
+      location: location.value,
+      bio: bio.value,
+    });
+  }
   navigateTo('/');
 };
 </script>
@@ -70,7 +78,7 @@ const submit = async () => {
           <InputText placeholder="Bio" v-model="bio" />
         </div>
         <div class="upload-wrapper">
-            <i class="material-icons image-ico">image</i>
+          <i class="material-icons image-ico">image</i>
           <FileUpload
             mode="basic"
             ref="fileUpload"

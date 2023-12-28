@@ -1,5 +1,5 @@
 <template>
-  <div class="wrapper">
+  <div class="wrapper filter-overlay">
     <div class="range-display">
       Rating: {{ filtering.ratingRange[0] }} -
       {{ filtering.ratingRange[1] }}

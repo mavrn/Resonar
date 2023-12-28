@@ -28,7 +28,7 @@ onMounted(async () => {
     } else {
       foundUser.value = new User(user);
       await foundUser.value.resolve(db);
-      isLoggedInUser.value = currentUser.uid == foundUser.uid;
+      isLoggedInUser.value = currentUser.value?.uid == foundUser.value?.uid;
       if (isLoggedInUser.value) {
         menuOptions.value.push({
           name: 'Account',
@@ -101,8 +101,8 @@ onMounted(async () => {
         ></UserContainer>
       </div>
     </div>
+    <NotFound v-if="foundUser == false" element="User" />
   </div>
-  <NotFound v-if="foundUser == false" element="User" />
 </template>
 
 <style scoped>

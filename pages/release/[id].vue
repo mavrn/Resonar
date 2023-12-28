@@ -62,6 +62,10 @@
         :max="10"
         :step="0.1"
         :size="190"
+        :pt="isDark ? {
+          value: { style: { stroke: 'white' } },
+          range: { style: { stroke: 'rgb(104, 104, 104)' } },
+        } : undefined"
       ></Knob>
       <div class="score-buttons">
         <button
@@ -253,6 +257,7 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { useUserStore } from '../../store/currentUser';
 
+const isDark = document.documentElement.getAttribute('data-theme') == "dark";
 const db = useFirestore();
 const { currentUser } = storeToRefs(useUserStore());
 const routedRelease = useRoute().params.id;
@@ -261,16 +266,14 @@ const isRating = ref(false);
 const userRating = ref(null);
 const selectedRating = ref(5);
 const commentInput = ref('');
+const replyInput = ref('');
 const isReplyingTo = ref(null);
 const isReplyingToParent = ref(null);
-const replyInput = ref('');
 const commentarea = ref(null);
 const roundedRating = computed({
   get: () => selectedRating.value,
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
 });
-
-
 
 function setUserRating() {
   let newUserRating = undefined;
@@ -327,29 +330,37 @@ async function addRating() {
 }
 
 async function addComment() {
+  if (commentInput.value === '') {
+    return;
+  }
+  const input = commentInput.value;
+  commentInput.value = '';
   const newComment = await release.value.addComment(
     db,
-    commentInput.value,
+    input,
     currentUser.value
   );
   release.value.comments.unshift(newComment);
-  commentInput.value = '';
 }
 
 async function addReply() {
+  if (replyInput.value === '') {
+    return;
+  }
+  const input = replyInput.value;
+  replyInput.value = '';
   const commentIndex = release.value.comments.findIndex(
     (comment) => comment.uid == isReplyingToParent.value
   );
   const newComment = await release.value.addReply(
     db,
     isReplyingToParent.value,
-    replyInput.value,
+    input,
     currentUser.value
   );
   release.value.comments[commentIndex].replies.push(newComment);
   isReplyingToParent.value = null;
   isReplyingTo.value = null;
-  replyInput.value = '';
 }
 
 async function removeRating() {
@@ -575,6 +586,7 @@ async function removeReply(replyID, parentID) {
   width: 50px;
   height: 50px;
   border-radius: 50%;
+  border: 2px solid black;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -834,5 +846,14 @@ async function removeReply(replyID, parentID) {
 .p-knob-text {
   fill: black;
   font-size: 23px;
+}
+
+[data-theme='dark'] .p-knob-text {
+  fill: white;
+}
+
+[data-theme='dark'] .p-knob.range {
+  fill: white !important;
+  color: white !important;
 }
 </style>

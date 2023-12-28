@@ -15,6 +15,7 @@ let remoteJSONFound = false;
 let remoteJSONTooOld = false;
 let localJSONFound = false;
 let localJSONTooOld = false;
+const isDarkMode = ref(false);
 const remoteIndexLoaded = ref<boolean | undefined>(undefined);
 const storage = useFirebaseStorage();
 const jsonRef = storageRef(storage, 'index.json');
@@ -104,15 +105,15 @@ const resolveJson = async () => {
     await updateRemoteIndex();
     console.log('Index done by R1.');
   } //else if (remoteJSONTooOld) {
-    //console.debug('Getting JSON from remote...');
-    //index.value = await fetchRemoteJson();
-    //console.log('Updating the remote index...');
-    //await resolveRemoteIndex();
-    //remoteIndexLoaded.value = true;
-    //console.log('Uploading JSON...');
-    //await updateRemoteIndex();
-    //console.log('Index done by R2.');}
-   else if (!localJSONFound || localJSONTooOld) {
+  //console.debug('Getting JSON from remote...');
+  //index.value = await fetchRemoteJson();
+  //console.log('Updating the remote index...');
+  //await resolveRemoteIndex();
+  //remoteIndexLoaded.value = true;
+  //console.log('Uploading JSON...');
+  //await updateRemoteIndex();
+  //console.log('Index done by R2.');}
+  else if (!localJSONFound || localJSONTooOld) {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
     remoteIndexLoaded.value = true;
@@ -223,6 +224,10 @@ const resolveRemoteIndex = async () => {
 };
 
 onMounted(() => {
+  initializeTheme();
+  if (document.documentElement.getAttribute('data-theme') == 'dark') {
+    isDarkMode.value = true;
+  }
   resolveJson();
   auth = getAuth();
   onAuthStateChanged(auth, async (user) => {
@@ -251,31 +256,76 @@ watch(
 const handleSignOut = async () => {
   signOut(auth);
 };
+
+const toggleDarkMode = async () => {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  if (currentTheme == 'light') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    localStorage.setItem('theme', 'dark');
+    isDarkMode.value = true;
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light');
+    localStorage.setItem('theme', 'light');
+    isDarkMode.value = false;
+  }
+};
 </script>
 
 <template>
   <Title>Resonar</Title>
+  <button class="dark-mode-toggle" @click="toggleDarkMode">
+    <i v-if="isDarkMode" class="dm-icon material-icons">dark_mode</i>
+    <i v-else class="dm-icon material-icons">light_mode</i>
+  </button>
   <div class="header-fixed">
     <div class="wrapper">
       <TopBar
         v-model:search-value="searchValue"
         :handleSignOut="handleSignOut"
         :remoteIndexLoaded="remoteIndexLoaded"
+        :isDarkMode="isDarkMode"
       />
       <NuxtPage
         v-model:searchValue="searchValue"
         :index="index"
         :remoteIndexLoaded="remoteIndexLoaded"
+        :isDarkMode="isDarkMode"
       ></NuxtPage>
     </div>
   </div>
 </template>
 
 <style scoped>
+.dark-mode-toggle {
+  width: 50px;
+  height: 50px;
+  border-top-right-radius: 100%;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  cursor: pointer;
+  z-index: 999;
+  background-color: rgba(100, 100, 100, 0.3);
+  color: white;
+  border: none;
+}
+
+.dark-mode-toggle:hover {
+  background-color: rgba(2, 2, 2, 0.7);
+}
+
+.dm-icon {
+  position: absolute;
+  top: 60%;
+  left: 40%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+}
+
 body {
   margin: auto;
   font-weight: 300;
-  background: var(--primary-bg);
+  background: white;
   color: var(--primary);
   line-height: 200%;
 }
@@ -290,6 +340,9 @@ body {
   flex-direction: column;
   min-height: 100vh;
   box-sizing: inherit;
+  [data-theme='dark'] {
+    background: black;
+  }
 }
 </style>
 
@@ -297,6 +350,199 @@ body {
 * {
   margin: 0;
   padding: 0;
+}
+
+[data-theme='dark'] .wrapper {
+  background: rgb(36, 36, 36);
+  color: white !important;
+}
+[data-theme='dark'] .rating-container {
+  color: white !important;
+  border-color: white !important;
+}
+
+[data-theme='dark'] .release-info-wrapper {
+  color: white !important;
+}
+
+[data-theme='dark'] .search-bar-field {
+  background-color: rgb(50, 62, 71);
+}
+
+[data-theme='dark'] a {
+  color: white !important;
+}
+
+[data-theme='dark'] svg {
+  fill: white !important;
+}
+
+[data-theme='dark'] input {
+  color: white !important;
+}
+
+[data-theme='dark'] input::placeholder {
+  color: white !important;
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .topbar-button {
+  background-color: rgb(255, 255, 255);
+  color: black;
+  fill: black;
+}
+
+[data-theme='dark'] .filter-overlay {
+  background-color: black;
+  color: rgb(192, 192, 192) !important;
+}
+
+[data-theme='dark'] .topbar-button i {
+  color: black !important;
+}
+
+[data-theme='dark'] .release-wrapper {
+  color: white;
+}
+
+[data-theme='dark'] .score {
+  color: white;
+  border: 2px solid white !important;
+}
+
+[data-theme='dark'] .tracklist-container {
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid white !important;
+}
+
+[data-theme='dark'] .header-logo-sm-container {
+  background-color: black;
+}
+
+[data-theme='dark'] .user-rating-button {
+  border: 2px solid white !important;
+  color: white !important;
+}
+
+[data-theme='dark'] .user-rating-button:before {
+  border: none !important;
+}
+
+[data-theme='dark'] .add-rating-button {
+  border: 2px solid white !important;
+}
+
+[data-theme='dark'] .add-rating-button:hover {
+  color: black !important;
+  fill: white !important;
+}
+
+[data-theme='dark'] .menu-button {
+  background-color: white !important;
+  color: black !important;
+}
+
+[data-theme='dark'] .menu-button-sm {
+  background-color: white !important;
+  color: black !important;
+}
+
+[data-theme='dark'] .menu-button-sm:hover {
+  background-color: white !important;
+  color: black !important;
+}
+
+.secondary-button {
+  background: transparent !important;
+  color: black !important;
+  border: 1px solid black !important;
+}
+
+[data-theme='dark'] .secondary-button {
+  background: transparent !important;
+  color: white !important;
+  border: 2px solid white !important;
+}
+[data-theme='dark'] .secondary-button:hover {
+  background: white !important;
+  color: black !important;
+  border: 2px solid white !important;
+}
+[data-theme='dark'] .comment-card,
+[data-theme='dark'] .rating-card {
+  background-color: rgb(36, 36, 48) !important;
+  border: 1px solid white !important;
+}
+[data-theme='dark'] .comment-card:hover,
+[data-theme='dark'] .rating-card:hover {
+  background-color: rgb(58, 58, 66) !important;
+}
+
+[data-theme='dark'] .rating-card-score,
+[data-theme='dark'] .rating-card-score-sm {
+  border: 2px solid white !important;
+}
+[data-theme='dark'] .comment-score {
+  border: 1px solid white !important;
+}
+
+[data-theme='dark'] .add-comment-container {
+  background-color: rgb(36, 36, 48) !important;
+  border: 1px solid white !important;
+}
+
+[data-theme='dark'] .add-comment-input {
+  background-color: rgb(36, 36, 48) !important;
+  color: white !important;
+}
+
+[data-theme='dark'] .add-comment-input::placeholder {
+  color: white !important;
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .add-comment-button {
+  color: white !important;
+  border: 1px solid white !important;
+}
+
+[data-theme='dark'] .profile-wrapper {
+  color: white !important;
+}
+
+[data-theme='dark'] .profile-wrapper-sm {
+  color: white !important;
+}
+
+[data-theme='dark'] header {
+  color: white !important;
+  background-color: rgb(0, 0, 0) !important;
+}
+
+[data-theme='dark'] .p-inputtext {
+  background-color: transparent !important;
+}
+
+[data-theme='dark'] .login-button {
+  background-color: white !important;
+  border: none !important;
+  color: black !important;
+}
+
+[data-theme='dark'] .login-button:hover {
+  background-color: transparent !important;
+  color: white !important;
+  outline: 2px solid white !important;
+}
+[data-theme='dark'] .topbar-login-button {
+  background-color: white !important;
+  color: black !important;
+}
+
+[data-theme='dark'] .topbar-login-button:hover {
+  background-color: transparent !important;
+  color: white !important;
+  border: 1px solid white;
 }
 
 .show-bigger-than-lg-flex {
@@ -388,10 +634,5 @@ body {
   @media (min-width: 501px) and (max-width: 768px) {
     display: flex;
   }
-}
-
-.secondary-button {
-  background: transparent;
-  color: black;
 }
 </style>

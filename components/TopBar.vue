@@ -7,6 +7,7 @@ const props = defineProps({
   handleSignOut: Function,
   handleSortingChange: Function,
   remoteIndexLoaded: Boolean,
+  isDarkMode: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
 const { currentUser } = storeToRefs(useUserStore());
@@ -92,20 +93,24 @@ function onSortingOrderChange() {
     </div>
   </Transition>
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
-    <NuxtLink to="/">
-      <img class="header-logo-sm" src="../assets/logo-lm.png" alt="Logo"
+    <NuxtLink :to="{ path: '/', query: {} }">
+      <img
+        class="header-logo-sm"
+        @click="computedSearchValue = ''"
+        :src="getPicName('logo', isDarkMode)"
+        alt="Logo"
     /></NuxtLink>
     <div v-if="!currentUser" class="header-main-user show-smaller-than-sm-flex">
       <NuxtLink to="/login"
-        ><Button class="topbar-button secondary-button"
-          ><i class="material-icons text-white">login</i>
+        ><Button class="topbar-login-button"
+          ><i class="material-icons">login</i>
         </Button>
       </NuxtLink>
     </div>
     <div v-else class="header-main-user show-smaller-than-sm-flex">
       <NuxtLink :to="'/user/' + currentUser.username"
-        ><Button class="topbar-button secondary-button"
-          ><i class="material-icons text-white">person</i></Button
+        ><Button class="topbar-login-button"
+          ><i class="material-icons">person</i></Button
         >
       </NuxtLink>
     </div>
@@ -113,14 +118,22 @@ function onSortingOrderChange() {
   <header>
     <div class="inner">
       <div class="header-main">
-        <NuxtLink class="show-bigger-than-lg-flex" to="/">
-          <img class="header-logo" src="../assets/logo-lm.png" alt="Logo" />
+        <NuxtLink
+          class="show-bigger-than-lg-flex"
+          :to="{ path: '/', query: {} }"
+        >
+          <img
+            class="header-logo"
+            @click="computedSearchValue = ''"
+            :src="getPicName('logo', isDarkMode)"
+            alt="Logo"
+          />
         </NuxtLink>
         <div class="header-search">
           <div class="search-bar-field">
             <div class="search-bar">
               <div class="placeholder-logo">
-                <i class="material-icons text-white">search</i>
+                <i class="material-icons">search</i>
               </div>
               <input
                 class="search-input"
@@ -287,7 +300,7 @@ function onSortingOrderChange() {
                 class="filter-button secondary-button"
                 @click="showFilterMenu = !showFilterMenu"
               >
-                <i class="material-icons text-white">tune</i>
+                <i class="material-icons">tune</i>
               </Button>
             </div>
           </div>
@@ -304,7 +317,7 @@ function onSortingOrderChange() {
           <div class="header-main-user show-between-sm-md">
             <NuxtLink to="/login"
               ><Button class="topbar-button"
-                ><i class="material-icons text-white">login</i>
+                ><i class="material-icons">login</i>
               </Button>
             </NuxtLink>
           </div>
@@ -313,7 +326,7 @@ function onSortingOrderChange() {
           <div class="header-main-user show-bigger-than-md-flex">
             <NuxtLink v-if="currentUser" :to="'/user/' + currentUser.username"
               ><Button class="topbar-button"
-                ><i class="material-icons text-white">person</i>
+                ><i class="material-icons">person</i>
                 <span>{{ currentUser.username }}</span></Button
               >
             </NuxtLink>
@@ -327,7 +340,7 @@ function onSortingOrderChange() {
           <div class="header-main-user show-between-sm-md">
             <NuxtLink v-if="currentUser" :to="'/user/' + currentUser.username"
               ><Button class="topbar-button"
-                ><i class="material-icons text-white">person</i></Button
+                ><i class="material-icons">person</i></Button
               >
             </NuxtLink>
           </div>
@@ -535,7 +548,7 @@ header {
 .filter-dropdown {
   position: relative;
   display: inline-flex;
-  width:180px;
+  width: 180px;
   cursor: pointer;
   border: none;
   border-radius: var(--border-radius);
@@ -675,7 +688,6 @@ header {
   color: gray;
 }
 
-
 .dropdown-selected {
   position: relative;
   display: flex;
@@ -713,6 +725,10 @@ header {
 
 .topbar-button {
   height: 42px;
+}
+
+.topbar-login-button {
+  height: 35px;
 }
 
 .placeholder-logo {
