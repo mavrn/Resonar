@@ -65,7 +65,7 @@
           class="submit-placeholder"
         >
           <img
-            src="../assets/loading.gif"
+            src="../assets/loading-lm.gif"
             class="loading-gif"
             alt="Loading Animation"
           />
