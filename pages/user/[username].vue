@@ -32,7 +32,6 @@ onMounted(async () => {
       isLoggedInUser.value = currentUser.value?.uid == foundUser.value?.uid;
       if (isLoggedInUser.value) {
         menuOptions.value.push({
-          // add settings tab if this profile page belongs to the logged in user
           name: 'Account',
           icon: 'settings',
         });
@@ -41,42 +40,20 @@ onMounted(async () => {
     }
   });
 });
+
+watch(currentUser, () => {
+  isLoggedInUser.value = currentUser.value.uid == foundUser.value?.uid;
+  if (isLoggedInUser.value) {
+    menuOptions.value.push({
+      name: 'Account',
+      icon: 'settings',
+    });
+  }
+});
 </script>
 
 <template>
-  <div class="profile-wrapper show-bigger-than-lg-flex">
-    <div v-if="foundUser" class="profile-container">
-      <div class="user-info">
-        <div class="avatar-wrapper">
-          <img v-if="imageSrc" class="avatar" :src="imageSrc" />
-          <Skeleton v-else class="skeleton" />
-        </div>
-        <div class="username">
-          {{ foundUser.username }}
-        </div>
-      </div>
-      <div class="menu-wrapper">
-        <Button
-          v-for="option in menuOptions"
-          :class="{
-            'menu-button': true,
-            'secondary-button': option.name != selectedOption,
-          }"
-          @click="selectedOption = option.name"
-        >
-          <span>{{ option.name }}</span>
-        </Button>
-      </div>
-      <div class="menu-box">
-        <UserContainer
-          :user="foundUser"
-          :selectedComponent="selectedOption"
-        ></UserContainer>
-      </div>
-    </div>
-    <NotFound v-if="foundUser == false" element="User" />
-  </div>
-  <div class="profile-wrapper-sm show-smaller-than-lg-flex">
+  <div class="profile-wrapper-sm">
     <div v-if="foundUser" class="profile-container-sm">
       <div class="avatar-wrapper-sm">
         <img v-if="imageSrc" class="avatar-sm" :src="imageSrc" />
@@ -108,10 +85,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.profile-wrapper {
-  justify-content: center;
-}
-
 .profile-wrapper-sm {
   padding: 20px;
   flex-direction: column;
@@ -129,62 +102,6 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.profile-container {
-  display: flex;
-  flex-direction: column;
-  gap: 50px;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  max-width: 800px;
-  border-radius: var(--border-radius);
-}
-
-.avatar-wrapper {
-  overflow: hidden;
-  justify-content: center;
-}
-.avatar {
-  aspect-ratio: 1;
-  border-radius: 50%;
-  object-fit: cover;
-  height: 200px;
-}
-.user-info {
-  align-items: center;
-  gap: 30px;
-}
-
-.menu-wrapper {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 10px;
-}
-.menu-button {
-  display: flex;
-  justify-content: center;
-  width: 160px;
-  padding-left: 5px;
-  padding-right: 5px;
-}
-
-.menu-box {
-  display: flex;
-  justify-content: center;
-  height: 100%;
-  min-width: 400px;
-  grid-area: 3 / 1 / 4 / 3;
-}
-
-.skeleton {
-  width: 200px !important;
-  height: 200px !important;
-  border-radius: 50%;
-  position: relative;
-}
-
 .skeleton-sm {
   aspect-ratio: 1;
   width: 200px !important;
@@ -256,12 +173,5 @@ onMounted(async () => {
   padding-top: 10px;
   text-align: center;
   font-weight: 600;
-}
-
-.flex {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 </style>

@@ -262,7 +262,7 @@ import { doc, getDoc } from 'firebase/firestore';
 import { useUserStore } from '../../store/currentUser';
 import { useDarkModeStore } from '~/store/darkMode';
 
-const {isDark} = storeToRefs(useDarkModeStore());
+const { isDark } = storeToRefs(useDarkModeStore());
 const db = useFirestore();
 const { currentUser } = storeToRefs(useUserStore());
 const routedRelease = useRoute().params.id;
@@ -635,8 +635,6 @@ async function removeReply(replyID, parentID) {
   transform: scale(1.1);
 }
 
-
-[]
 .green {
   background-color: transparent;
   border: 2px solid green;
