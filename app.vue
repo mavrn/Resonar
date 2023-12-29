@@ -476,8 +476,10 @@ body {
   color: black !important;
   border: 2px solid white !important;
 }
+
 [data-theme='dark'] .comment-card,
-[data-theme='dark'] .rating-card {
+[data-theme='dark'] .rating-card,
+[data-theme='dark'] .comment-area {
   background-color: rgb(36, 36, 48) !important;
   border: 1px solid white !important;
 }
@@ -485,6 +487,7 @@ body {
 [data-theme='dark'] .rating-card:hover {
   background-color: rgb(58, 58, 66) !important;
 }
+
 
 [data-theme='dark'] .rating-card-score,
 [data-theme='dark'] .rating-card-score-sm {

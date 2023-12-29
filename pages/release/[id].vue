@@ -129,7 +129,7 @@
         :key="comment.uid"
       >
         <div class="comment">
-          <div class="comment-card">
+          <div class="comment-area">
             <div class="comment-content">
               <NuxtLink
                 class="comment-avatar"
@@ -188,7 +188,7 @@
           </div>
         </div>
         <div class="reply" v-for="reply in comment.replies">
-          <div class="comment-card">
+          <div class="comment-area">
             <div class="comment-content">
               <NuxtLink
                 class="comment-avatar"
@@ -704,13 +704,10 @@ async function removeReply(replyID, parentID) {
   margin-top: 10px;
   margin-bottom: 5px;
   width: 100%;
-  border: none;
-  border-bottom: 2px solid black;
   display: flex;
   padding-left: 10px;
   padding-right: 20px;
   background-color: white;
-  border: none;
   border: 1px solid black;
   border-radius: var(--border-radius);
   box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
@@ -761,7 +758,9 @@ async function removeReply(replyID, parentID) {
   width: 1px;
   left: -10px;
 }
-
+[data-theme='dark'] .reply::before {
+  background-color: white;
+}
 .reply {
   margin-left: 3.5rem;
   margin-top: 10px;
@@ -786,7 +785,7 @@ async function removeReply(replyID, parentID) {
   width: 100%;
 }
 
-.comment-card {
+.comment-area {
   padding: 20px;
   background-color: white;
   border: 1px solid black;
