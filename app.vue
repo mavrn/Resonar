@@ -134,8 +134,7 @@ const resolveJson = async () => {
     console.log('Uploading JSON...');
     await updateRemoteIndex();
     console.log('Index done by R1.');
-  }
-  else if (!localJSONFound || localJSONTooOld) {
+  } else if (!localJSONFound || localJSONTooOld) {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
     remoteIndexLoaded.value = true;
@@ -302,18 +301,16 @@ const toggleDarkMode = async () => {
   left: 0;
   cursor: pointer;
   z-index: 999;
-  background-color: rgba(100, 100, 100);
-  opacity: 0.3;
+  background-color: rgba(100, 100, 100, 0.3);
   color: white;
   border: none;
-  transition: all 0.15s ease-in-out; /* Added transition for smooth animation */
+  transition: all 0.3s ease-in-out;
 }
 
 .dark-mode-toggle:hover {
   width: 55px;
   height: 55px;
-  background-color: rgba(2, 2, 2);
-  opacity: 0.7;
+  background-color: rgba(2, 2, 2, 0.7);
 }
 
 .dm-icon {
