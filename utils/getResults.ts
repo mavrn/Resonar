@@ -74,7 +74,7 @@ export const getResults = async (
       });
     }
   }
-  if (filtering.sorting) {
+  if (filtering && filtering.sorting) {
     console.debug('Sorting...');
     if (filtering.sorting === 'Release Date') {
       results.sort((a, b) => {

@@ -12,6 +12,9 @@ const username = ref('');
 const errMsg = ref();
 const password = ref('');
 const auth = getAuth();
+const props = defineProps({
+  addUserToIndex: Function,
+});
 const register = async () => {
   if (await getUser(db, username.value)) {
     errMsg.value = 'Username taken.';
@@ -26,6 +29,11 @@ const register = async () => {
         email.value,
         userCredentials.user.uid
       );
+      props.addUserToIndex({
+        username: username.value,
+        uid: userCredentials.user.uid,
+        picture: 'avatar.jpg',
+      });
       navigateTo('/onboarding');
     })
     .catch((error) => {
@@ -45,6 +53,11 @@ const signInWithGoogle = () => {
         userCredentials.user.uid
       );
       await updateUser(db, userCredentials.user.uid, {
+        picture: userCredentials.user.photoURL,
+      });
+      props.addUserToIndex({
+        username: userCredentials.user.displayName,
+        uid: userCredentials.user.uid,
         picture: userCredentials.user.photoURL,
       });
       console.debug('Successfully registered!');

@@ -278,7 +278,9 @@ const roundedRating = computed({
   get: () => selectedRating.value,
   set: (value) => (selectedRating.value = parseFloat(value.toFixed(1))),
 });
-
+const props = defineProps({
+  updateRatingToIndex: Function,
+});
 function setUserRating() {
   let newUserRating = undefined;
   if (currentUser.value) {
@@ -331,6 +333,7 @@ async function addRating() {
     release.value,
     selectedRating.value
   );
+  props.updateRatingToIndex(release.value.uid, release.value.rating);
 }
 
 async function addComment() {
@@ -560,7 +563,7 @@ async function removeReply(replyID, parentID) {
   }
 
   100% {
-    transfor: scale(1);
+    transform: scale(1);
   }
 }
 

@@ -8,7 +8,9 @@ const db = useFirestore();
 const location = ref('');
 const bio = ref('');
 const fileUpload = ref(null);
-
+const props = defineProps({
+  updateUserToIndex: Function,
+});
 const hasPicture = async (user) => {
   console.log(user);
   const foundUser = await getUser(db, user.username);
@@ -47,10 +49,18 @@ const submit = async () => {
       bio: bio.value,
       picture: fileName,
     });
-  }
-  else {
+    props.updateUserToIndex(currentUser.uid, {
+      location: location.value,
+      bio: bio.value,
+      picture: fileName,
+    });
+  } else {
     console.log('updating user uid', currentUser.uid, 'with', location, bio);
     updateUser(db, currentUser.uid, {
+      location: location.value,
+      bio: bio.value,
+    });
+    props.updateUserToIndex(currentUser.uid, {
       location: location.value,
       bio: bio.value,
     });

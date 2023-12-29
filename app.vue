@@ -5,6 +5,7 @@ import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDoc, doc, query, getDocs } from 'firebase/firestore';
 import { getMetadata, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { useUserStore } from './store/currentUser';
+import { User } from './utils/User';
 
 const { setUser } = useUserStore();
 const db = useFirestore();
@@ -58,25 +59,54 @@ const updateRemoteIndex = async () => {
   console.debug('Upload complete.');
 };
 
+const updateRatingToIndex = (releaseID: string, newRating: number) => {
+  for (const item of index.value) {
+    if (item.reference.replace('releases/', '') === releaseID) {
+      item.rating = newRating;
+    }
+  }
+  updateRemoteIndex();
+  localStorage.setItem('index', JSON.stringify(index.value));
+};
+
+const updateUserToIndex = (
+  userID: string,
+  newFields: { [key: string]: any }
+) => {
+  for (const item of index.value) {
+    if (
+      item.type === 'user' &&
+      item.reference.replace('users/', '') === userID
+    ) {
+      for (const key in newFields) {
+        if (newFields.hasOwnProperty(key)) {
+          item[key] = newFields[key];
+        }
+      }
+    }
+  }
+  updateRemoteIndex();
+  localStorage.setItem('index', JSON.stringify(index.value));
+};
+
+const addUserToIndex = (newUser: User) => {
+  index.value.push({
+    name: newUser.username,
+    type: 'user',
+    reference: 'users/' + newUser.uid,
+    picture: newUser.picture,
+  });
+  updateRemoteIndex();
+  localStorage.setItem('index', JSON.stringify(index.value));
+};
+
 const resolveJson = async () => {
-  let metadata;
   try {
-    metadata = await getMetadata(jsonRef);
+    await getMetadata(jsonRef);
     remoteJSONFound = true;
   } catch (error) {
     console.log('Remote JSON not found.');
     remoteJSONFound = false;
-  }
-  if (remoteJSONFound) {
-    const timeDiff =
-      new Date().getTime() - new Date(metadata.timeCreated).getTime();
-    const minutesAgo = Math.floor(timeDiff / (1000 * 60));
-    if (minutesAgo > 5) {
-      console.debug('Remote JSON is too old.');
-      remoteJSONTooOld = true;
-    } else {
-      console.debug('Remote JSON not too old.');
-    }
   }
   const localLastUpdate = localStorage.getItem('lastUpdate');
   if (localLastUpdate) {
@@ -104,15 +134,7 @@ const resolveJson = async () => {
     console.log('Uploading JSON...');
     await updateRemoteIndex();
     console.log('Index done by R1.');
-  } //else if (remoteJSONTooOld) {
-  //console.debug('Getting JSON from remote...');
-  //index.value = await fetchRemoteJson();
-  //console.log('Updating the remote index...');
-  //await resolveRemoteIndex();
-  //remoteIndexLoaded.value = true;
-  //console.log('Uploading JSON...');
-  //await updateRemoteIndex();
-  //console.log('Index done by R2.');}
+  }
   else if (!localJSONFound || localJSONTooOld) {
     console.debug('Getting JSON from remote...');
     index.value = await fetchRemoteJson();
@@ -191,38 +213,6 @@ const buildRemoteIndex = async () => {
   console.debug('Done!');
 };
 
-const resolveRemoteIndex = async () => {
-  const q = query(collection(db, 'users'));
-  const users = await getDocs(q);
-  index.value = index.value.filter((element) => {
-    return element.type !== 'user';
-  });
-  users.forEach((user) => {
-    const userData = user.data();
-    index.value.push({
-      name: userData.username,
-      picture: userData.picture,
-      type: 'user',
-      reference: 'users/' + user.id,
-    });
-  });
-  await Promise.all(
-    index.value.map(async (element) => {
-      if (['album', 'single'].includes(element.type)) {
-        const [collectionPath, documentId] = element.reference.split('/');
-        const documentRef = doc(db, collectionPath, documentId);
-        const relSnapshot = await getDoc(documentRef);
-        element.rating = relSnapshot?.data?.()?.rating;
-      }
-      return element;
-    })
-  );
-  console.debug('Saving JSON locally...');
-  localStorage.setItem('index', JSON.stringify(index.value));
-  localStorage.setItem('lastUpdate', JSON.stringify(new Date().toISOString()));
-  console.debug('Done!');
-};
-
 onMounted(() => {
   initializeTheme();
   if (document.documentElement.getAttribute('data-theme') == 'dark') {
@@ -290,6 +280,9 @@ const toggleDarkMode = async () => {
         :index="index"
         :remoteIndexLoaded="remoteIndexLoaded"
         :isDarkMode="isDarkMode"
+        :addUserToIndex="addUserToIndex"
+        :updateRatingToIndex="updateRatingToIndex"
+        :updateUserToIndex="updateUserToIndex"
       ></NuxtPage>
     </div>
   </div>
@@ -299,19 +292,28 @@ const toggleDarkMode = async () => {
 .dark-mode-toggle {
   width: 50px;
   height: 50px;
+  @media (max-width: 550px) {
+    width: 75px;
+    height: 75px;
+  }
   border-top-right-radius: 100%;
   position: fixed;
   bottom: 0;
   left: 0;
   cursor: pointer;
   z-index: 999;
-  background-color: rgba(100, 100, 100, 0.3);
+  background-color: rgba(100, 100, 100);
+  opacity: 0.3;
   color: white;
   border: none;
+  transition: all 0.15s ease-in-out; /* Added transition for smooth animation */
 }
 
 .dark-mode-toggle:hover {
-  background-color: rgba(2, 2, 2, 0.7);
+  width: 55px;
+  height: 55px;
+  background-color: rgba(2, 2, 2);
+  opacity: 0.7;
 }
 
 .dm-icon {
@@ -320,6 +322,11 @@ const toggleDarkMode = async () => {
   left: 40%;
   transform: translate(-50%, -50%);
   font-size: 24px;
+  @media (max-width: 550px) {
+    font-size: 27px;
+    top: 55%;
+    left: 45%;
+  }
 }
 
 body {
