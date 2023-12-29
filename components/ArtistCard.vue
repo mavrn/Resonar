@@ -16,7 +16,7 @@
         </div>
       </div>
       <div class="artist-info-row-2">
-        <img v-if="isDarkMode" class="type-icon" src="../assets/mic-dm.png" />
+        <img v-if="isDark" class="type-icon" src="../assets/mic-dm.png" />
         <img v-else class="type-icon" src="../assets/mic-lm.png" />
         <span>Artist</span>
       </div>
@@ -26,9 +26,10 @@
 
 <script setup lang="ts">
 import { Artist } from '#imports';
+import { useDarkModeStore } from '~/store/darkMode';
+const  {isDark} = storeToRefs(useDarkModeStore());
 defineProps({
   artist: Artist,
-  isDarkMode: Boolean,
 });
 </script>
 

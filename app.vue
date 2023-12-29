@@ -1,22 +1,21 @@
 <script setup lang="ts">
 import type { Auth } from 'firebase/auth';
-import type { DocumentData } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 import { collection, getDoc, doc, query, getDocs } from 'firebase/firestore';
 import { getMetadata, ref as storageRef, uploadBytes } from 'firebase/storage';
 import { useUserStore } from './store/currentUser';
+import { useDarkModeStore } from './store/darkMode';
 import { User } from './utils/User';
 
 const { setUser } = useUserStore();
+const { isDark } = storeToRefs(useDarkModeStore());
 const db = useFirestore();
 const searchValue = ref('');
 const router = useRouter();
 const index = ref<Array<Object>>([]);
 let remoteJSONFound = false;
-let remoteJSONTooOld = false;
 let localJSONFound = false;
 let localJSONTooOld = false;
-const isDarkMode = ref(false);
 const remoteIndexLoaded = ref<boolean | undefined>(undefined);
 const storage = useFirebaseStorage();
 const jsonRef = storageRef(storage, 'index.json');
@@ -215,7 +214,7 @@ const buildRemoteIndex = async () => {
 onMounted(() => {
   initializeTheme();
   if (document.documentElement.getAttribute('data-theme') == 'dark') {
-    isDarkMode.value = true;
+    isDark.value = true;
   }
   resolveJson();
   auth = getAuth();
@@ -247,15 +246,14 @@ const handleSignOut = async () => {
 };
 
 const toggleDarkMode = async () => {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  if (currentTheme == 'light') {
+  if (!isDark.value) {
     document.documentElement.setAttribute('data-theme', 'dark');
     localStorage.setItem('theme', 'dark');
-    isDarkMode.value = true;
+    isDark.value = true;
   } else {
     document.documentElement.setAttribute('data-theme', 'light');
     localStorage.setItem('theme', 'light');
-    isDarkMode.value = false;
+    isDark.value = false;
   }
 };
 </script>
@@ -263,7 +261,7 @@ const toggleDarkMode = async () => {
 <template>
   <Title>Resonar</Title>
   <button class="dark-mode-toggle" @click="toggleDarkMode">
-    <i v-if="isDarkMode" class="dm-icon material-icons">dark_mode</i>
+    <i v-if="isDark" class="dm-icon material-icons">dark_mode</i>
     <i v-else class="dm-icon material-icons">light_mode</i>
   </button>
   <div class="header-fixed">
@@ -272,13 +270,11 @@ const toggleDarkMode = async () => {
         v-model:search-value="searchValue"
         :handleSignOut="handleSignOut"
         :remoteIndexLoaded="remoteIndexLoaded"
-        :isDarkMode="isDarkMode"
       />
       <NuxtPage
         v-model:searchValue="searchValue"
         :index="index"
         :remoteIndexLoaded="remoteIndexLoaded"
-        :isDarkMode="isDarkMode"
         :addUserToIndex="addUserToIndex"
         :updateRatingToIndex="updateRatingToIndex"
         :updateUserToIndex="updateUserToIndex"
@@ -424,12 +420,21 @@ body {
 }
 
 [data-theme='dark'] .header-logo-sm-container {
-  background-color: black;
+  background-color: rgb(22, 22, 22) !important;
 }
 
 [data-theme='dark'] .user-rating-button {
   border: 2px solid white !important;
   color: white !important;
+}
+
+[data-theme='dark'] .user-rating-button:hover {
+  color: black !important;
+  background-color: white !important;
+}
+
+[data-theme='dark'] .user-rating-button:hover .user-rating-delete-icon {
+  color: black !important;
 }
 
 [data-theme='dark'] .user-rating-button:before {
@@ -438,10 +443,12 @@ body {
 
 [data-theme='dark'] .add-rating-button {
   border: 2px solid white !important;
+  color: white !important;
 }
 
 [data-theme='dark'] .add-rating-button:hover {
   color: black !important;
+  background-color: white !important;
   fill: white !important;
 }
 
@@ -488,7 +495,6 @@ body {
   background-color: rgb(58, 58, 66) !important;
 }
 
-
 [data-theme='dark'] .rating-card-score,
 [data-theme='dark'] .rating-card-score-sm {
   border: 2px solid white !important;
@@ -527,7 +533,7 @@ body {
 
 [data-theme='dark'] header {
   color: white !important;
-  background-color: rgb(0, 0, 0) !important;
+  background-color: rgb(22, 22, 22) !important;
 }
 
 [data-theme='dark'] .p-inputtext {

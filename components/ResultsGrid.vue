@@ -10,17 +10,14 @@
           <ReleaseCard
             v-if="results[i - 1] && results[i - 1] instanceof Release"
             :release="results[i - 1]"
-            :isDarkMode="isDarkMode"
           />
           <ArtistCard
             v-else-if="results[i - 1] && results[i - 1] instanceof Artist"
             :artist="results[i - 1]"
-            :isDarkMode="isDarkMode"
           ></ArtistCard>
           <UserCard
             v-else-if="results[i - 1] && results[i - 1] instanceof User"
             :user="results[i - 1]"
-            :isDarkMode="isDarkMode"
           ></UserCard>
           <Skeleton v-else class="skeleton" />
         </li>
@@ -30,11 +27,11 @@
 </template>
 
 <script setup>
+
 const props = defineProps({
   results: Object,
   update: Function,
   loadedResults: Number,
-  isDarkMode: Boolean,
 });
 
 //simple method debouncer

@@ -18,7 +18,7 @@
       </div>
       <div class="user-info-row-2">
         <img
-          v-if="isDarkMode"
+          v-if="isDark"
           class="type-icon"
           src="../assets/person-dm.png"
         />
@@ -30,9 +30,11 @@
 </template>
 
 <script setup lang="ts">
+import { useDarkModeStore } from '~/store/darkMode';
+
+const { isDark } = storeToRefs(useDarkModeStore());
 const props = defineProps({
   user: User,
-  isDarkMode: Boolean,
 });
 const imageData = ref<string | null>(null);
 onMounted(async () => {

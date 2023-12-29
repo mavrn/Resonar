@@ -1,20 +1,23 @@
 <script setup lang="ts">
 import { useFilteringStore } from '../store/filtering';
 import { useUserStore } from '~/store/currentUser';
+import { useDarkModeStore } from '~/store/darkMode';
+
+const { isDark } = storeToRefs(useDarkModeStore());
+const { currentUser } = storeToRefs(useUserStore());
+const { filtering } = storeToRefs(useFilteringStore());
 
 const props = defineProps({
   searchValue: String,
   handleSignOut: Function,
   handleSortingChange: Function,
   remoteIndexLoaded: Boolean,
-  isDarkMode: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
-const { currentUser } = storeToRefs(useUserStore());
+
 const showFilterMenu = ref(false);
 const filterOverlayRef = ref<null | HTMLElement>(null);
 const overlayToggleRef = ref<null | HTMLElement>(null);
-const { filtering } = storeToRefs(useFilteringStore());
 const sorting = ref('Relevance');
 const sortingOrder = ref(-1);
 
@@ -96,7 +99,7 @@ function onSortingOrderChange() {
   <div class="show-smaller-than-lg-flex header-logo-sm-container">
     <NuxtLink :to="{ path: '/', query: {} }">
       <img
-        v-if="isDarkMode"
+        v-if="isDark"
         class="header-logo-sm"
         @click="computedSearchValue = ''"
         src="../assets/logo-dm.png"
@@ -131,7 +134,7 @@ function onSortingOrderChange() {
           :to="{ path: '/', query: {} }"
         >
           <img
-            v-if="isDarkMode"
+            v-if="isDark"
             class="header-logo"
             @click="computedSearchValue = ''"
             src="../assets/logo-dm.png"

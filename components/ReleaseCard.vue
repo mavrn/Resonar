@@ -20,22 +20,22 @@
       </div>
       <div class="release-info-row-3">
         <img
-          v-if="release?.type === 'album' && isDarkMode"
+          v-if="release?.type === 'album' && isDark"
           class="type-icon"
           src="../assets/album-dm.png"
         />
         <img
-          v-if="release?.type === 'album' && !isDarkMode"
+          v-if="release?.type === 'album' && !isDark"
           class="type-icon"
           src="../assets/album-lm.png"
         />
         <img
-          v-if="release?.type === 'single' && isDarkMode"
+          v-if="release?.type === 'single' && isDark"
           class="type-icon"
           src="../assets/single-dm.png"
         />
         <img
-          v-if="release?.type === 'single' && !isDarkMode"
+          v-if="release?.type === 'single' && !isDark"
           class="type-icon"
           src="../assets/single-lm.png"
         />
@@ -60,6 +60,9 @@
 
 <script setup lang="ts">
 import { Timestamp } from 'firebase/firestore';
+import { useDarkModeStore } from '~/store/darkMode';
+
+const { isDark } = storeToRefs(useDarkModeStore());
 const image = ref<null | HTMLElement>(null);
 function getYear(date: number | Timestamp | Date) {
   if (typeof date === 'number') {
@@ -96,7 +99,6 @@ onBeforeUnmount(() => {
 
 const props = defineProps({
   release: Object,
-  isDarkMode: Boolean,
 });
 </script>
 

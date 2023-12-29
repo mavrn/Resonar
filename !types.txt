@@ -29,7 +29,6 @@ User (users/)
     created: Date
     ratings: {release: Release, content: string, score: number, created: Date}[]
     comments: {release: Release, content: string, parent?: comment}
-    settings: {theme: string ["dark", "light"]}
 
 Comment (releases/X/comments) & (users/X/comments)
     content: string

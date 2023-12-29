@@ -11,7 +11,6 @@
     :results="results"
     :update="resolveResults"
     :loadedResults="loadedResults"
-    :isDarkMode="isDarkMode"
   />
 </template>
 
@@ -34,7 +33,6 @@ const props = defineProps({
   searchValue: String,
   index: Array,
   remoteIndexLoaded: Boolean,
-  isDarkMode: Boolean,
 });
 const emits = defineEmits(['update:searchValue']);
 const route = useRoute();
