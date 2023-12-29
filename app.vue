@@ -310,6 +310,10 @@ const toggleDarkMode = async () => {
 .dark-mode-toggle:hover {
   width: 55px;
   height: 55px;
+  @media (max-width: 550px) {
+    width: 80px;
+    height: 80px;
+  }
   background-color: rgba(2, 2, 2, 0.7);
 }
 

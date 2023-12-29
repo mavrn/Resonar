@@ -243,16 +243,6 @@ function onSortingOrderChange() {
                       >
                         In your Rated
                       </button>
-                      <button
-                        v-if="currentUser"
-                        :class="{
-                          'filter-active-button': filtering.inBookmarks,
-                          'filter-passive-button': !filtering.inBookmarks,
-                        }"
-                        @click="filtering.inBookmarks = !filtering.inBookmarks"
-                      >
-                        In your Bookmarks
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -564,7 +554,7 @@ header {
 .filter-dropdown {
   position: relative;
   display: inline-flex;
-  width: 180px;
+  width: 150px;
   cursor: pointer;
   border: none;
   border-radius: var(--border-radius);
@@ -659,13 +649,15 @@ header {
 .button-field {
   display: flex;
   padding-top: 10px;
+  align-items: center;
+  justify-content: center;
 }
 .filter-active-button {
   border-radius: var(--border-radius);
   background-color: white;
   color: black;
   border: none;
-  width: 40%;
+  width: 100px;
   height: 40px;
   margin-left: 10px;
   margin-right: 10px;
@@ -676,7 +668,7 @@ header {
   background: transparent;
   color: white;
   border: 2px solid white;
-  width: 40%;
+  width: 100px;
   height: 40px;
   margin-left: 10px;
   margin-right: 10px;

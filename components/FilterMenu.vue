@@ -66,15 +66,6 @@
       >
         In your Rated
       </button>
-      <button
-        :class="{
-          'filter-active-button': filtering.inBookmarks,
-          'filter-passive-button': !filtering.inBookmarks,
-        }"
-        @click="filtering.inBookmarks = !filtering.inBookmarks"
-      >
-        In your Bookmarks
-      </button>
     </div>
   </div>
 </template>
@@ -123,7 +114,19 @@ const typeOptions = [
   background-color: white;
   color: black;
   border: none;
-  width: 100%;
+  width: 140px;
+  height: 40px;
+  opacity: 80%;
+  padding: 10px;
+  margin-top: 20px;
+}
+
+.filter-passive-button {
+  border-radius: var(--border-radius);
+  background: transparent;
+  color: white;
+  border: 2px solid white;
+  width: 140px;
   height: 40px;
   opacity: 80%;
   padding: 10px;
@@ -155,18 +158,6 @@ const typeOptions = [
   width: 40px;
   height: 40px;
   padding: 0px;
-}
-
-.filter-passive-button {
-  border-radius: var(--border-radius);
-  background: transparent;
-  color: white;
-  border: 2px solid white;
-  width: 100%;
-  height: 40px;
-  opacity: 80%;
-  padding: 10px;
-  margin-top: 20px;
 }
 
 .range-display {
