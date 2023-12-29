@@ -21,6 +21,7 @@ const menuOptions = ref([
 const selectedOption = ref('Info');
 const imageSrc = ref('');
 
+//Resolves the User Profile by its routed username
 onMounted(async () => {
   getUser(db, routedUser).then(async (user) => {
     if (!user) {
@@ -31,6 +32,7 @@ onMounted(async () => {
       isLoggedInUser.value = currentUser.value?.uid == foundUser.value?.uid;
       if (isLoggedInUser.value) {
         menuOptions.value.push({
+          // add settings tab if this profile page belongs to the logged in user
           name: 'Account',
           icon: 'settings',
         });

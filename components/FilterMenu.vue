@@ -86,6 +86,7 @@ const { filtering } = storeToRefs(useFilteringStore());
 const type = ref('All');
 const sorting = ref('Relevance');
 
+//reverses the sorting order
 function onClickSortingOrder() {
   filtering.value.sortingOrder = -filtering.value.sortingOrder;
 }

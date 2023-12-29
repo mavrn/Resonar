@@ -6,6 +6,12 @@ import {
   Firestore,
 } from 'firebase/firestore';
 
+/**
+ * Looks for a user doc that matches a username in DB. Only works for exact matches.
+ * @param db Firestore instance
+ * @param username Username to look for
+ * @returns A document if user was found, null of not
+ */
 export const getUser = async (db: Firestore, username: string) => {
   const users = collection(db, 'users');
   var q = query(users, where('username', '==', username));

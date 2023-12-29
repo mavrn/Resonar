@@ -1,3 +1,8 @@
+/**
+ * @param date Date instance
+ * @returns The date formatted relative to the current date, similar to youtube comments.
+ *          I.e. '2 hours ago', '6 months ago' etc.
+ */
 export function getTimeDescriptor(date: Date): string {
   const now = new Date();
   const timeDifference = now.getTime() - date.getTime();

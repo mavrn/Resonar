@@ -281,6 +281,10 @@ const roundedRating = computed({
 const props = defineProps({
   updateRatingToIndex: Function,
 });
+
+/**
+ * Resolves the Rating that the logged in user has given this release
+ */
 function setUserRating() {
   let newUserRating = undefined;
   if (currentUser.value) {
@@ -293,6 +297,7 @@ function setUserRating() {
   userRating.value = newUserRating;
 }
 
+//Resolves the release using the routed ID
 onMounted(async () => {
   const releaseDocument = doc(db, '/releases', routedRelease);
   const snapshot = await getDoc(releaseDocument);
@@ -313,13 +318,16 @@ watch(
   }
 );
 
+/** Handles resizing the comment input area on overflow */
 function resizeArea() {
   if (commentarea.value) {
     commentarea.value.style.height = '30px';
     commentarea.value.style.height = commentarea.value.scrollHeight + 10 + 'px';
   }
 }
-
+/**
+ * Adds a new rating on this release, by the currently logged in user, locally and in DB
+ */
 async function addRating() {
   isRating.value = false;
   userRating.value = selectedRating.value;
@@ -336,6 +344,9 @@ async function addRating() {
   props.updateRatingToIndex(release.value.uid, release.value.rating);
 }
 
+/**
+ * Adds a new comment under this release, by the currently logged in user, locally and in DB
+ */
 async function addComment() {
   if (commentInput.value === '') {
     return;
@@ -350,6 +361,9 @@ async function addComment() {
   release.value.comments.unshift(newComment);
 }
 
+/**
+ * Adds a new reply under a comment under this release, by the currently logged in user, locally and in DB
+ */
 async function addReply() {
   if (replyInput.value === '') {
     return;
@@ -370,6 +384,9 @@ async function addReply() {
   isReplyingTo.value = null;
 }
 
+/**
+ * Removes the rating that the logged in user has given this release, locally and in DB
+ */
 async function removeRating() {
   currentUser.value.ratings = currentUser.value.ratings.filter(
     (rating) => rating.release.uid !== release.value.uid
@@ -381,6 +398,10 @@ async function removeRating() {
   );
 }
 
+/**
+ * Removes a comment by its ID, locally and in DB
+ * @param {string} commentID ID of comment to be removed
+ */
 async function removeComment(commentID) {
   release.value.comments = release.value.comments.filter(
     (comment) => comment.uid !== commentID
@@ -388,6 +409,11 @@ async function removeComment(commentID) {
   release.value.removeComment(db, commentID);
 }
 
+/**
+ * Removes a reply by its ID and its parent's ID, locally and in DB
+ * @param {string} replyID
+ * @param {string} parentID
+ */
 async function removeReply(replyID, parentID) {
   const commentIndex = release.value.comments.findIndex(
     (comment) => comment.uid == parentID

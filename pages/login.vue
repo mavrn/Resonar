@@ -14,11 +14,18 @@ const password = ref('');
 const errMsg = ref();
 const db = useFirestore();
 
+/**
+ * @param email Input string
+ * @returns Whether the string is a valid email
+ */
 function isValidEmail(email: string) {
   const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
   return regex.test(email);
 }
 
+/**
+ * Signs into Firebase auth with email and password. Searches for username instead if not email field not formatted as an email.
+ */
 const signIn = async () => {
   let emailToSearch = email.value;
   if (!isValidEmail(email.value)) {
@@ -32,7 +39,7 @@ const signIn = async () => {
   signInWithEmailAndPassword(getAuth(), emailToSearch, password.value)
     .then((data) => {
       console.debug('Successfully signed in!');
-      router.push('./');
+      router.push('./'); //redirect to index page
     })
     .catch((error) => {
       console.debug(error.code);
@@ -53,11 +60,18 @@ const signIn = async () => {
     });
 };
 
+/**
+ * Signs into Firebase Auth with a Google Popup
+ */
 const signInRedirect = async () => {
-  signInWithRedirect(getAuth(), new GoogleAuthProvider()).catch((error) => {
-    console.error('Failed signinRedirect', error);
-    errMsg.value = 'Failed Redirect.';
-  });
+  signInWithPopup(getAuth(), new GoogleAuthProvider())
+    .then((data) => {
+      router.push('./');
+    })
+    .catch((error) => {
+      console.error('Failed signinRedirect', error);
+      errMsg.value = 'Failed Redirect.';
+    });
 };
 </script>
 

@@ -30,6 +30,7 @@ const routedArtist = useRoute().params.id;
 const artist = ref(null);
 const releases = ref([]);
 
+//Resolves the routed artist on mount
 onMounted(async () => {
   const artistDocument = doc(db, '/artists', routedArtist);
   const snapshot = await getDoc(artistDocument);

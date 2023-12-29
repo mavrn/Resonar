@@ -11,6 +11,11 @@ const fileUpload = ref(null);
 const props = defineProps({
   updateUserToIndex: Function,
 });
+
+/**
+ * @param {string} user Username to search a picture for
+ * @returns Whether the given username has a picture assigned
+ */
 const hasPicture = async (user) => {
   console.log(user);
   const foundUser = await getUser(db, user.username);
@@ -18,6 +23,9 @@ const hasPicture = async (user) => {
   return Boolean(foundUser.data().picture);
 };
 
+/**
+ * Submits additional details after signup. Uploads the picture to Firebase Storage if one was uploaded.
+ */
 const submit = async () => {
   if (!fileUpload.value) return;
   const currentUser = userStore.currentUser;

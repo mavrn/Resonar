@@ -73,11 +73,14 @@ function getYear(date: number | Timestamp | Date) {
   }
 }
 
+/**
+ * Updates a css variable if the window is resized. This is necessary to automatically abbreviate the release titles on overflow.
+ */
 const updateWidth = () => {
   if (image.value) {
     document.documentElement.style.setProperty(
       '--image-width',
-      `${image.value.offsetWidth * 0.8}px`
+      `${image.value.offsetWidth * 0.8}px` //Text is abbreviated if its length is more than 80% of the image width
     );
   }
 };

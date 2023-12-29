@@ -49,9 +49,15 @@ const debounce = (func, delay) => {
   };
 };
 
+/**
+ * Resolves all results until a certain limit. Called on infinite scroll.
+ * Some functions in this functions are not strictly necessary anymore, as results are exclusively resolved locally now.
+ * Previously, each result would be fetched from the DB before displaying.
+ */
 const resolveResults = async () => {
   doneFlag.value = false;
   console.debug('Resolve called while loadedresults is', loadedResults.value);
+  //some checks to ensure this function is not called too often or in a faulty way
   if (processing.value) {
     console.debug('Rejected. Reason: Still preprocessing.');
     return;
@@ -72,7 +78,7 @@ const resolveResults = async () => {
     loadedResults.value + limit
   );
   const currLoaded = loadedResults.value;
-  limitedResults.forEach(async (result, index) => {
+  limitedResults.forEach((result, index) => {
     const [collectionPath, documentId] = result.reference.split('/');
     console.debug('Getting Release locally', documentId);
     let newItem;
@@ -104,6 +110,11 @@ const resolveResults = async () => {
   });
 };
 
+/**
+ * Update function, called any filter options or query changes. Filters and displays index.
+ * @param {String} searchValue Search query
+ * @param {Object[]} index Search index
+ */
 const updateResultsUnl = async (searchValue, index) => {
   loadedResults.value = 0;
   if (index.length == 0) {
@@ -121,6 +132,8 @@ const updateResultsUnl = async (searchValue, index) => {
 
 const updateResults = debounce(updateResultsUnl, 150);
 
+
+//all watchers for updating the results list
 watch(
   () => props.searchValue,
   () => {

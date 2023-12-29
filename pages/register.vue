@@ -15,6 +15,11 @@ const auth = getAuth();
 const props = defineProps({
   addUserToIndex: Function,
 });
+
+/**
+ * Registers a user in Firebase auth with the given details. Also creates a new user profile in DB users/id/
+ * Checks if username or email are already in DB, displys error msg
+ */
 const register = async () => {
   if (await getUser(db, username.value)) {
     errMsg.value = 'Username taken.';
@@ -41,6 +46,10 @@ const register = async () => {
       errMsg.value = error.message;
     });
 };
+
+/**
+ * Registers a new Firebase Auth user with Google Popup.  Also creates a new user profile in DB users/id/. Exists checks are done automatically.
+ */
 const signInWithGoogle = () => {
   const provider = new GoogleAuthProvider();
   signInWithPopup(getAuth(), provider)

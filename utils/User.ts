@@ -17,6 +17,9 @@ import {
 import type { DocumentData } from 'firebase/firestore';
 import { Release } from './Release';
 
+/**
+ * User utility class for unified source code
+ */
 export class User {
   uid: string;
   username: string;
@@ -28,6 +31,13 @@ export class User {
   ratings: { rating: number; release: Release; created: Date }[];
   bio: string;
 
+  /**
+   * Creates an instance of User.
+   * @date 12/29/2023 - 4:14:32 AM
+   *
+   * @constructor
+   * @param {?DocumentData} [doc] Firestore user doc
+   */
   constructor(doc?: DocumentData) {
     if (doc) {
       const docData = doc.data();
@@ -43,10 +53,23 @@ export class User {
     }
   }
 
+  /**
+   * Updates this user with any fields
+   * @param db Firestore instance
+   * @param fields Any fields to update
+   */
   async update(db: Firestore, fields: Object) {
     updateUser(db, this.uid, fields);
   }
 
+  /**
+   * Adds a rating to this user, uploads to DB: users/this.uid/ratings
+   * Also recalculates average rating and ratingCount of release, updates to DB at: releases/release.uid
+   * @param db Firestore instance
+   * @param release Release instance
+   * @param ratingToAdd Rating number, 0-10
+   * @returns New average rating calculated
+   */
   async addRating(db: Firestore, release: Release, ratingToAdd: number) {
     setDoc(doc(db, 'users/' + this.uid + '/ratings', release.uid), {
       created: Timestamp.now(),
@@ -87,6 +110,13 @@ export class User {
     }
   }
 
+  /**
+   * Removes a rating from this user, deletes from DB: users/this.uid/ratings
+   * Also recalculates average rating and ratingCount of release, updates to DB at: releases/release.uid
+   * @param db Firestore instance
+   * @param release Release instance
+   * @returns New average rating calculated
+   */
   async removeRating(db: Firestore, release: Release) {
     const ratingDoc = await getDoc(
       doc(db, 'users/' + this.uid + '/ratings', release.uid)
@@ -125,6 +155,10 @@ export class User {
     }
   }
 
+  /**
+   * Resolves all relevant fields neccesary for user page (ratings and comments)
+   * @param db Firestore instance
+   */
   async resolve(db: Firestore) {
     this.ratings = [];
     this.comments = [];
@@ -167,6 +201,9 @@ export class User {
     );
   }
 
+  /**
+   * @returns The average rating that this user has given.
+   */
   getAverageRating() {
     if (this.ratings.length > 0) {
       const averageRating =
@@ -178,6 +215,12 @@ export class User {
     }
   }
 
+  /**
+   * Manually resolves all fields necessary to display user on index page. Matches fields in index.json
+   * @param uid Unique User ID
+   * @param username Username
+   * @param picture Avatar URL
+   */
   resolveAllLocal(uid: string, username: string, picture: string) {
     this.uid = uid;
     this.username = username;

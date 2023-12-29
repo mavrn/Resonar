@@ -39,6 +39,7 @@ watch(showFilterMenu, (newValue) => {
   }
 });
 
+//Handles clicks and taps outside the mobile filter window and closes it
 const handleOutsideClick = (event: Event) => {
   const overlayElement = filterOverlayRef.value;
 

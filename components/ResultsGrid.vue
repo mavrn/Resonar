@@ -37,6 +37,7 @@ const props = defineProps({
   isDarkMode: Boolean,
 });
 
+//simple method debouncer
 const debounce = (func, delay) => {
   let timeoutId;
   return function (...args) {
@@ -47,6 +48,10 @@ const debounce = (func, delay) => {
   };
 };
 
+/**
+ * Handles the infinite scroll and lazy loading. If the user is scrolled past a certain threshold, calles the passed in update function.
+ * Is debounced as too many calls lag the page.
+ */
 function handleScroll() {
   const loadingThreshold = window.innerWidth < 600 ? 55 : 70;
   const scrollTop =

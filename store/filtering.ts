@@ -1,3 +1,6 @@
+/**
+ * Pinia store for managing the currently selected Filter
+ */
 export const useFilteringStore = defineStore('filtering', {
   state: () => ({
     filtering: new Filter(

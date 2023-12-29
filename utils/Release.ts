@@ -12,24 +12,27 @@ import {
   doc,
   addDoc,
   Timestamp,
-  where,
   deleteDoc,
   setDoc,
 } from 'firebase/firestore';
 import type { DocumentData } from 'firebase/firestore';
 
+//converts string to proper title case (hello world -> Hello World)
 function toTitleCase(str: string) {
   return str
     .split(' ')
     .map((word) => {
       if (word.length === 0) {
-        return word; // Handle empty strings
+        return word;
       }
       return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
     })
     .join(' ');
 }
 
+/**
+ * Generic utility class for Releases
+ */
 export class Release {
   uid: string;
   artistUnresolved: DocumentReference;
@@ -44,6 +47,13 @@ export class Release {
   type: string;
   tracklist: { title: string; duration: string; index: number }[];
 
+  /**
+   * Creates an instance of Release.
+   * @date 12/29/2023 - 4:01:42 AM
+   *
+   * @constructor
+   * @param {?DocumentData} [doc] Firestore release doc
+   */
   constructor(doc?: DocumentData) {
     if (doc) {
       const docData = doc.data();
@@ -62,6 +72,10 @@ export class Release {
     }
   }
 
+  /**
+   * Resolves artist information. Only done if necessary, as this is an extra DB call.
+   * Resolves artist name and picture
+   */
   async resolveArtist() {
     if (this.artistUnresolved) {
       return new Promise((resolve, reject) => {
@@ -78,6 +92,10 @@ export class Release {
     }
   }
 
+  /**
+   * Resolves all comments and replies of a release, including users, ratings and pictures. Only necessary if viewing the release page.
+   * @param db Firestore instance
+   */
   async resolveComments(db: Firestore) {
     const comments = collection(db, 'releases/' + this.uid + '/comments');
     const commentsQuery = query(comments);
@@ -89,13 +107,14 @@ export class Release {
         db,
         'releases/' + this.uid + '/comments/' + comment.id + '/replies'
       );
-      const replyQuery = query(replyIndex, orderBy('created', 'asc'));
+      const replyQuery = query(replyIndex, orderBy('created', 'asc')); //newer comments first
       const replyDocs = await getDocs(replyQuery);
       const replies: Comment[] = [];
 
       const userPromises: Promise<void>[] = [];
 
       replyDocs.forEach((replyDoc) => {
+        // for each comments, replies are also resolved
         const replyData = replyDoc.data();
         const userPromise = (async () => {
           const user = new User(await getDoc(replyData.user));
@@ -168,6 +187,13 @@ export class Release {
     });
   }
 
+  /**
+   * Creates a new comment under this release, uploads to DB: /releases/id/comments
+   * @param db Firestore instance
+   * @param content Content of new comment
+   * @param user User instance of author
+   * @returns Newly created comment, only after uploading to DB
+   */
   async addComment(db: Firestore, content: string, user: User) {
     const releaseRef = doc(db, 'releases/', this.uid);
     const docRef = await addDoc(
@@ -211,6 +237,11 @@ export class Release {
     );
   }
 
+  /**
+   * Removes a comment under this release by its ID
+   * @param db Firestore instance
+   * @param commentID Comment ID
+   */
   async removeComment(db: Firestore, commentID: string) {
     const commentToDelete = await getDoc(
       doc(db, 'releases/' + this.uid + '/comments', commentID)
@@ -223,6 +254,12 @@ export class Release {
     );
   }
 
+  /**
+   * Removes a reply under this release by its ID and parent ID
+   * @param db Firestore instance
+   * @param replyID ID of reply to delete
+   * @param parentID ID of reply's parent comment
+   */
   async removeReply(db: Firestore, replyID: string, parentID: string) {
     const commentToDelete = await getDoc(
       doc(
@@ -239,6 +276,14 @@ export class Release {
     );
   }
 
+  /**
+   * Adds a reply under a specific comment under this release. Uploads to DB: /releases/this.uid/comments/parentID/replies/
+   * @param db Firestore instance
+   * @param parentID ID of of parent comment
+   * @param newContent Content of new reply
+   * @param newUser Author of reply
+   * @returns Newly created reply as Comment instance, only after uploading to DB
+   */
   async addReply(
     db: Firestore,
     parentID: string,
@@ -282,12 +327,29 @@ export class Release {
     );
   }
 
+  /**
+   * Resolves artist details manually, done when displaying releases with index.json
+   * @param artistName Artist name
+   * @param artistID Unique artist ID
+   */
   resolveArtistLocal(artistName: string, artistID: string) {
     this.artist = new Artist();
     this.artist.name = toTitleCase(artistName || '');
     this.artist.uid = artistID;
   }
 
+  /**
+   * Resolves all release details manually, matches all fields of index.json
+   * @param uid Unique release ID
+   * @param artistID Unique artist ID
+   * @param title Release title
+   * @param cover Release cover URL
+   * @param year Release date year
+   * @param rating Release rating
+   * @param type Release type
+   * @param genres All genres
+   * @param artistName Name of artist
+   */
   resolveAllLocal(
     uid: string | null | undefined,
     artistID: string | null | undefined,
