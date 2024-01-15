@@ -5,8 +5,10 @@
 
 ![logo-dm](https://github.com/prxide/Resonar/assets/86189907/87cf0cad-ca4d-4454-b8f4-33ebd1fc66ab)
 
-<br/>
+[resonar.vercel.app](resonar.vercel.app)
 
+
+<br/>
 
 ![ezgif-3-a4cf059abd](https://github.com/prxide/Resonar/assets/86189907/be05d1be-f3f0-44b1-95a3-e893fa854168)
 
