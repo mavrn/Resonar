@@ -5,7 +5,7 @@
 
 ![logo-dm](https://github.com/prxide/Resonar/assets/86189907/87cf0cad-ca4d-4454-b8f4-33ebd1fc66ab)
 
-[resonar.vercel.app](resonar.vercel.app)
+[resonar.vercel.app](https://resonar.vercel.app)
 
 
 <br/>
